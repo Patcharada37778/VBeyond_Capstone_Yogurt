@@ -1,0 +1,96 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import AppLayout from './components/layout/AppLayout';
+import { useStore } from './context/StoreContext';
+
+import Login from './pages/common/Login';
+import ForgotPassword from './pages/common/ForgotPassword';
+import FirstLogin from './pages/common/FirstLogin';
+import MigratedLogin from './pages/common/MigratedLogin';
+import Dashboard from './pages/dashboards/Dashboard';
+import Announcements from './pages/common/Announcements';
+import Notifications from './pages/common/Notifications';
+import ReportProblem from './pages/common/ReportProblem';
+import ContactSupport from './pages/common/ContactSupport';
+
+import Register from './pages/agent/Register';
+import MyApplication from './pages/agent/MyApplication';
+import Help from './pages/agent/Help';
+import Profile from './pages/agent/Profile';
+import Renewal from './pages/agent/Renewal';
+
+import TeamMembers from './pages/team-lead/TeamMembers';
+import TeamInvitations from './pages/team-lead/TeamInvitations';
+import TeamHierarchy from './pages/team-lead/TeamHierarchy';
+
+import Applications from './pages/compliance/Applications';
+import ApplicationDetail from './pages/compliance/ApplicationDetail';
+import Documents from './pages/compliance/Documents';
+
+import AgentDirectory from './pages/agent-manager/AgentDirectory';
+import AgentDetail from './pages/agent-manager/AgentDetail';
+import Teams from './pages/agent-manager/Teams';
+import Onboarding from './pages/agent-manager/Onboarding';
+import Renewals from './pages/agent-manager/Renewals';
+import AgentStatus from './pages/agent-manager/AgentStatus';
+import InvitationsAdmin from './pages/agent-manager/InvitationsAdmin';
+
+import Inquiries from './pages/support/Inquiries';
+import FaqManage from './pages/support/FaqManage';
+import SupportInbox from './pages/support/SupportInbox';
+
+import SystemIssues from './pages/system-admin/SystemIssues';
+import AdminAccounts from './pages/system-admin/AdminAccounts';
+import Roles from './pages/system-admin/Roles';
+import ActivityLogs from './pages/system-admin/ActivityLogs';
+
+export default function App() {
+  const { user } = useStore();
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/first-login" element={<FirstLogin />} />
+      <Route path="/migrated-login" element={<MigratedLogin />} />
+      <Route path="/join" element={<Register publicMode />} />
+
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/announcements" element={<Announcements />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/report-problem" element={<ReportProblem />} />
+        <Route path="/contact-support" element={<ContactSupport />} />
+        <Route path="/support-inbox" element={<SupportInbox />} />
+        <Route path="/system-issues" element={<SystemIssues />} />
+
+        <Route path="/register" element={<Register />} />
+        <Route path="/my-application" element={<MyApplication />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/renewal" element={<Renewal />} />
+
+        <Route path="/team/members" element={<TeamMembers />} />
+        <Route path="/team/invitations" element={<TeamInvitations />} />
+        <Route path="/team/hierarchy" element={<TeamHierarchy />} />
+
+        <Route path="/applications" element={<Applications />} />
+        <Route path="/applications/:id" element={<ApplicationDetail />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/inquiries" element={<Inquiries />} />
+        <Route path="/agents" element={<AgentDirectory />} />
+        <Route path="/agents/:id" element={<AgentDetail />} />
+        <Route path="/teams" element={<Teams />} />
+        <Route path="/invitations" element={<InvitationsAdmin />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/renewals" element={<Renewals />} />
+        <Route path="/agent-status" element={<AgentStatus />} />
+        <Route path="/faq" element={<FaqManage />} />
+
+        <Route path="/admin/accounts" element={<AdminAccounts />} />
+        <Route path="/admin/roles" element={<Roles />} />
+        <Route path="/admin/activity" element={<ActivityLogs />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
+    </Routes>
+  );
+}
