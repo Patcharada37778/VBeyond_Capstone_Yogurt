@@ -51,18 +51,27 @@ function RegisterWizard() {
   const invite = state.invitations.find((i) => i.id === params.get('invite')) || state.invitations.find((i) => i.email.toLowerCase() === user.email && ['Pending', 'Accepted', 'Registration In Progress'].includes(i.status));
   const invitedTeam = state.teams.find((t) => t.id === invite?.teamId);
   const inviter = state.agents.find((a) => a.id === invite?.invitedBy);
-  const draftKey = `arms-reg-draft-${user.email}`;
+  const draftKey = `arms-reg-draft-v2-${user.email}`;
   const [nameFirst, ...nameRest] = (invite?.name || user.name || '').split(' ');
 
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
-  const [agree, setAgree] = useState(false);
+  const [agree, setAgree] = useState(true);
   const [form, setForm] = useState(() => {
     try { const saved = JSON.parse(localStorage.getItem(draftKey)); if (saved) return saved; } catch { /* no draft */ }
     return {
-      firstName: nameFirst || '', lastName: nameRest.join(' '), email: user.email, phone: invite?.phone || '', dob: '', nationality: 'Thai', address: '',
-      experience: '', occupation: '', qualifications: '', referrer: inviter ? `${inviter.firstName} ${inviter.lastName} (${inviter.id})` : '',
-      docs: {},
+      // Demo: every field is pre-filled so the registration can be submitted in a few clicks.
+      firstName: nameFirst || 'Nutnicha', lastName: nameRest.join(' ') || 'Rungroj', email: user.email, phone: invite?.phone || '089-456-7123', dob: '1996-04-12', nationality: 'Thai',
+      address: '88/5 Sukhumvit Soi 50, Phra Khanong, Khlong Toei, Bangkok 10260',
+      experience: '3 years selling condominiums with a residential brokerage in Bangkok', occupation: 'Property Sales Executive',
+      qualifications: 'Bachelor of Business Administration (Marketing), Chulalongkorn University; Real Estate Agent Course (TREBA)',
+      referrer: inviter ? `${inviter.firstName} ${inviter.lastName} (${inviter.id})` : '',
+      docs: {
+        id: { fileName: 'national_id_card.pdf', size: 412000 },
+        cert: { fileName: 'treba_agent_course_certificate.pdf', size: 655000 },
+        bank: { fileName: 'bank_book_first_page.jpg', size: 298000 },
+        other: { fileName: 'house_registration.pdf', size: 371000 },
+      },
     };
   });
 
