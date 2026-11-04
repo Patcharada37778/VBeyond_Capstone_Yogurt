@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useMyNotifications, useStore } from '../../context/StoreContext';
+import { RENEWAL_REMINDER_DAYS, useMyNotifications, useStore } from '../../context/StoreContext';
 import { Avatar, EmptyState, StatCard, StatusBadge, TONES } from '../../components/common';
 import { NOTIF_ICON } from '../../components/notifications/notifMeta';
 import { effectiveInviteStatus } from '../../components/dashboard/AgentShared';
@@ -143,7 +143,7 @@ function AgentBlocks({ user }) {
       {a.status === 'Suspended' && <div className="alert alert-warning"><i className="bi bi-pause-circle me-2" /><strong>Your account is suspended.</strong> Restricted functions such as renewal, invitations and new reservations are unavailable. Your existing deals are preserved and under manager review. {a.statusNote?.reason && `Reason: ${a.statusNote.reason}.`}</div>}
       {a.status === 'Expired' && <div className="alert alert-danger d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-calendar-x me-1" /><span className="flex-grow-1"><strong>Your membership has expired.</strong> Membership-dependent functions are restricted until you renew.</span><Link to="/renewal" className="btn btn-sm btn-danger">Renew now</Link></div>}
       {!a.teamId && a.status === 'Active' && <div className="alert alert-brand"><i className="bi bi-hourglass-split me-2" /><strong>Welcome aboard!</strong> An Agent Manager will assign you to a team shortly — you'll get a notification.</div>}
-      {a.status === 'Active' && left <= 90 && !renewal && <div className="alert alert-warning d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-bell me-1" /><span className="flex-grow-1"><strong>Renewal reminder:</strong> your membership expires in {left} days ({fmtDate(a.membershipExpiry)}).</span><Link to="/renewal" className="btn btn-sm btn-warning">Start renewal</Link></div>}
+      {a.status === 'Active' && left <= RENEWAL_REMINDER_DAYS && !renewal && <div className="alert alert-warning d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-bell me-1" /><span className="flex-grow-1"><strong>Renewal reminder:</strong> your membership expires in {left} days ({fmtDate(a.membershipExpiry)}).</span><Link to="/renewal" className="btn btn-sm btn-warning">Start renewal</Link></div>}
       {renewal && <div className="alert alert-brand d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-arrow-repeat me-1" /><span className="flex-grow-1">Renewal {renewal.id}: <strong>{renewal.status}</strong>{renewal.status === 'Pending Payment' ? ' — payment required' : ''}</span><Link to="/renewal" className="btn btn-sm btn-outline-primary">View renewal</Link></div>}
       <div className="row g-3 mb-3">
         <div className="col-6 col-lg-3"><div className="card h-100"><div className="card-body"><div className="small text-muted">Membership status</div><div className="mt-2"><StatusBadge status={a.status} /></div></div></div></div>

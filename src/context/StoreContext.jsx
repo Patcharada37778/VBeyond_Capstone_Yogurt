@@ -4,6 +4,7 @@ import { ROLES, BACKOFFICE_ROLES } from '../utils/permissions';
 import { fullName } from '../utils/format';
 
 const STORAGE_KEY = 'vbeyond-arms-demo-v1';
+export const RENEWAL_REMINDER_DAYS = 30;
 const StoreContext = createContext(null);
 
 // The seven demo personas shown in the role switcher.
@@ -75,6 +76,23 @@ export function StoreProvider({ children }) {
       return draft;
     });
   }, []);
+
+  // Send each active agent one renewal reminder when their membership is within 30 days of expiry.
+  useEffect(() => {
+    const due = (a) => {
+      const days = Math.ceil((new Date(a.membershipExpiry) - new Date()) / 86400000);
+      return a.status === 'Active' && a.activated && days > 0 && days <= RENEWAL_REMINDER_DAYS && a.reminderSentFor !== a.membershipExpiry
+        && !state.renewals.some((r) => r.agentId === a.id && !['Approved', 'Rejected'].includes(r.status));
+    };
+    if (!state.agents.some(due)) return;
+    mutate((d) => {
+      d.agents.filter(due).forEach((a) => {
+        const days = Math.ceil((new Date(a.membershipExpiry) - new Date()) / 86400000);
+        a.reminderSentFor = a.membershipExpiry;
+        notify(d, `agent:${a.id}`, { category: 'Membership renewal reminders', title: `Your membership expires in ${days} day${days === 1 ? '' : 's'}`, body: 'Submit your renewal request now to avoid interruption to your agent access.', link: '/renewal' });
+      });
+    });
+  }, [state.agents, state.renewals, mutate]);
 
   const user = useMemo(() => deriveUser(state), [state]);
 

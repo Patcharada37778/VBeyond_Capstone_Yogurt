@@ -20,7 +20,7 @@ export const TEAMS = [
 
 // [id, first, last, team, status, regDaysAgo, expiryInDays, gender]
 const AGENT_ROWS = [
-  ['AG-1001', 'Somchai', 'Prasertsuk', 'T-ALP', 'Active', 760, 43],
+  ['AG-1001', 'Somchai', 'Prasertsuk', 'T-ALP', 'Active', 760, 25],
   ['AG-1002', 'Kanokwan', 'Thongdee', 'T-ALP', 'Active', 890, 210],
   ['AG-1003', 'Apinya', 'Saetang', 'T-ALP', 'Active', 410, 160],
   ['AG-1004', 'Tanakorn', 'Jaidee', 'T-ALP', 'Active', 300, 65],
@@ -333,7 +333,6 @@ const TRANSFER_REQUESTS = [
 
 function makeNotifications() {
   return [
-    { id: 'N-1', to: ['agent:AG-1001'], category: 'Membership renewal reminders', title: 'Your membership expires in 43 days', body: 'Submit your renewal request early to avoid interruption to your agent access.', link: '/renewal', at: daysFromNow(-1, 8), readBy: [] },
     { id: 'N-2', to: ['allAgents'], category: 'Company announcements', title: 'New announcement: Q4 commission structure update', body: 'Revised commission tiers for condominium sales.', link: '/announcements?open=AN-031', at: daysFromNow(-1, 9), readBy: [] },
     { id: 'N-3', to: ['agent:AG-1001'], category: 'System issue updates', title: 'Your ticket TCK-1083 was received', body: 'Our IT team will review "Login page shows error after password reset".', link: '/report-problem', at: daysFromNow(-3, 18), readBy: [] },
     { id: 'N-4', to: ['agent:AG-1002'], category: 'Team invitations', title: 'Weerapong Sangthong opened your invitation', body: 'Registration is in progress for Team Alpha.', link: '/team/invitations', at: daysFromNow(-5, 11), readBy: [] },
