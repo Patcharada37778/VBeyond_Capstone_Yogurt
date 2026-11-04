@@ -104,6 +104,22 @@ h1, h2, h3, h4, h5, .font-brand {
 /* ---------- Cards ---------- */
 .card { border: 1px solid var(--vb-border); border-radius: var(--vb-radius); box-shadow: 0 1px 2px rgba(16, 40, 44, 0.04); }
 .registration-card { background-color: #f7f9f7; box-shadow: 0 8px 24px rgba(16, 40, 44, 0.12); }
+.application-details-card { background-color: #f7f8f7; }
+.application-details-card > .card-header { background-color: #f7f8f7; }
+.application-details-list { display: grid; gap: 0.7rem; }
+.application-details-list > div { display: grid; grid-template-columns: minmax(74px, 0.32fr) minmax(0, 1fr); align-items: baseline; gap: 0.65rem; }
+.application-details-list dt { margin: 0; color: var(--vb-muted); font-size: 0.74rem; font-weight: 500; }
+.application-details-list dd { min-width: 0; margin: 0; color: var(--vb-ink); font-size: 0.82rem; font-weight: 400; line-height: 1.4; overflow-wrap: anywhere; }
+.application-progress-card { background-color: #f8f9f8; }
+.application-progress-card > .card-body { background-color: #f8f9f8; border-radius: inherit; }
+.my-application-page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+.my-application-page .card-header { padding: 1rem 1.5rem; }
+.my-application-page .card-body { padding: 1.5rem; }
+.dashboard-page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+.dashboard-page .card { background-color: #f7f8f7; }
+.dashboard-page .card-header { background-color: #f7f8f7; padding: 1rem 1.5rem; }
+.dashboard-page .card-body { padding: 1.5rem; }
+.dashboard-page .card > .list-group-flush > .list-group-item { padding-right: 1.5rem; padding-left: 1.5rem; }
 .card-header { background: #fff; border-bottom: 1px solid var(--vb-border); font-weight: 600; padding: 0.85rem 1.1rem; }
 .card-body { padding: 1.1rem; }
 
@@ -269,6 +285,24 @@ tr.row-highlight td { background: var(--vb-green-50) !important; }
 .review-fields dt { margin-bottom: 0.2rem; color: #68737a; font-size: 0.74rem; font-weight: 500; letter-spacing: 0.025em; }
 .review-fields dd { margin: 0; color: var(--vb-ink); font-size: 0.9rem; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
 .review-agreement { padding: 0.25rem 0 0 1.5rem; color: var(--vb-ink); line-height: 1.55; }
+.application-progress-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.65rem; margin-bottom: 1.1rem; }
+.application-progress-status { font-size: 0.9rem; font-weight: 600; color: var(--vb-teal-800); }
+.application-progress-status.attention { color: #8a6500; }
+.application-progress-status.rejected { color: #b42318; }
+.application-progress-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+.application-progress-step { position: relative; z-index: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--vb-muted); text-align: center; }
+.application-progress-step:not(:last-child)::after { content: ''; position: absolute; z-index: -1; top: 15px; left: calc(50% + 16px); width: calc(100% - 32px); height: 3px; border-radius: 2px; background: var(--vb-border); }
+.application-progress-step.completed::after { background: var(--vb-green-600); }
+.application-progress-marker { width: 32px; height: 32px; display: grid; place-items: center; border: 2px solid #cbd4d5; border-radius: 50%; background: #fff; color: var(--vb-muted); font-size: 0.8rem; font-weight: 600; }
+.application-progress-label { max-width: 150px; font-size: 0.78rem; line-height: 1.3; }
+.application-progress-step.completed { color: var(--vb-green-700); }
+.application-progress-step.completed .application-progress-marker { border-color: var(--vb-green-600); background: var(--vb-green-600); color: #fff; }
+.application-progress-step.current { color: var(--vb-ink); font-weight: 600; }
+.application-progress-step.current .application-progress-marker { border: 3px solid var(--vb-teal-700); background: #fff; color: transparent; }
+.application-progress-step.current.attention .application-progress-marker { border-color: #e0a800; background: #fff7da; color: #8a6500; }
+.application-progress-step.current.rejected .application-progress-marker { border-color: #b42318; background: #b42318; color: #fff; }
+.application-progress-step.current.completed-state { color: var(--vb-green-700); }
+.application-progress-step.current.completed-state .application-progress-marker { border-color: var(--vb-green-600); background: var(--vb-green-600); color: #fff; }
 .stepper { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; padding: 0.25rem 0 0; }
 .stepper .step-item { position: relative; min-width: 0; }
 .stepper .step-item:not(:last-child)::after { content: ''; position: absolute; z-index: 0; top: 15px; left: calc(50% + 15px); width: calc(100% - 30px); height: 2px; background: var(--vb-border); }
@@ -287,6 +321,12 @@ tr.row-highlight td { background: var(--vb-green-50) !important; }
 @media (max-width: 575.98px) {
   .stepper .step { font-size: 0.68rem; padding: 0 0.1rem; }
   .stepper .step-label { max-width: 82px; }
+  .application-progress-label { max-width: 82px; font-size: 0.68rem; }
+  .my-application-page .card-header { padding: 0.85rem 1rem; }
+  .my-application-page .card-body { padding: 1rem; }
+  .dashboard-page .card-header { padding: 0.85rem 1rem; }
+  .dashboard-page .card-body { padding: 1rem; }
+  .dashboard-page .card > .list-group-flush > .list-group-item { padding-right: 1rem; padding-left: 1rem; }
   .registration-card .card-body { padding: 1.1rem; }
   .registration-card .card-footer { padding: 0 1.1rem 1.1rem; }
 }
@@ -303,6 +343,21 @@ tr.row-highlight td { background: var(--vb-green-50) !important; }
 .doc-file-remove .bi { font-size: 0.65rem; }
 .doc-file-description { display: block; color: #929b9d !important; font-size: 0.72rem; line-height: 1.35; }
 .doc-tile .doc-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--vb-teal-50); color: var(--vb-teal-700); display: grid; place-items: center; font-size: 1.15rem; flex-shrink: 0; }
+.doc-name-link { max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; vertical-align: baseline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.doc-name-link:hover:not(:disabled) { text-decoration: underline; }
+.doc-name-link:focus-visible { outline: 2px solid var(--vb-green-600); outline-offset: 2px; border-radius: 2px; }
+.doc-name-link:disabled { cursor: default; }
+.document-file-details { color: #b0b8b9; font-size: 0.72rem; }
+.application-document-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.3rem; }
+.application-document-actions { display: flex; gap: 0.35rem; }
+.application-document-card-actions { display: flex; align-self: stretch; flex-direction: column; justify-content: center; align-items: flex-end; gap: 0.35rem; }
+.application-document-action { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border-radius: 8px; }
+.application-document-actions .application-document-action { background-color: #d3d8d8; border-color: #d3d8d8; color: var(--vb-teal-900); }
+.application-document-actions .application-document-action:hover { background-color: #c1c8c8; border-color: #c1c8c8; }
+.application-document-remove { position: absolute; top: 0.35rem; right: 0.35rem; z-index: 1; width: 22px; height: 22px; display: grid; place-items: center; padding: 0; border-radius: 6px; }
+.application-document-remove .bi { font-size: 0.62rem; }
+.application-document .doc-tile { position: relative; padding-right: 2.6rem; }
+.application-document > .doc-file-description { margin-top: 0.3rem; }
 .doc-preview { background: repeating-linear-gradient(45deg, #f6f8f8, #f6f8f8 10px, #eef2f2 10px, #eef2f2 20px); border: 1px dashed #b7c9ca; border-radius: 10px; min-height: 340px; display: grid; place-items: center; text-align: center; color: var(--vb-muted); }
 .notif-item { display: flex; gap: 0.8rem; padding: 0.85rem 1rem; border-bottom: 1px solid var(--vb-border); cursor: pointer; background: #fff; text-align: left; width: 100%; border-left: 0; border-right: 0; border-top: 0; }
 .notif-item:hover { background: var(--vb-teal-50); }
