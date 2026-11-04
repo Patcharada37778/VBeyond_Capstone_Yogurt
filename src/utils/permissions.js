@@ -57,7 +57,8 @@ export const DEFAULT_PERMISSIONS = {
   itAdmin: build({ announcements: 'VCED', issues: 'VCEAD', messages: 'V', adminAccounts: 'VCEDM', roles: 'VEM', activityLogs: 'V' }),
 };
 
-// Navigation. `roles` = agent-side roles with fixed access; `module` = back-office RBAC module.
+// Navigation. `hideFor` = roles that can open the page but don't see it in the sidebar.
+// `roles` = agent-side roles with fixed access; `module` = back-office RBAC module.
 export const NAV = [
   { group: 'Overview', items: [
     { path: '/dashboard', label: 'Dashboard', icon: 'bi-grid-1x2', roles: 'all' },
@@ -65,7 +66,7 @@ export const NAV = [
   { group: 'My Application', items: [
     { path: '/my-application', label: 'My Application', icon: 'bi-file-earmark-person', roles: ['prospect'] },
     { path: '/register', label: 'Agent Registration', icon: 'bi-pencil-square', roles: ['prospect'] },
-    { path: '/help', label: 'Help & Inquiries', icon: 'bi-question-circle', roles: ['prospect'] },
+    { path: '/help', label: 'Help & Inquiries', icon: 'bi-question-circle', roles: ['prospect'], hideFor: ['prospect'] },
   ] },
   { group: 'My Account', items: [
     { path: '/profile', label: 'My Profile', icon: 'bi-person-badge', roles: ['agent', 'teamLead'] },
@@ -78,10 +79,10 @@ export const NAV = [
     { path: '/team/hierarchy', label: 'Team Hierarchy', icon: 'bi-diagram-3', roles: ['teamLead'] },
   ] },
   { group: 'Common Services', items: [
-    { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', roles: ['prospect', 'agent', 'teamLead'], module: 'announcements' },
-    { path: '/notifications', label: 'Notifications', icon: 'bi-bell', roles: 'all', badge: 'notifications' },
-    { path: '/report-problem', label: 'Report a Problem', icon: 'bi-bug', roles: 'all' },
-    { path: '/contact-support', label: 'Contact Support', icon: 'bi-headset', roles: ['prospect', 'agent', 'teamLead', 'compliance', 'agentManager'] },
+    { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', roles: ['prospect', 'agent', 'teamLead'], module: 'announcements', hideFor: ['prospect'] },
+    { path: '/notifications', label: 'Notifications', icon: 'bi-bell', roles: 'all', badge: 'notifications', hideFor: ['prospect'] },
+    { path: '/report-problem', label: 'Report a Problem', icon: 'bi-bug', roles: 'all', hideFor: ['prospect'] },
+    { path: '/contact-support', label: 'Contact Support', icon: 'bi-headset', roles: ['prospect', 'agent', 'teamLead', 'compliance', 'agentManager'], hideFor: ['prospect'] },
     { path: '/support-inbox', label: 'Support Messages', icon: 'bi-chat-left-text', module: 'messages' },
     { path: '/system-issues', label: 'System Issues', icon: 'bi-tools', module: 'issues' },
   ] },
@@ -113,7 +114,7 @@ export function canAccessItem(item, role, permissions) {
 }
 
 export function navForRole(role, permissions) {
-  return NAV.map((g) => ({ ...g, items: g.items.filter((i) => canAccessItem(i, role, permissions)) })).filter((g) => g.items.length);
+  return NAV.map((g) => ({ ...g, items: g.items.filter((i) => canAccessItem(i, role, permissions) && !i.hideFor?.includes(role)) })).filter((g) => g.items.length);
 }
 
 // Find the nav item that owns a path (longest prefix match) — used by route guards.

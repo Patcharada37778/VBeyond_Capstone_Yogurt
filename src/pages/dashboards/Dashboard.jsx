@@ -4,6 +4,7 @@ import { Avatar, EmptyState, StatCard, StatusBadge, TONES } from '../../componen
 import { NOTIF_ICON } from '../../components/notifications/notifMeta';
 import { effectiveInviteStatus } from '../../components/dashboard/AgentShared';
 import { ApplicationProgress } from '../agent/MyApplication';
+import Help from '../agent/Help';
 import { ROLES } from '../../utils/permissions';
 import { daysUntil, fmtDate, fmtDateTime, fmtMoney, fullName, timeAgo } from '../../utils/format';
 
@@ -103,9 +104,8 @@ function ProspectDashboard({ user }) {
         </div>
       ))}
       {openClar && <div className="alert alert-warning d-flex flex-wrap gap-3 align-items-center"><i className="bi bi-question-diamond fs-4" /><div className="flex-grow-1"><strong>Action needed:</strong> {openClar.message}</div><Link to="/my-application" className="btn btn-warning">Respond now</Link></div>}
-      <div className="row g-3">
-        <div className="col-lg-8">
-          <div className="card mb-3">
+      <div className="d-grid gap-3">
+          <div className="card">
             <div className="card-header">Application status</div>
             <div className="card-body">
               {app ? <>
@@ -123,18 +123,7 @@ function ProspectDashboard({ user }) {
             </div>
           </div>
           <RecentNotifications />
-        </div>
-        <div className="col-lg-4 d-grid gap-3 align-content-start">
-          <QuickActions actions={[
-            ...(app ? [{ to: '/my-application', label: 'Track my application', icon: 'bi-file-earmark-person', primary: true }] : [{ to: '/register', label: 'Register to become an agent', icon: 'bi-pencil-square', primary: true }]),
-            ...(app && ['Pending Review', 'Clarification Required', 'Resubmitted'].includes(app.status) ? [{ to: '/my-application?edit=1', label: 'Edit submitted documents', icon: 'bi-files' }] : []),
-            { to: '/help', label: 'FAQ & ask a question', icon: 'bi-question-circle' },
-            { to: '/contact-support', label: 'Contact support', icon: 'bi-headset' },
-          ]} />
-          <div className="card"><div className="card-header">Popular questions</div><div className="list-group list-group-flush">
-            {state.faqs.filter((f) => f.published).slice(0, 4).map((f) => <Link key={f.id} to="/help" className="list-group-item list-group-item-action small">{f.q}</Link>)}
-          </div></div>
-        </div>
+          <div className="mt-2"><Help embedded /></div>
       </div>
     </>
   );

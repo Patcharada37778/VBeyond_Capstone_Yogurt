@@ -9,7 +9,7 @@ import { timeAgo } from '../../utils/format';
 
 export const FAQ_CATEGORIES = ['Registration', 'Documents', 'Membership', 'Account', 'Commission', 'Teams'];
 
-export default function Help() {
+export default function Help({ embedded = false }) {
   const { state, mutate, user } = useStore();
   const toast = useToast();
   const [params] = useSearchParams();
@@ -59,11 +59,18 @@ export default function Help() {
 
   return (
     <>
+      {embedded ? (
+        <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+          <div><h2 className="h5 mb-0">Frequently asked questions</h2><small className="text-muted">Answers about registration, documents and membership.</small></div>
+          {isProspect && <button className="btn btn-outline-primary" onClick={() => { setErrors({}); setAsk(true); }}><i className="bi bi-chat-square-text me-1" />Ask a question</button>}
+        </div>
+      ) : (
       <PageHeader title={isProspect ? 'Help & Inquiries' : 'Frequently Asked Questions'} subtitle="Find answers about registration, documents and membership." crumbs={[{ label: isProspect ? 'Help & Inquiries' : 'FAQ' }]}
         actions={isProspect ? <button className="btn btn-primary" onClick={() => { setErrors({}); setAsk(true); }}><i className="bi bi-chat-square-text me-1" />Ask a question</button>
           : <Link to="/contact-support" className="btn btn-outline-primary"><i className="bi bi-headset me-1" />Contact support</Link>} />
+      )}
       <div className="row g-3">
-        <div className={isProspect ? 'col-lg-8' : 'col-12'}>
+        <div className={isProspect && (!embedded || myInq.length) ? 'col-lg-8' : 'col-12'}>
           <div className="card">
             <div className="card-body">
               <SearchInput value={q} onChange={setQ} placeholder="Search frequently asked questions" />
@@ -84,7 +91,7 @@ export default function Help() {
             {!faqs.length && <EmptyState icon="bi-search" title="No matching questions">Try another keyword{isProspect ? ' or ask our team directly' : ''}.</EmptyState>}
           </div>
         </div>
-        {isProspect && (
+        {isProspect && (!embedded || myInq.length > 0) && (
           <div className="col-lg-4">
             <div className="card">
               <div className="card-header">My inquiries</div>
