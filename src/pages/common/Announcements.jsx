@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { logAction, nextId, notify, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
 import { EmptyState, PageHeader, SearchInput, Select, StatusBadge, Tabs } from '../../components/common';
 import { ConfirmModal, Modal } from '../../components/modals/Modal';
 import { fmtDate } from '../../utils/format';
+import { readImageFile } from '../../utils/image';
+import { AnnouncementDetailModal, AnnouncementVisual } from '../../components/dashboard/AnnouncementBanner';
 
 const CATEGORIES = ['Policy', 'Project Launch', 'Training', 'System', 'Event', 'General'];
-const blank = { title: '', category: 'General', summary: '', body: '' };
+const blank = { title: '', category: 'General', summary: '', body: '', image: null };
 
 export default function Announcements() {
   const { state, mutate, user, can } = useStore();
@@ -19,6 +21,7 @@ export default function Announcements() {
   const [editing, setEditing] = useState(null); // {id?, ...fields}
   const [errors, setErrors] = useState({});
   const [confirm, setConfirm] = useState(null);
+  const imageRef = useRef(null);
   const me = user.keys[0];
   const manage = can('announcements', 'create') || can('announcements', 'edit');
   const openId = params.get('open');
@@ -37,14 +40,13 @@ export default function Announcements() {
   const save = (publish) => {
     const e = {};
     if (editing.title.trim().length < 5) e.title = 'Enter a title (at least 5 characters).';
-    if (editing.summary.trim().length < 10) e.summary = 'Enter a short description.';
     if (editing.body.trim().length < 20) e.body = 'Enter the full announcement (at least 20 characters).';
     setErrors(e);
     if (Object.keys(e).length) return;
     mutate((d) => {
       let a = d.announcements.find((x) => x.id === editing.id);
       if (!a) { a = { id: nextId(d, 'ann', 'AN-', 3), readBy: [], author: user.name, status: 'Draft', date: new Date().toISOString() }; d.announcements.unshift(a); }
-      Object.assign(a, { title: editing.title.trim(), category: editing.category, summary: editing.summary.trim(), body: editing.body.trim() });
+      Object.assign(a, { title: editing.title.trim(), category: editing.category, summary: editing.summary.trim(), body: editing.body.trim(), image: editing.image || null });
       if (publish) {
         a.status = 'Published'; a.date = new Date().toISOString();
         notify(d, ['allAgents', 'allApplicants'], { category: 'Company announcements', title: `New announcement: ${a.title}`, body: a.summary, link: `/announcements?open=${a.id}` });
@@ -54,6 +56,14 @@ export default function Announcements() {
     toast(publish ? 'Announcement published and agents notified.' : 'Draft saved.');
     setEditing(null);
     if (publish) setTab('Published'); else setTab('Draft');
+  };
+
+  const pickImage = async (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    try { const image = await readImageFile(f); setEditing((x) => ({ ...x, image })); }
+    catch (err) { toast(err.message, 'warning'); }
   };
 
   const setStatus = (a, status) => {
@@ -85,15 +95,18 @@ export default function Announcements() {
             const unread = a.status === 'Published' && !a.readBy.includes(me);
             return (
               <div className="col-md-6 col-xl-4" key={a.id}>
-                <div className="card h-100">
+                <div className="card h-100 announce-card">
+                  <div onClick={() => setParams({ open: a.id })} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') setParams({ open: a.id }); }} aria-label={`Open ${a.title}`}>
+                    <AnnouncementVisual a={a} height={170} />
+                  </div>
                   <div className="card-body d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
                       <span className="status-badge sb-teal">{a.category}</span>
                       {unread ? <span className="badge bg-success">New</span> : manage ? <StatusBadge status={a.status} /> : <small className="text-muted"><i className="bi bi-check2-all" /> Read</small>}
                     </div>
-                    <h3 className={`h6 mb-1 ${unread ? 'fw-bold' : ''}`}>{a.title}</h3>
-                    <small className="text-muted mb-2">{fmtDate(a.date)} · {a.author}</small>
-                    <p className="small text-muted flex-grow-1">{a.summary}</p>
+                    {a.image && <h3 className={`h6 mb-1 ${unread ? 'fw-bold' : ''}`}>{a.title}</h3>}
+                    <small className="text-muted mb-2"><i className="bi bi-calendar3 me-1" />{fmtDate(a.date)} · {a.author}</small>
+                    {a.summary ? <p className="small text-muted flex-grow-1">{a.summary}</p> : <div className="flex-grow-1" />}
                     <div className="d-flex flex-wrap gap-2">
                       <button className="btn btn-sm btn-outline-primary" onClick={() => setParams({ open: a.id })}>Read more</button>
                       {can('announcements', 'edit') && a.status !== 'Archived' && <button className="btn btn-sm btn-light" onClick={() => { setErrors({}); setEditing({ ...a }); }}><i className="bi bi-pencil" /> Edit</button>}
@@ -109,17 +122,7 @@ export default function Announcements() {
         </div>
       ) : <div className="card"><EmptyState icon="bi-megaphone" title="No announcements match your filters" /></div>}
 
-      <Modal open={!!opened} onClose={() => setParams({})} title={opened?.title} size="lg"
-        footer={<button className="btn btn-primary" onClick={() => setParams({})}>Close</button>}>
-        {opened && <>
-          <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
-            <span className="status-badge sb-teal">{opened.category}</span>
-            <small className="text-muted">Published {fmtDate(opened.date)} by {opened.author}</small>
-          </div>
-          <p className="fw-medium">{opened.summary}</p>
-          {opened.body.split('\n').map((p, i) => <p key={i} className="mb-2">{p}</p>)}
-        </>}
-      </Modal>
+      <AnnouncementDetailModal a={opened} onClose={() => setParams({})} />
 
       <Modal open={!!editing} onClose={() => setEditing(null)} title={editing?.id ? 'Edit announcement' : 'New announcement'} size="lg"
         footer={<>
@@ -134,16 +137,28 @@ export default function Announcements() {
             {errors.title && <div className="invalid-feedback">{errors.title}</div>}
           </div>
           <div>
+            <label className="form-label">Banner image (optional)</label>
+            <div className="image-drop">
+              <AnnouncementVisual a={{ ...editing, title: editing.title || 'Your topic appears here', category: editing.category }} height={180} />
+            </div>
+            <div className="d-flex flex-wrap gap-2 mt-2 align-items-center">
+              <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => imageRef.current?.click()}><i className="bi bi-image me-1" />{editing.image ? 'Change image' : 'Upload image'}</button>
+              {editing.image && <button type="button" className="btn btn-sm btn-light text-danger" onClick={() => setEditing({ ...editing, image: null })}>Remove image</button>}
+              <small className="text-muted">Without an image, the banner shows the title as the topic. Wide images (about 3:1) work best.</small>
+              <input ref={imageRef} type="file" accept="image/*" className="d-none" onChange={pickImage} />
+            </div>
+          </div>
+          <div>
             <label className="form-label required" htmlFor="an-c">Category</label>
             <select id="an-c" className="form-select" value={editing.category} onChange={(e) => setEditing({ ...editing, category: e.target.value })}>{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select>
           </div>
           <div>
-            <label className="form-label required" htmlFor="an-s">Short description</label>
+            <label className="form-label" htmlFor="an-s">Short description (optional)</label>
             <input id="an-s" className={`form-control ${errors.summary ? 'is-invalid' : ''}`} value={editing.summary} onChange={(e) => setEditing({ ...editing, summary: e.target.value })} />
             {errors.summary && <div className="invalid-feedback">{errors.summary}</div>}
           </div>
           <div>
-            <label className="form-label required" htmlFor="an-b">Full announcement</label>
+            <label className="form-label required" htmlFor="an-b">Details</label>
             <textarea id="an-b" rows={7} className={`form-control ${errors.body ? 'is-invalid' : ''}`} value={editing.body} onChange={(e) => setEditing({ ...editing, body: e.target.value })} />
             {errors.body && <div className="invalid-feedback">{errors.body}</div>}
           </div>

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AnnouncementBanner, AnnouncementDetailModal } from '../../components/dashboard/AnnouncementBanner';
 import { RENEWAL_REMINDER_DAYS, useMyNotifications, useStore } from '../../context/StoreContext';
 import { Avatar, EmptyState, StatCard, StatusBadge, TONES } from '../../components/common';
 import { NOTIF_ICON } from '../../components/notifications/notifMeta';
@@ -47,29 +49,20 @@ function RecentNotifications({ limit = 5 }) {
   );
 }
 
-function RecentAnnouncements() {
-  const { state, user } = useStore();
-  const list = state.announcements.filter((a) => a.status === 'Published').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+function AgentAnnouncements() {
+  const { state, user, mutate } = useStore();
+  const [open, setOpen] = useState(null);
+  const me = user.keys[0];
+  const items = state.announcements.filter((a) => a.status === 'Published').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+  const show = (a) => {
+    setOpen(a);
+    if (!a.readBy.includes(me)) mutate((d) => { d.announcements.find((x) => x.id === a.id).readBy.push(me); });
+  };
   return (
-    <div className="card h-100">
-      <div className="card-header d-flex justify-content-between"><span>Company announcements</span><Link to="/announcements" className="small fw-normal">View all</Link></div>
-      <div className="list-group list-group-flush">
-        {list.map((a) => (
-          <Link key={a.id} to={`/announcements?open=${a.id}`} className="list-group-item list-group-item-action">
-            <div className="d-flex justify-content-between gap-2"><span className={`text-truncate ${a.readBy.includes(user.keys[0]) ? '' : 'fw-semibold'}`}>{a.title}</span>{!a.readBy.includes(user.keys[0]) && <span className="badge bg-success">New</span>}</div>
-            <small className="text-muted">{a.category} · {fmtDate(a.date)}</small>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function QuickActions({ actions }) {
-  return (
-    <div className="card h-100"><div className="card-header">Quick actions</div><div className="card-body d-grid gap-2">
-      {actions.map((a) => <Link key={a.to + a.label} to={a.to} className={`btn ${a.primary ? 'btn-primary' : 'btn-light'} text-start`}><i className={`bi ${a.icon} me-2`} />{a.label}</Link>)}
-    </div></div>
+    <>
+      <AnnouncementBanner items={items} onOpen={show} />
+      <AnnouncementDetailModal a={open} onClose={() => setOpen(null)} />
+    </>
   );
 }
 
@@ -167,17 +160,8 @@ function AgentDashboard({ user }) {
   return (
     <>
       <Greeting user={user} subtitle={`Agent ID ${user.agent.id}${user.agent.migrated ? ' · migrated from the legacy system' : ''}`} />
+      <AgentAnnouncements />
       <AgentBlocks user={user} />
-      <div className="row g-3">
-        <div className="col-lg-5"><RecentNotifications /></div>
-        <div className="col-lg-4"><RecentAnnouncements /></div>
-        <div className="col-lg-3"><QuickActions actions={[
-          { to: '/renewal', label: 'Renew membership', icon: 'bi-arrow-repeat', primary: true },
-          { to: '/profile', label: 'Edit my profile', icon: 'bi-person' },
-          { to: '/report-problem', label: 'Report a problem', icon: 'bi-bug' },
-          { to: '/contact-support', label: 'Contact support', icon: 'bi-headset' },
-        ]} /></div>
-      </div>
     </>
   );
 }
@@ -195,6 +179,7 @@ function TeamLeadDashboard({ user }) {
       <Greeting user={user} subtitle={`Team lead of ${team.name} · ${team.region}`}>
         <Link to="/team/invitations" className="btn btn-light"><i className="bi bi-person-plus me-1" />Invite someone</Link>
       </Greeting>
+      <AgentAnnouncements />
       <div className="row g-3 mb-3">
         <div className="col-6 col-lg-3"><StatCard icon="bi-people" label="Total team members" value={members.length} to="/team/members" /></div>
         <div className="col-6 col-lg-3"><StatCard icon="bi-check-circle" label="Active agents" value={members.filter((a) => a.status === 'Active').length} tone={TONES.green} to="/team/members" /></div>
@@ -238,10 +223,6 @@ function TeamLeadDashboard({ user }) {
       </div>
       <h2 className="h5 mt-4 mb-3">My agent account</h2>
       <AgentBlocks user={user} />
-      <div className="row g-3">
-        <div className="col-lg-7"><RecentNotifications /></div>
-        <div className="col-lg-5"><RecentAnnouncements /></div>
-      </div>
     </>
   );
 }
