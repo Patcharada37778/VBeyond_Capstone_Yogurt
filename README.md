@@ -46,8 +46,8 @@ Other entry points on the login page:
 6. Agent Manager → *Onboarding* → assign to Team Alpha
 7. Team Lead → notification "New team member" → *Invitations* → invite someone (team pre-assigned)
 8. Active Agent → dashboard shows announcement banners, renewal reminder (30 days before expiry) and overall commission → *My Commission* for the statement
-9. Active Agent → *Membership Renewal* → submit → (Agent Manager verifies documents) → pay (simulated)
-10. Agent Manager → *Membership Renewals* → verify payment → approve
+9. Active Agent → *Membership Renewal* → upload the PDPA certificate → submit (renewal is free)
+10. Agent Manager → *Membership Renewals* → verify documents → approve (expiry is extended)
 11. Any user → *Report a Problem* → Agent Manager → *System Issues* → assign → resolve → reporter is notified
 12. Agent Manager → *Announcements* → create a banner with or without an image
 

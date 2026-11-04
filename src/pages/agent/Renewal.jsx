@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { logAction, notify, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
 import { FilePicker, PageHeader, StatusBadge } from '../../components/common';
-import { ConfirmModal, Modal } from '../../components/modals/Modal';
-import { addYears, daysUntil, fmtDate, fmtDateTime, fmtMoney } from '../../utils/format';
+import { ConfirmModal } from '../../components/modals/Modal';
+import { addYears, daysUntil, fmtDate, fmtDateTime } from '../../utils/format';
 
-export const RENEWAL_FEE = 3500;
-export const RENEWAL_FLOW = ['Not Yet Submitted', 'Pending Review', 'Pending Payment', 'Payment Verification', 'Approved'];
+export const RENEWAL_FLOW = ['Not Yet Submitted', 'Pending Review', 'Approved'];
 
 export default function Renewal() {
   const { state, mutate, user } = useStore();
@@ -22,11 +21,7 @@ export default function Renewal() {
   const [form, setForm] = useState({ period: '1 year', doc: null, note: '', confirm: false });
   const [errors, setErrors] = useState({});
   const [review, setReview] = useState(false);
-  const [pay, setPay] = useState(false);
-  const [payForm, setPayForm] = useState({ method: 'Bank transfer', slip: null });
   const [infoReply, setInfoReply] = useState({ text: '', doc: null });
-
-  const fee = form.period === '2 years' ? RENEWAL_FEE * 2 - 500 : RENEWAL_FEE;
 
   const openReview = () => {
     const e = {};
@@ -40,29 +35,16 @@ export default function Renewal() {
     const now = new Date().toISOString();
     mutate((d) => {
       d.counters.ren++;
-      d.renewals.unshift({ id, agentId: agent.id, requestedAt: now, period: form.period, fee, paymentStatus: 'Unpaid', paymentRef: '', status: 'Pending Review', note: form.note.trim(),
+      d.renewals.unshift({ id, agentId: agent.id, requestedAt: now, period: form.period, status: 'Pending Review', note: form.note.trim(),
         documents: [{ id: 'RD1', type: 'PDPA training certificate', fileName: form.doc.fileName, size: form.doc.size, uploadedAt: now, status: 'Pending' }],
         infoRequest: null, rejectionReason: '', history: [{ at: now, text: 'Renewal request submitted' }] });
       d.agents.find((a) => a.id === agent.id).activity.unshift({ at: now, text: `Submitted membership renewal request ${id}` });
-      notify(d, ['role:agentManager', 'role:agentManager'], { category: 'Membership renewal reminders', title: `Renewal request: ${user.name}`, body: `${id} · ${form.period} · waiting for document review`, link: `/renewals?open=${id}` });
+      notify(d, 'role:agentManager', { category: 'Membership renewal reminders', title: `Renewal request: ${user.name}`, body: `${id} · ${form.period} · waiting for document review`, link: `/renewals?open=${id}` });
       logAction(d, user, 'Submitted membership renewal', id);
     });
     setReview(false);
     setForm({ period: '1 year', doc: null, note: '', confirm: false });
     toast(`Renewal request ${id} submitted. Status: Pending Review.`);
-  };
-  const submitPayment = () => {
-    if (!payForm.slip && payForm.method === 'Bank transfer') { setErrors({ slip: 'Upload your transfer slip.' }); return; }
-    const ref = `TRF-${Math.floor(10000 + Math.random() * 89999)}`;
-    mutate((d) => {
-      const r = d.renewals.find((x) => x.id === active.id);
-      r.paymentStatus = 'Paid'; r.paymentRef = ref; r.paymentMethod = payForm.method; r.status = 'Payment Verification'; r.slip = payForm.slip?.fileName || null;
-      r.history.push({ at: new Date().toISOString(), text: `Payment submitted via ${payForm.method} (${ref})` });
-      notify(d, ['role:agentManager', 'role:agentManager'], { category: 'Membership renewal reminders', title: `Renewal payment submitted: ${user.name}`, body: `${r.id} is ready for payment verification.`, link: `/renewals?open=${r.id}` });
-      logAction(d, user, 'Submitted renewal payment (simulated)', `${r.id} / ${ref}`);
-    });
-    setPay(false); setErrors({});
-    toast(`Payment of ${fmtMoney(active.fee)} recorded (ref ${ref}). Awaiting verification.`, 'success', 'Simulated payment');
   };
   const answerInfo = () => {
     if (infoReply.text.trim().length < 5) { setErrors({ info: 'Please respond to the request.' }); return; }
@@ -71,7 +53,7 @@ export default function Renewal() {
       r.infoRequest.response = infoReply.text.trim(); r.infoRequest.respondedAt = new Date().toISOString();
       if (infoReply.doc) r.documents.push({ id: `RD${r.documents.length + 1}`, type: 'Additional document', fileName: infoReply.doc.fileName, size: infoReply.doc.size, uploadedAt: new Date().toISOString(), status: 'Pending' });
       r.history.push({ at: new Date().toISOString(), text: 'Agent responded to information request' });
-      notify(d, ['role:agentManager', 'role:agentManager'], { category: 'Membership renewal reminders', title: `${user.name} responded on ${r.id}`, body: infoReply.text.trim().slice(0, 80), link: `/renewals?open=${r.id}` });
+      notify(d, 'role:agentManager', { category: 'Membership renewal reminders', title: `${user.name} responded on ${r.id}`, body: infoReply.text.trim().slice(0, 80), link: `/renewals?open=${r.id}` });
     });
     setInfoReply({ text: '', doc: null }); setErrors({});
     toast('Response sent to the back office.');
@@ -117,7 +99,7 @@ export default function Renewal() {
                         {['1 year', '2 years'].map((p) => (
                           <label key={p} className={`border rounded p-3 flex-fill ${form.period === p ? 'border-primary bg-brand-soft' : ''}`} style={{ cursor: 'pointer', minWidth: 160 }}>
                             <input type="radio" className="form-check-input me-2" name="period" checked={form.period === p} onChange={() => setForm({ ...form, period: p })} />
-                            <strong>{p}</strong><div className="small text-muted">{fmtMoney(p === '2 years' ? RENEWAL_FEE * 2 - 500 : RENEWAL_FEE)}{p === '2 years' ? ' · save ฿500' : ''}</div>
+                            <strong>{p}</strong><div className="small text-muted">Free</div>
                           </label>
                         ))}
                       </div>
@@ -141,15 +123,14 @@ export default function Renewal() {
               <div className="card-body d-grid gap-3">
                 <dl className="dl-grid mb-0">
                   <div><dt>Period</dt><dd>{active.period}</dd></div>
-                  <div><dt>Fee</dt><dd>{fmtMoney(active.fee)}</dd></div>
-                  <div><dt>Payment</dt><dd><StatusBadge status={active.paymentStatus} /></dd></div>
+                  <div><dt>Fee</dt><dd>Free</dd></div>
                   <div><dt>New expiry (if approved)</dt><dd>{fmtDate(addYears(new Date(agent.membershipExpiry) > new Date() ? agent.membershipExpiry : new Date().toISOString(), active.period === '2 years' ? 2 : 1))}</dd></div>
                 </dl>
                 <div>
                   <div className="small text-muted mb-1">Supporting documents</div>
                   {active.documents.map((d) => <div key={d.id} className="doc-tile mb-2"><div className="doc-icon"><i className="bi bi-file-earmark-text" /></div><div className="flex-grow-1"><div className="small text-muted">{d.type}</div><div className="fw-medium">{d.fileName}</div></div><StatusBadge status={d.status} /></div>)}
                 </div>
-                {active.status === 'Pending Review' && !active.infoRequest?.message && <div className="alert alert-brand small mb-0"><i className="bi bi-hourglass-split me-1" />The back office is reviewing your documents. You'll be asked to pay once they're verified.</div>}
+                {active.status === 'Pending Review' && !active.infoRequest?.message && <div className="alert alert-brand small mb-0"><i className="bi bi-hourglass-split me-1" />The back office is reviewing your documents. You'll be notified once it's approved. No payment is needed.</div>}
                 {active.infoRequest && !active.infoRequest.response && (
                   <div className="border border-warning rounded p-3">
                     <div className="fw-semibold mb-1"><i className="bi bi-question-diamond me-1 text-warning" />Additional information requested</div>
@@ -160,13 +141,6 @@ export default function Renewal() {
                     <button className="btn btn-primary btn-sm mt-2" onClick={answerInfo}>Send response</button>
                   </div>
                 )}
-                {active.status === 'Pending Payment' && (
-                  <div className="border rounded p-3 bg-brand-soft d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <div><div className="fw-semibold">Documents verified — payment required</div><small className="text-muted">Pay {fmtMoney(active.fee)} to continue.</small></div>
-                    <button className="btn btn-success" onClick={() => setPay(true)}><i className="bi bi-credit-card me-1" />Pay renewal fee</button>
-                  </div>
-                )}
-                {active.status === 'Payment Verification' && <div className="alert alert-brand small mb-0"><i className="bi bi-shield-check me-1" />Payment {active.paymentRef} received. The back office is verifying it.</div>}
               </div>
             </div>
           )}
@@ -180,8 +154,8 @@ export default function Renewal() {
                 <li>Renewal opens 90 days before your membership expires.</li>
                 <li>Complete the PDPA refresher training and upload the certificate.</li>
                 <li>The back office verifies your documents (1–2 business days).</li>
-                <li>Pay the membership fee ({fmtMoney(RENEWAL_FEE)} per year).</li>
-                <li>Once payment is verified, your expiry date is extended automatically.</li>
+                <li>Renewal is free — there is no membership fee.</li>
+                <li>Once approved, your expiry date is extended automatically.</li>
               </ol>
             </div>
           </div>
@@ -191,7 +165,7 @@ export default function Renewal() {
               {requests.map((r) => (
                 <div key={r.id} className="list-group-item">
                   <div className="d-flex justify-content-between"><strong>{r.id}</strong><StatusBadge status={r.status} /></div>
-                  <small className="text-muted">{fmtDate(r.requestedAt)} · {r.period} · {fmtMoney(r.fee)}</small>
+                  <small className="text-muted">{fmtDate(r.requestedAt)} · {r.period}</small>
                   <ul className="small text-muted mb-0 mt-1 ps-3">{r.history.slice(-3).map((h, i) => <li key={i}>{h.text}</li>)}</ul>
                 </div>
               ))}
@@ -205,29 +179,12 @@ export default function Renewal() {
         <dl className="d-grid gap-2 mb-0 small">
           <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Agent</dt><dd className="mb-0">{user.name} ({agent.id})</dd></div>
           <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Period</dt><dd className="mb-0">{form.period}</dd></div>
-          <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Fee</dt><dd className="mb-0">{fmtMoney(fee)}</dd></div>
+          <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Fee</dt><dd className="mb-0">Free</dd></div>
           <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Document</dt><dd className="mb-0">{form.doc?.fileName}</dd></div>
         </dl>
-        <p className="small text-muted mt-3 mb-0">Payment is requested after your documents are verified.</p>
+        <p className="small text-muted mt-3 mb-0">Renewal is free. The back office will review your documents and approve the renewal.</p>
       </ConfirmModal>
 
-      <Modal open={pay} onClose={() => setPay(false)} title="Pay renewal fee (simulated)" footer={<><button className="btn btn-light" onClick={() => setPay(false)}>Cancel</button><button className="btn btn-success" onClick={submitPayment}>Confirm payment of {fmtMoney(active?.fee)}</button></>}>
-        <div className="alert alert-warning small"><i className="bi bi-info-circle me-1" />This is a simulated payment — no money is charged.</div>
-        <label className="form-label">Payment method</label>
-        <div className="d-grid gap-2 mb-3">
-          {['Bank transfer', 'PromptPay QR', 'Credit card'].map((m) => (
-            <label key={m} className={`border rounded p-2 ${payForm.method === m ? 'border-primary bg-brand-soft' : ''}`} style={{ cursor: 'pointer' }}>
-              <input type="radio" className="form-check-input me-2" name="pm" checked={payForm.method === m} onChange={() => setPayForm({ ...payForm, method: m })} />{m}
-            </label>
-          ))}
-        </div>
-        {payForm.method === 'Bank transfer' && <>
-          <div className="small border rounded p-2 mb-2 bg-light">VBEYOND Development Co., Ltd. · Kasikornbank · 123-4-56789-0</div>
-          <FilePicker id="slip" label="Transfer slip" required current={payForm.slip} error={errors.slip} onSelect={(f) => setPayForm({ ...payForm, slip: f })} />
-        </>}
-        {payForm.method === 'PromptPay QR' && <div className="text-center border rounded p-3"><i className="bi bi-qr-code display-3" /><div className="small text-muted">Scan with any banking app (demo)</div></div>}
-        {payForm.method === 'Credit card' && <div className="row g-2"><div className="col-12"><input className="form-control" placeholder="4111 1111 1111 1111" aria-label="Card number" /></div><div className="col-6"><input className="form-control" placeholder="MM/YY" aria-label="Expiry" /></div><div className="col-6"><input className="form-control" placeholder="CVC" aria-label="CVC" /></div></div>}
-      </Modal>
     </>
   );
 }

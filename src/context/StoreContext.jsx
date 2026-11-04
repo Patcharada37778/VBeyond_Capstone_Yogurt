@@ -3,7 +3,7 @@ import { createSeed } from '../data/seed';
 import { ROLES, BACKOFFICE_ROLES } from '../utils/permissions';
 import { fullName } from '../utils/format';
 
-const STORAGE_KEY = 'vbeyond-arms-demo-v3';
+const STORAGE_KEY = 'vbeyond-arms-demo-v4';
 export const RENEWAL_REMINDER_DAYS = 30;
 const StoreContext = createContext(null);
 

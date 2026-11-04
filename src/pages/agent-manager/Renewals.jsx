@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import { Avatar, PageHeader, SearchInput, StatusBadge, Tabs } from '../../components/common';
 import DataTable from '../../components/tables/DataTable';
 import { Modal } from '../../components/modals/Modal';
-import { addYears, fmtDate, fmtDateTime, fmtMoney, fullName } from '../../utils/format';
+import { addYears, fmtDate, fmtDateTime, fullName } from '../../utils/format';
 
 export default function Renewals() {
   const { state, mutate, user, can } = useStore();
@@ -38,16 +38,15 @@ export default function Renewals() {
   };
 
   const verifyDoc = (docId, status) => update((x) => { x.documents.find((d) => d.id === docId).status = status; }, `Document marked ${status}`, `Document marked ${status}.`);
-  const verifyDocs = () => update((x) => { x.documents.forEach((d) => { d.status = 'Verified'; }); x.status = 'Pending Payment'; if (x.infoRequest && !x.infoRequest.response) x.infoRequest = null; },
-    'Documents verified — payment requested', 'Documents verified. The agent was asked to pay.', { title: `Renewal ${r.id}: documents verified`, body: `Please pay ${fmtMoney(r.fee)} to continue your renewal.` });
-  const verifyPayment = () => update((x) => { x.paymentStatus = 'Verified'; }, 'Payment verified', 'Payment verified. You can now approve the renewal.');
+  const verifyDocs = () => update((x) => { x.documents.forEach((d) => { d.status = 'Verified'; }); if (x.infoRequest && !x.infoRequest.response) x.infoRequest = null; },
+    'All documents verified', 'All documents marked as verified. You can now approve the renewal.');
 
   const submitAction = () => {
     if (action === 'reject' && msg.trim().length < 10) return setErr('A rejection reason is required (at least 10 characters).');
     if (action === 'info' && msg.trim().length < 10) return setErr('Describe the information you need.');
     if (action === 'approve') {
       update((x, d) => {
-        x.status = 'Approved'; x.paymentStatus = 'Verified';
+        x.status = 'Approved';
         const a = d.agents.find((y) => y.id === x.agentId);
         const prev = a.membershipExpiry;
         a.membershipStart = new Date(a.membershipExpiry) > new Date() ? a.membershipStart : new Date().toISOString();
@@ -71,12 +70,10 @@ export default function Renewals() {
 
   return (
     <>
-      <PageHeader title="Approving Membership Renewal" subtitle="Review renewal requests, verify documents and payments, then approve or reject." crumbs={[{ label: 'Agent Team Management' }, { label: 'Membership Renewals' }]} />
+      <PageHeader title="Approving Membership Renewal" subtitle="Review renewal requests, verify documents, then approve or reject. Renewal is free." crumbs={[{ label: 'Agent Team Management' }, { label: 'Membership Renewals' }]} />
       <Tabs active={tab} onChange={setTab} tabs={[
         { key: 'open', label: 'Open', count: state.renewals.filter((x) => !['Approved', 'Rejected'].includes(x.status)).length },
         { key: 'Pending Review', label: 'Pending review', count: counts('Pending Review') },
-        { key: 'Pending Payment', label: 'Pending payment', count: counts('Pending Payment') },
-        { key: 'Payment Verification', label: 'Payment verification', count: counts('Payment Verification') },
         { key: 'Approved', label: 'Approved' }, { key: 'Rejected', label: 'Rejected' }, { key: 'all', label: 'All' },
       ]} />
       <div className="card">
@@ -87,7 +84,6 @@ export default function Renewals() {
             { key: 'name', label: 'Agent name', sortValue: (x) => fullName(x.agent), render: (x) => <div className="d-flex align-items-center gap-2"><Avatar name={fullName(x.agent)} color={x.agent?.avatarColor} size={28} />{fullName(x.agent)}</div> },
             { key: 'expiry', label: 'Current expiry', sortValue: (x) => x.agent?.membershipExpiry, render: (x) => fmtDate(x.agent?.membershipExpiry) },
             { key: 'requestedAt', label: 'Request date', render: (x) => fmtDate(x.requestedAt) },
-            { key: 'paymentStatus', label: 'Payment', render: (x) => <StatusBadge status={x.paymentStatus} /> },
             { key: 'docs', label: 'Documents', sortValue: (x) => x.documents.length, render: (x) => <small>{x.documents.filter((d) => d.status === 'Verified').length}/{x.documents.length} verified</small> },
             { key: 'status', label: 'Renewal status', render: (x) => <StatusBadge status={x.status} /> },
             { key: 'actions', label: '', render: (x) => <button className="btn btn-sm btn-outline-primary" onClick={() => setParams({ open: x.id })}>Review</button> },
@@ -98,9 +94,8 @@ export default function Renewals() {
         footer={r && !['Approved', 'Rejected'].includes(r.status) ? <>
           {canEdit && <button className="btn btn-light" onClick={() => { setAction('info'); setMsg(''); setErr(''); }}><i className="bi bi-question-diamond me-1" />Request info</button>}
           {canApprove && <button className="btn btn-outline-danger" onClick={() => { setAction('reject'); setMsg(''); setErr(''); }}>Reject</button>}
-          {canEdit && r.status === 'Pending Review' && <button className="btn btn-primary" onClick={verifyDocs}>Verify documents & request payment</button>}
-          {canEdit && r.status === 'Payment Verification' && r.paymentStatus === 'Paid' && <button className="btn btn-primary" onClick={verifyPayment}>Verify payment</button>}
-          {canApprove && <button className="btn btn-success" disabled={r.paymentStatus !== 'Verified'} title={r.paymentStatus !== 'Verified' ? 'Verify the payment first' : ''} onClick={() => { setAction('approve'); setMsg(''); }}>Approve renewal</button>}
+          {canEdit && r.status === 'Pending Review' && r.documents.some((d) => d.status !== 'Verified') && <button className="btn btn-primary" onClick={verifyDocs}>Verify all documents</button>}
+          {canApprove && <button className="btn btn-success" onClick={() => { setAction('approve'); setMsg(''); }}>Approve renewal</button>}
         </> : <button className="btn btn-primary" onClick={() => setParams({})}>Close</button>}>
         {r && agent && <>
           <div className="d-flex gap-3 align-items-center mb-3">
@@ -111,9 +106,8 @@ export default function Renewals() {
           <dl className="dl-grid mb-3">
             <div><dt>Current expiry</dt><dd>{fmtDate(agent.membershipExpiry)}</dd></div>
             <div><dt>Requested</dt><dd>{fmtDateTime(r.requestedAt)}</dd></div>
-            <div><dt>Period / fee</dt><dd>{r.period} · {fmtMoney(r.fee)}</dd></div>
+            <div><dt>Period</dt><dd>{r.period} · free</dd></div>
             <div><dt>New expiry if approved</dt><dd className="text-green">{fmtDate(newExpiry)}</dd></div>
-            <div><dt>Payment</dt><dd><StatusBadge status={r.paymentStatus} />{r.paymentRef && <small className="d-block text-muted">{r.paymentMethod || 'Bank transfer'} · {r.paymentRef}{r.slip ? ` · slip ${r.slip}` : ''}</small>}</dd></div>
           </dl>
           {r.note && <div className="alert alert-light border small"><strong>Agent note:</strong> {r.note}</div>}
           {r.rejectionReason && <div className="alert alert-danger small"><strong>Rejection reason:</strong> {r.rejectionReason}</div>}
