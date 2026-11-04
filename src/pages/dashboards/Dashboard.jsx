@@ -59,12 +59,14 @@ function ProspectDashboard({ user }) {
       {openClar && <div className="alert alert-warning d-flex flex-wrap gap-3 align-items-center"><i className="bi bi-question-diamond fs-4" /><div className="flex-grow-1"><strong>Action needed:</strong> {openClar.message}</div><Link to="/my-application" className="btn btn-warning">Respond now</Link></div>}
       <div className="d-grid gap-3">
           <div className="card">
-            <div className="card-header">Application status</div>
+            <div className="card-header d-flex justify-content-between align-items-center gap-2">
+              <span>Application status</span>
+              {app && <Link to="/my-application" className="btn btn-sm btn-outline-primary">View application details</Link>}
+            </div>
             <div className="card-body">
               {app ? <>
-                <div className="d-flex flex-wrap justify-content-between mb-3 gap-2"><span>Reference <strong>{app.id}</strong> · submitted {fmtDate(app.submittedAt)}</span><StatusBadge status={app.status} /></div>
+                <div className="mb-3">Reference <strong>{app.id}</strong> · submitted {fmtDate(app.submittedAt)}</div>
                 <ApplicationProgress app={app} agent={agent} />
-                <div className="mt-3"><Link to="/my-application" className="btn btn-outline-primary btn-sm">View application details</Link></div>
               </> : <>
                 <p className="text-muted">You haven't applied yet. Here's how it works:</p>
                 <div className="row g-2 text-center small">
@@ -256,12 +258,12 @@ export default function Dashboard() {
   const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard };
   const C = map[user.role];
   return (
-    <>
+    <div className="dashboard-page">
       <C user={user} />
       <footer className="dash-footer">
         <span className="fw-semibold"><i className="bi bi-headset me-2" aria-hidden="true" />Contact support</span>
         <a href="mailto:info@vbeyond.co.th"><i className="bi bi-envelope me-1" aria-hidden="true" />info@vbeyond.co.th</a>
       </footer>
-    </>
+    </div>
   );
 }
