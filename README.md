@@ -2,7 +2,7 @@
 
 A clickable, frontend-only prototype of the VBEYOND Agent Relationship Management System.
 It covers the full agent lifecycle: registration, compliance review, first login, team onboarding,
-membership renewal, status changes, team transfers, support, and back-office administration (RBAC).
+membership renewal, commission overview, status changes, team transfers, and support.
 
 - React 19 + React Router + Bootstrap 5 + Bootstrap Icons (Vite)
 - No backend, database, real auth, or external APIs
@@ -27,10 +27,8 @@ Use the quick sign-in buttons on the login page, or the **Demo role switcher** i
 | Prospective Agent | Nutnicha Rungroj |
 | Active Agent | Somchai Prasertsuk (AG-1001) |
 | Team Lead | Kanokwan Thongdee (AG-1002, Team Alpha) |
-| Compliance Admin | Nattaporn Srisawat |
-| Back-office Agent Manager | Suchada Chaiyaporn |
-| Support Staff | Pakawadee Boonmee |
-| System IT Admin | Thanakrit Wattana |
+| Back-office Agent Manager | Suchada Chaiyaporn — also reviews and approves applications |
+| Support Staff | Pakawadee Boonmee — also resolves reported problems |
 
 Other entry points on the login page:
 - **First sign-in for migrated agents** — try `LG-20417` or `yupin.c@vbeyond-agent.co.th`
@@ -42,16 +40,17 @@ Other entry points on the login page:
 ## Suggested demo journey
 
 1. Prospective Agent → *Agent Registration* → submit the 4-step wizard
-2. Compliance Admin → *Agent Applications* → open it → *Request clarification*
+2. Agent Manager → *Agent Applications* → open it → *Request clarification*
 3. Prospective Agent → *My Application* → respond, replace the document, resubmit
-4. Compliance Admin → verify documents → *Approve* (agent ID is generated)
+4. Agent Manager → verify documents → *Approve* (agent ID is generated)
 5. Prospective Agent → *Proceed to first login* → set a password → agent dashboard
 6. Agent Manager → *Onboarding* → assign to Team Alpha
 7. Team Lead → notification "New team member" → *Invitations* → invite someone (team pre-assigned)
-8. Active Agent → *Membership Renewal* → submit → (Agent Manager verifies documents) → pay (simulated)
-9. Compliance Admin / Agent Manager → *Membership Renewals* → verify payment → approve
-10. Any user → *Report a Problem* → System IT Admin → *System Issues* → assign → resolve → reporter is notified
-11. System IT Admin → *Roles & Permissions* → change the matrix → save → the affected role's navigation updates
+8. Active Agent → dashboard shows announcement banners, renewal reminder (30 days before expiry) and overall commission → *My Commission* for the statement
+9. Active Agent → *Membership Renewal* → submit → (Agent Manager verifies documents) → pay (simulated)
+10. Agent Manager → *Membership Renewals* → verify payment → approve
+11. Any user → *Report a Problem* → Support Staff → *System Issues* → assign → resolve → reporter is notified
+12. Agent Manager → *Announcements* → create a banner with or without an image
 
 ## Project structure
 
@@ -60,7 +59,7 @@ src/
   components/   layout (shell, sidebar, top bar), tables, modals, notifications, dashboard helpers
   context/      StoreContext (state, persistence, current user, permissions), ToastContext
   data/         seed.js — mock agents, teams, applications, tickets, renewals, etc.
-  pages/        agent, team-lead, compliance, agent-manager, support, system-admin, common, dashboards
+  pages/        agent, team-lead, applications, agent-manager, support, common, dashboards
   services/     agentLifecycle.js — status change, transfer, team lead change, onboarding rules
   utils/        permissions.js (roles, RBAC modules, navigation), format.js
   styles/       theme.css — VBEYOND colours and component styling

@@ -17,14 +17,15 @@ import MyApplication from './pages/agent/MyApplication';
 import Help from './pages/agent/Help';
 import Profile from './pages/agent/Profile';
 import Renewal from './pages/agent/Renewal';
+import Commission from './pages/agent/Commission';
 
 import TeamMembers from './pages/team-lead/TeamMembers';
 import TeamInvitations from './pages/team-lead/TeamInvitations';
 import TeamHierarchy from './pages/team-lead/TeamHierarchy';
 
-import Applications from './pages/compliance/Applications';
-import ApplicationDetail from './pages/compliance/ApplicationDetail';
-import Documents from './pages/compliance/Documents';
+import Applications from './pages/applications/Applications';
+import ApplicationDetail from './pages/applications/ApplicationDetail';
+import Documents from './pages/applications/Documents';
 
 import AgentDirectory from './pages/agent-manager/AgentDirectory';
 import AgentDetail from './pages/agent-manager/AgentDetail';
@@ -38,10 +39,7 @@ import Inquiries from './pages/support/Inquiries';
 import FaqManage from './pages/support/FaqManage';
 import SupportInbox from './pages/support/SupportInbox';
 
-import SystemIssues from './pages/system-admin/SystemIssues';
-import AdminAccounts from './pages/system-admin/AdminAccounts';
-import Roles from './pages/system-admin/Roles';
-import ActivityLogs from './pages/system-admin/ActivityLogs';
+import SystemIssues from './pages/support/SystemIssues';
 
 export default function App() {
   const { user } = useStore();
@@ -67,6 +65,7 @@ export default function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/renewal" element={<Renewal />} />
+        <Route path="/commission" element={<Commission />} />
 
         <Route path="/team/members" element={<TeamMembers />} />
         <Route path="/team/invitations" element={<TeamInvitations />} />
@@ -85,9 +84,6 @@ export default function App() {
         <Route path="/agent-status" element={<AgentStatus />} />
         <Route path="/faq" element={<FaqManage />} />
 
-        <Route path="/admin/accounts" element={<AdminAccounts />} />
-        <Route path="/admin/roles" element={<Roles />} />
-        <Route path="/admin/activity" element={<ActivityLogs />} />
       </Route>
 
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />

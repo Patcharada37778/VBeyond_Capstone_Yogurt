@@ -44,7 +44,7 @@ export default function Renewal() {
         documents: [{ id: 'RD1', type: 'PDPA training certificate', fileName: form.doc.fileName, size: form.doc.size, uploadedAt: now, status: 'Pending' }],
         infoRequest: null, rejectionReason: '', history: [{ at: now, text: 'Renewal request submitted' }] });
       d.agents.find((a) => a.id === agent.id).activity.unshift({ at: now, text: `Submitted membership renewal request ${id}` });
-      notify(d, ['role:compliance', 'role:agentManager'], { category: 'Membership renewal reminders', title: `Renewal request: ${user.name}`, body: `${id} · ${form.period} · waiting for document review`, link: `/renewals?open=${id}` });
+      notify(d, ['role:agentManager', 'role:agentManager'], { category: 'Membership renewal reminders', title: `Renewal request: ${user.name}`, body: `${id} · ${form.period} · waiting for document review`, link: `/renewals?open=${id}` });
       logAction(d, user, 'Submitted membership renewal', id);
     });
     setReview(false);
@@ -58,7 +58,7 @@ export default function Renewal() {
       const r = d.renewals.find((x) => x.id === active.id);
       r.paymentStatus = 'Paid'; r.paymentRef = ref; r.paymentMethod = payForm.method; r.status = 'Payment Verification'; r.slip = payForm.slip?.fileName || null;
       r.history.push({ at: new Date().toISOString(), text: `Payment submitted via ${payForm.method} (${ref})` });
-      notify(d, ['role:compliance', 'role:agentManager'], { category: 'Membership renewal reminders', title: `Renewal payment submitted: ${user.name}`, body: `${r.id} is ready for payment verification.`, link: `/renewals?open=${r.id}` });
+      notify(d, ['role:agentManager', 'role:agentManager'], { category: 'Membership renewal reminders', title: `Renewal payment submitted: ${user.name}`, body: `${r.id} is ready for payment verification.`, link: `/renewals?open=${r.id}` });
       logAction(d, user, 'Submitted renewal payment (simulated)', `${r.id} / ${ref}`);
     });
     setPay(false); setErrors({});
@@ -71,7 +71,7 @@ export default function Renewal() {
       r.infoRequest.response = infoReply.text.trim(); r.infoRequest.respondedAt = new Date().toISOString();
       if (infoReply.doc) r.documents.push({ id: `RD${r.documents.length + 1}`, type: 'Additional document', fileName: infoReply.doc.fileName, size: infoReply.doc.size, uploadedAt: new Date().toISOString(), status: 'Pending' });
       r.history.push({ at: new Date().toISOString(), text: 'Agent responded to information request' });
-      notify(d, ['role:compliance', 'role:agentManager'], { category: 'Membership renewal reminders', title: `${user.name} responded on ${r.id}`, body: infoReply.text.trim().slice(0, 80), link: `/renewals?open=${r.id}` });
+      notify(d, ['role:agentManager', 'role:agentManager'], { category: 'Membership renewal reminders', title: `${user.name} responded on ${r.id}`, body: infoReply.text.trim().slice(0, 80), link: `/renewals?open=${r.id}` });
     });
     setInfoReply({ text: '', doc: null }); setErrors({});
     toast('Response sent to the back office.');

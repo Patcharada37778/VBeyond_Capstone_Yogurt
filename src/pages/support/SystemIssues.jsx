@@ -22,7 +22,7 @@ export default function SystemIssues() {
   const [text, setText] = useState('');
   const canResolve = can('issues', 'approve');
   const canEdit = can('issues', 'edit');
-  const itAdmins = state.admins.filter((a) => a.role === 'itAdmin' && a.status === 'Active');
+  const supportStaff = state.admins.filter((a) => a.role === 'support' && a.status === 'Active');
   const t = state.issues.find((x) => x.id === params.get('open'));
 
   const rows = state.issues.filter((x) => (status === 'All' || (status === 'Active' ? !['Resolved', 'Closed'].includes(x.status) : x.status === status))
@@ -45,7 +45,7 @@ export default function SystemIssues() {
   const assign = (id) => update((x, d) => { x.assignedTo = id || null; if (id) notify(d, `admin:${id}`, { category: 'System issue updates', title: `Ticket ${x.id} assigned to you`, body: x.title, link: `/system-issues?open=${x.id}` }); },
     `Assigned to ${state.admins.find((a) => a.id === id)?.name || 'nobody'}`, 'Assignment updated.');
   const setPri = (p) => update((x) => { x.priority = p; }, `Priority changed to ${p}`, `Priority set to ${p}.`);
-  const escalate = () => update((x) => { x.escalated = true; x.notes.push({ at: new Date().toISOString(), by: user.name, text: 'Escalated to System IT Admin for technical investigation.' }); }, 'Escalated to System IT Admin', 'Escalated to IT.', null);
+  const escalate = () => update((x) => { x.escalated = true; x.notes.push({ at: new Date().toISOString(), by: user.name, text: 'Flagged for technical investigation.' }); }, 'Escalated to System IT Admin', 'Escalated to IT.', null);
   const addText = () => {
     if (!text.trim()) return;
     if (tab === 'note') update((x) => { x.notes.push({ at: new Date().toISOString(), by: user.name, text: text.trim() }); }, 'Internal note added', 'Internal note added.');
@@ -69,7 +69,7 @@ export default function SystemIssues() {
           <SearchInput value={q} onChange={setQ} placeholder="Search tickets" className="flex-grow-1" />
           <Select value={status} onChange={setStatus} label="Status" options={[{ value: 'Active', label: 'Active (not resolved)' }, { value: 'All', label: 'All statuses' }, ...ISSUE_STATUSES]} />
           <Select value={priority} onChange={setPriority} label="Priority" options={[{ value: 'All', label: 'All priorities' }, ...PRIORITIES]} />
-          <Select value={assignee} onChange={setAssignee} label="Assignee" options={[{ value: 'All', label: 'Anyone' }, { value: 'none', label: 'Unassigned' }, { value: 'escalated', label: 'Escalated by support' }, ...itAdmins.map((a) => ({ value: a.id, label: a.name }))]} />
+          <Select value={assignee} onChange={setAssignee} label="Assignee" options={[{ value: 'All', label: 'Anyone' }, { value: 'none', label: 'Unassigned' }, ...supportStaff.map((a) => ({ value: a.id, label: a.name }))]} />
         </div>
         <DataTable rows={rows} onRowClick={(x) => setParams({ open: x.id })} initialSort={{ key: 'createdAt', dir: 'desc' }} empty="No tickets match"
           columns={[
@@ -114,7 +114,7 @@ export default function SystemIssues() {
               <div>
                 <label className="form-label" htmlFor="is-a">Assigned administrator</label>
                 <select id="is-a" className="form-select" value={t.assignedTo || ''} disabled={!canResolve} onChange={(e) => assign(e.target.value)}>
-                  <option value="">Unassigned</option>{itAdmins.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  <option value="">Unassigned</option>{supportStaff.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
               <div>
@@ -122,8 +122,8 @@ export default function SystemIssues() {
                 <select id="is-p" className="form-select" value={t.priority} disabled={!canEdit} onChange={(e) => setPri(e.target.value)}>{PRIORITIES.map((p) => <option key={p}>{p}</option>)}</select>
               </div>
               {canResolve && !['Resolved', 'Closed'].includes(t.status) && <button className="btn btn-success" onClick={() => changeStatus('Resolved')}><i className="bi bi-check2-circle me-1" />Mark as resolved</button>}
-              {!canResolve && canEdit && !t.escalated && <button className="btn btn-outline-primary" onClick={escalate}><i className="bi bi-arrow-up-right-circle me-1" />Escalate to System IT Admin</button>}
-              {!canResolve && <small className="text-muted">Only System IT Admins can assign tickets and change status.</small>}
+              {!canResolve && canEdit && !t.escalated && <button className="btn btn-outline-primary" onClick={escalate}><i className="bi bi-arrow-up-right-circle me-1" />Flag for investigation</button>}
+              {!canResolve && <small className="text-muted">You can view and comment on tickets, but not change their status.</small>}
             </div>
             <h3 className="h6">Issue history</h3>
             <ul className="timeline small mb-0">{[...t.history].reverse().map((h, i) => <li key={i} className="done"><div>{h.text}</div><small className="text-muted">{fmtDateTime(h.at)} · {h.by}</small></li>)}</ul>

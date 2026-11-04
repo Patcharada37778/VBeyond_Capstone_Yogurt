@@ -17,7 +17,7 @@ export default function Inquiries() {
   const [reply, setReply] = useState('');
   const [closeAfter, setCloseAfter] = useState(false);
   const canEdit = can('inquiries', 'edit');
-  const staff = state.admins.filter((a) => ['support', 'compliance'].includes(a.role) && a.status === 'Active');
+  const staff = state.admins.filter((a) => ['support', 'agentManager'].includes(a.role) && a.status === 'Active');
 
   const unanswered = (i) => i.status === 'Open' && !i.messages[i.messages.length - 1].staff;
   const rows = state.inquiries.filter((i) => (tab === 'All' || (tab === 'Unanswered' ? unanswered(i) : tab === 'Mine' ? i.assignedTo === user.id : i.status === tab))

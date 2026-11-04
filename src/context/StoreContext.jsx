@@ -3,7 +3,7 @@ import { createSeed } from '../data/seed';
 import { ROLES, BACKOFFICE_ROLES } from '../utils/permissions';
 import { fullName } from '../utils/format';
 
-const STORAGE_KEY = 'vbeyond-arms-demo-v1';
+const STORAGE_KEY = 'vbeyond-arms-demo-v2';
 export const RENEWAL_REMINDER_DAYS = 30;
 const StoreContext = createContext(null);
 
@@ -12,10 +12,8 @@ export const PERSONAS = [
   { key: 'prospect', label: 'Prospective Agent', name: 'Nutnicha Rungroj', session: { applicantKey: 'nutnicha.rungroj@gmail.com', name: 'Nutnicha Rungroj' }, color: '#3aa845' },
   { key: 'agent', label: 'Active Agent', name: 'Somchai Prasertsuk', session: { agentId: 'AG-1001' } },
   { key: 'teamLead', label: 'Team Lead', name: 'Kanokwan Thongdee', session: { agentId: 'AG-1002' } },
-  { key: 'compliance', label: 'Compliance Admin', name: 'Nattaporn Srisawat', session: { adminId: 'ADM-01' } },
   { key: 'agentManager', label: 'Back-office Agent Manager', name: 'Suchada Chaiyaporn', session: { adminId: 'ADM-02' } },
   { key: 'support', label: 'Support Staff', name: 'Pakawadee Boonmee', session: { adminId: 'ADM-03' } },
-  { key: 'itAdmin', label: 'System IT Admin', name: 'Thanakrit Wattana', session: { adminId: 'ADM-04' } },
 ];
 
 function load() {
@@ -56,7 +54,7 @@ export function nextId(d, key, prefix, pad = 4) {
   return `${prefix}${String(n).padStart(pad, '0')}`;
 }
 export function notify(d, to, { category, title, body = '', link = '/notifications' }) {
-  d.notifications.unshift({ id: `N-${d.counters.notif++}`, to: Array.isArray(to) ? to : [to], category, title, body, link, at: new Date().toISOString(), readBy: [] });
+  d.notifications.unshift({ id: `N-${d.counters.notif++}`, to: [...new Set(Array.isArray(to) ? to : [to])], category, title, body, link, at: new Date().toISOString(), readBy: [] });
 }
 export function logAction(d, user, action, target) {
   d.logs.unshift({ id: `LOG-${d.counters.log++}`, at: new Date().toISOString(), actor: user?.name || 'System', role: ROLES[user?.role]?.label || 'System', action, target });

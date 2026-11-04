@@ -5,13 +5,11 @@ export const ROLES = {
   prospect: { label: 'Prospective Agent', portal: 'agent' },
   agent: { label: 'Active Agent', portal: 'agent' },
   teamLead: { label: 'Team Lead', portal: 'agent' },
-  compliance: { label: 'Compliance Admin', portal: 'backoffice' },
   agentManager: { label: 'Agent Manager', portal: 'backoffice' },
   support: { label: 'Support Staff', portal: 'backoffice' },
-  itAdmin: { label: 'System IT Admin', portal: 'backoffice' },
 };
 
-export const BACKOFFICE_ROLES = ['compliance', 'agentManager', 'support', 'itAdmin'];
+export const BACKOFFICE_ROLES = ['agentManager', 'support'];
 export const ACTIONS = [
   { key: 'view', label: 'View' },
   { key: 'create', label: 'Create' },
@@ -35,9 +33,6 @@ export const MODULES = [
   { key: 'onboarding', label: 'Onboarding' },
   { key: 'renewals', label: 'Membership Renewals' },
   { key: 'agentStatus', label: 'Agent Status Management' },
-  { key: 'adminAccounts', label: 'Admin Accounts' },
-  { key: 'roles', label: 'Roles & Permissions' },
-  { key: 'activityLogs', label: 'Activity Logs' },
 ];
 
 const p = (s) => ({
@@ -51,10 +46,8 @@ function build(map) {
 }
 
 export const DEFAULT_PERMISSIONS = {
-  compliance: build({ announcements: 'VC', issues: '', applications: 'VCEA', documents: 'VEA', inquiries: 'VCE', faq: 'VCED', agents: 'V', renewals: 'VEA', invitations: 'V' }),
-  agentManager: build({ announcements: 'VCE', applications: 'V', agents: 'VCE', teams: 'VCEA', invitations: 'VE', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA' }),
-  support: build({ announcements: 'V', issues: 'VCE', messages: 'VCE', inquiries: 'VCE', faq: 'VCED', agents: 'V' }),
-  itAdmin: build({ announcements: 'VCED', issues: 'VCEAD', messages: 'V', adminAccounts: 'VCEDM', roles: 'VEM', activityLogs: 'V' }),
+  agentManager: build({ announcements: 'VCED', applications: 'VCEA', documents: 'VEA', agents: 'VCE', teams: 'VCEA', invitations: 'VE', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA' }),
+  support: build({ announcements: 'V', issues: 'VCEAD', messages: 'VCE', inquiries: 'VCE', faq: 'VCED', agents: 'V', applications: 'V' }),
 };
 
 // Navigation. `hideFor` = roles that can open the page but don't see it in the sidebar.
@@ -71,7 +64,7 @@ export const NAV = [
   { group: 'My Account', items: [
     { path: '/profile', label: 'My Profile', icon: 'bi-person-badge', roles: ['agent', 'teamLead'] },
     { path: '/renewal', label: 'Membership Renewal', icon: 'bi-arrow-repeat', roles: ['agent', 'teamLead'] },
-    { path: '/help', label: 'FAQ', icon: 'bi-question-circle', roles: ['agent', 'teamLead'] },
+    { path: '/commission', label: 'My Commission', icon: 'bi-cash-coin', roles: ['agent', 'teamLead'] },
   ] },
   { group: 'My Team', items: [
     { path: '/team/members', label: 'Team Members', icon: 'bi-people', roles: ['teamLead'] },
@@ -82,7 +75,7 @@ export const NAV = [
     { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', roles: ['prospect', 'agent', 'teamLead'], module: 'announcements', hideFor: ['prospect'] },
     { path: '/notifications', label: 'Notifications', icon: 'bi-bell', roles: 'all', badge: 'notifications', hideFor: ['prospect'] },
     { path: '/report-problem', label: 'Report a Problem', icon: 'bi-bug', roles: 'all', hideFor: ['prospect'] },
-    { path: '/contact-support', label: 'Contact Support', icon: 'bi-headset', roles: ['prospect', 'agent', 'teamLead', 'compliance', 'agentManager'], hideFor: ['prospect'] },
+    { path: '/contact-support', label: 'Contact Support', icon: 'bi-headset', roles: ['prospect', 'agent', 'teamLead', 'agentManager'], hideFor: ['prospect'] },
     { path: '/support-inbox', label: 'Support Messages', icon: 'bi-chat-left-text', module: 'messages' },
     { path: '/system-issues', label: 'System Issues', icon: 'bi-tools', module: 'issues' },
   ] },
@@ -97,11 +90,6 @@ export const NAV = [
     { path: '/renewals', label: 'Membership Renewals', icon: 'bi-arrow-repeat', module: 'renewals' },
     { path: '/agent-status', label: 'Agent Status Management', icon: 'bi-toggles', module: 'agentStatus' },
     { path: '/faq', label: 'FAQ', icon: 'bi-journal-text', module: 'faq' },
-  ] },
-  { group: 'Administration', items: [
-    { path: '/admin/accounts', label: 'Admin Accounts', icon: 'bi-person-gear', module: 'adminAccounts' },
-    { path: '/admin/roles', label: 'Roles & Permissions', icon: 'bi-shield-lock', module: 'roles' },
-    { path: '/admin/activity', label: 'Activity Logs', icon: 'bi-clock-history', module: 'activityLogs' },
   ] },
 ];
 

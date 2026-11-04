@@ -41,14 +41,14 @@ export default function AppLayout() {
           {user.blocked ? (
             <div className="card"><div className="card-body">
               <EmptyState icon="bi-person-lock" title="This back-office account is deactivated">
-                A System IT Admin must reactivate this account before it can be used.
+                An administrator must reactivate this account before it can be used.
                 <div className="mt-3"><button className="btn btn-primary" onClick={signOut}>Sign out</button></div>
               </EmptyState>
             </div></div>
           ) : allowed ? <Outlet /> : (
             <div className="card"><div className="card-body">
               <EmptyState icon="bi-shield-lock" title="You don't have access to this page">
-                Your role ({user.role === 'teamLead' ? 'Team Lead' : user.role}) does not include permission for this feature. Ask a System IT Admin if you need access.
+                Your role does not include permission for this feature.
               </EmptyState>
             </div></div>
           )}

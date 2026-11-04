@@ -22,7 +22,7 @@ export default function AgentDetail() {
   const lead = state.agents.find((x) => x.id === team?.leadId);
   const deals = state.deals.filter((d) => d.agentId === a.id || d.previousAgentId === a.id);
   const renewals = state.renewals.filter((r) => r.agentId === a.id);
-  const sensitive = can('agents', 'edit') || user.role === 'compliance';
+  const sensitive = can('agents', 'edit');
   const canEdit = can('agents', 'edit');
 
   const save = () => {

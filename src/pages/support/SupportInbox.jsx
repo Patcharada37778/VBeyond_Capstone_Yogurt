@@ -39,12 +39,12 @@ export default function SupportInbox() {
       const now = new Date().toISOString();
       d.issues.unshift({ id, title: t.subject, category: 'Other', description: t.messages.map((m) => `${m.by}: ${m.text}`).join('\n'), priority: 'Medium', status: 'Open', reporterKey: t.fromKey, reporterName: t.fromName, contact: '', createdAt: now, assignedTo: null, escalated: true, attachment: null, notes: [{ at: now, by: user.name, text: `Escalated from support message ${t.id}` }], responses: [], userReplies: [], history: [{ at: now, text: `Escalated to IT from ${t.id}`, by: user.name }] });
       t.relatedIssue = id;
-      t.messages.push({ by: user.name, staff: true, at: now, text: `I've escalated this to our IT team as ticket ${id}. You can track it under Report a Problem.` });
-      notify(d, 'role:itAdmin', { category: 'System issue updates', title: `Escalated by Support: ${t.subject}`, body: `${id} from ${t.fromName}`, link: `/system-issues?open=${id}` });
-      notify(d, t.fromKey, { category: 'System issue updates', title: `Your message was escalated to IT (${id})`, body: t.subject, link: '/report-problem' });
-      logAction(d, user, 'Escalated support message to IT', `${t.id} → ${id}`);
+      t.messages.push({ by: user.name, staff: true, at: now, text: `I've logged this as support ticket ${id}. You can track it under Report a Problem.` });
+      notify(d, 'role:support', { category: 'System issue updates', title: `New ticket from message: ${t.subject}`, body: `${id} from ${t.fromName}`, link: `/system-issues?open=${id}` });
+      notify(d, t.fromKey, { category: 'System issue updates', title: `Your message was logged as ticket ${id}`, body: t.subject, link: '/report-problem' });
+      logAction(d, user, 'Converted support message to ticket', `${t.id} → ${id}`);
     });
-    toast(`Escalated to the System IT Admin as ${id}.`);
+    toast(`Logged as ticket ${id} in System Issues.`);
   };
 
   return (
@@ -72,7 +72,7 @@ export default function SupportInbox() {
               <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <span>{active.subject} <small className="text-muted fw-normal">· {active.fromName}{active.relatedIssue ? ` · ${active.relatedIssue}` : ''}</small></span>
                 <div className="d-flex gap-2 align-items-center"><StatusBadge status={active.status} />
-                  {canReply && !active.relatedIssue && active.status !== 'Closed' && <button className="btn btn-sm btn-outline-primary" onClick={escalate}><i className="bi bi-arrow-up-right-circle me-1" />Escalate to IT</button>}
+                  {canReply && !active.relatedIssue && active.status !== 'Closed' && <button className="btn btn-sm btn-outline-primary" onClick={escalate}><i className="bi bi-ticket-perforated me-1" />Create ticket</button>}
                   {canReply && (active.status === 'Closed' ? <button className="btn btn-sm btn-light" onClick={() => setStatus('Open')}>Reopen</button> : <button className="btn btn-sm btn-light" onClick={() => setStatus('Closed')}>Close</button>)}
                 </div>
               </div>

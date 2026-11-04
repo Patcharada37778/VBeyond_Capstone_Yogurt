@@ -73,7 +73,7 @@ export default function ContactSupport() {
 
   return (
     <>
-      <PageHeader title="Contact the System Admin" subtitle="Send a message to the VBEYOND support and system admin team." crumbs={[{ label: 'Common Services' }, { label: 'Contact Support' }]}
+      <PageHeader title="Contact Support" subtitle="Send a message to the VBEYOND support team." crumbs={[{ label: 'Common Services' }, { label: 'Contact Support' }]}
         actions={<button className="btn btn-primary" onClick={() => { setErrors({}); setCompose(true); }}><i className="bi bi-pencil-square me-1" />New message</button>} />
       <div className="row g-3">
         <div className="col-lg-4">

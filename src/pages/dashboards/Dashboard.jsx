@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AnnouncementBanner, AnnouncementDetailModal } from '../../components/dashboard/AnnouncementBanner';
-import { RENEWAL_REMINDER_DAYS, useMyNotifications, useStore } from '../../context/StoreContext';
-import { Avatar, EmptyState, StatCard, StatusBadge, TONES } from '../../components/common';
-import { NOTIF_ICON } from '../../components/notifications/notifMeta';
+import { RENEWAL_REMINDER_DAYS, useStore } from '../../context/StoreContext';
+import { Avatar, StatCard, StatusBadge, TONES } from '../../components/common';
 import { effectiveInviteStatus } from '../../components/dashboard/AgentShared';
 import { ApplicationProgress } from '../agent/MyApplication';
+import { CommissionBars, commissionSummary, monthlyCommission } from '../../components/dashboard/Commission';
 import Help from '../agent/Help';
 import { ROLES } from '../../utils/permissions';
-import { daysUntil, fmtDate, fmtDateTime, fmtMoney, fullName, timeAgo } from '../../utils/format';
+import { daysUntil, fmtDate, fmtMoney, fullName, timeAgo } from '../../utils/format';
 
 function Greeting({ user, subtitle, children }) {
   const h = new Date().getHours();
@@ -22,28 +22,6 @@ function Greeting({ user, subtitle, children }) {
           <div className="text-white-75">{subtitle}</div>
         </div>
         {children}
-      </div>
-    </div>
-  );
-}
-
-function RecentNotifications({ limit = 5 }) {
-  const { list } = useMyNotifications();
-  const { user, mutate } = useStore();
-  const navigate = useNavigate();
-  const me = user.keys[0];
-  return (
-    <div className="card h-100">
-      <div className="card-header d-flex justify-content-between"><span>Recent notifications</span><Link to="/notifications" className="small fw-normal">View all</Link></div>
-      <div>
-        {list.slice(0, limit).map((n) => (
-          <button key={n.id} className={`notif-item ${n.readBy.includes(me) ? '' : 'unread'}`} onClick={() => { mutate((d) => { const x = d.notifications.find((y) => y.id === n.id); if (!x.readBy.includes(me)) x.readBy.push(me); }); navigate(n.link); }}>
-            <span className="notif-icon"><i className={`bi ${NOTIF_ICON[n.category] || 'bi-bell'}`} /></span>
-            <span className="flex-grow-1" style={{ minWidth: 0 }}><span className="notif-title d-block text-truncate">{n.title}</span><small className="text-muted">{timeAgo(n.at)}</small></span>
-            {!n.readBy.includes(me) && <span className="unread-dot" />}
-          </button>
-        ))}
-        {!list.length && <EmptyState icon="bi-bell" title="No notifications yet" />}
       </div>
     </div>
   );
@@ -63,16 +41,6 @@ function AgentAnnouncements() {
       <AnnouncementBanner items={items} onOpen={show} />
       <AnnouncementDetailModal a={open} onClose={() => setOpen(null)} />
     </>
-  );
-}
-
-function ActivityFeed({ filter, title = 'Recent activity' }) {
-  const { state } = useStore();
-  const logs = state.logs.filter(filter || (() => true)).slice(0, 7);
-  return (
-    <div className="card h-100"><div className="card-header">{title}</div><div className="card-body">
-      {logs.length ? <ul className="timeline small mb-0">{logs.map((l) => <li key={l.id} className="done"><div><strong>{l.actor}</strong> · {l.action}</div><small className="text-muted">{l.target} · {timeAgo(l.at)}</small></li>)}</ul> : <EmptyState title="No activity yet" />}
-    </div></div>
   );
 }
 
@@ -115,7 +83,6 @@ function ProspectDashboard({ user }) {
               </>}
             </div>
           </div>
-          <RecentNotifications />
           <div className="mt-2"><Help embedded /></div>
       </div>
     </>
@@ -123,6 +90,36 @@ function ProspectDashboard({ user }) {
 }
 
 /* ----------------------------- Agent ----------------------------- */
+function CommissionOverview({ agentId }) {
+  const { state } = useStore();
+  const mine = (state.commissions || []).filter((c) => c.agentId === agentId);
+  const s = commissionSummary(mine);
+  return (
+    <div className="card mb-3">
+      <div className="card-header d-flex justify-content-between"><span>Overall commission</span><Link to="/commission" className="small fw-normal">View statement</Link></div>
+      <div className="card-body">
+        <div className="row g-4 align-items-center">
+          <div className="col-lg-5">
+            <div className="small text-muted">Total commission · last 12 months</div>
+            <div className="font-brand" style={{ fontSize: '2rem', lineHeight: 1.2 }}>{fmtMoney(s.total)}</div>
+            <div className="small text-muted mb-3">from {s.deals} closed deal{s.deals === 1 ? '' : 's'}</div>
+            <div className="row g-2 small">
+              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Earned in {new Date().getFullYear()}</div><div className="fw-semibold">{fmtMoney(s.ytd)}</div></div></div>
+              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">This month</div><div className="fw-semibold">{fmtMoney(s.thisMonth)}</div></div></div>
+              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Paid out</div><div className="fw-semibold text-green">{fmtMoney(s.paid)}</div></div></div>
+              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Upcoming</div><div className="fw-semibold">{fmtMoney(s.upcoming)}</div></div></div>
+            </div>
+          </div>
+          <div className="col-lg-7">
+            <div className="small text-muted mb-1">Commission by month</div>
+            <CommissionBars data={monthlyCommission(mine, 6)} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AgentBlocks({ user }) {
   const { state } = useStore();
   const a = user.agent;
@@ -146,6 +143,7 @@ function AgentBlocks({ user }) {
           {lead ? <div className="d-flex align-items-center gap-2 mt-1"><Avatar name={fullName(lead)} color={lead.avatarColor} photo={lead.photo} size={28} /><div className="lh-sm"><div className="fw-semibold small">{lead.id === a.id ? 'You' : fullName(lead)}</div><small className="text-muted">{lead.phone}</small></div></div> : <div className="fw-semibold mt-1">—</div>}
         </div></div></div>
       </div>
+      <CommissionOverview agentId={a.id} />
       {deals.length > 0 && (
         <div className="card mb-3"><div className="card-header">My active deals</div><div className="table-responsive"><table className="table mb-0">
           <thead><tr><th>Deal</th><th>Project</th><th>Stage</th><th>Value</th><th /></tr></thead>
@@ -227,51 +225,6 @@ function TeamLeadDashboard({ user }) {
   );
 }
 
-/* ----------------------------- Compliance ----------------------------- */
-function ComplianceDashboard({ user }) {
-  const { state } = useStore();
-  const apps = state.applications;
-  const pending = apps.filter((a) => ['Pending Review', 'Resubmitted'].includes(a.status));
-  const clar = apps.filter((a) => a.status === 'Clarification Required');
-  const approved = apps.filter((a) => a.status === 'Approved').sort((a, b) => new Date(b.timeline[b.timeline.length - 1].at) - new Date(a.timeline[a.timeline.length - 1].at));
-  const renewals = state.renewals.filter((r) => !['Approved', 'Rejected'].includes(r.status));
-  return (
-    <>
-      <Greeting user={user} subtitle={`${pending.length} application(s) waiting for review today.`}><Link to="/applications" className="btn btn-light">Open review queue</Link></Greeting>
-      <div className="row g-3 mb-3">
-        <div className="col-6 col-xl"><StatCard icon="bi-inboxes" label="Total applications" value={apps.length} to="/applications" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-hourglass-split" label="Pending review" value={pending.length} tone={TONES.blue} to="/applications" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-question-diamond" label="Need clarification" value={clar.length} tone={TONES.amber} to="/applications" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-patch-check" label="Approved" value={approved.length} tone={TONES.green} to="/applications" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-arrow-repeat" label="Pending renewals" value={renewals.length} tone={TONES.purple} to="/renewals" /></div>
-      </div>
-      <div className="row g-3">
-        <div className="col-lg-7">
-          <div className="card mb-3">
-            <div className="card-header d-flex justify-content-between"><span>Waiting for review</span><Link to="/applications" className="small fw-normal">View queue</Link></div>
-            <div className="list-group list-group-flush">
-              {pending.slice(0, 6).map((a) => (
-                <Link key={a.id} to={`/applications/${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2">
-                  <span className="lh-sm"><span className="d-block fw-medium">{a.personal.firstName} {a.personal.lastName}</span><small className="text-muted">{a.id} · {timeAgo(a.submittedAt)}</small></span>
-                  <StatusBadge status={a.status} />
-                </Link>
-              ))}
-              {!pending.length && <div className="list-group-item small text-muted">The review queue is empty.</div>}
-            </div>
-          </div>
-          <div className="card">
-            <div className="card-header">Recently approved</div>
-            <div className="list-group list-group-flush">
-              {approved.slice(0, 4).map((a) => <Link key={a.id} to={`/applications/${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between"><span>{a.personal.firstName} {a.personal.lastName} <small className="text-muted">→ {a.agentId}</small></span><small className="text-muted">{fmtDate(a.timeline[a.timeline.length - 1].at)}</small></Link>)}
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-5"><ActivityFeed filter={(l) => ['Compliance Admin', 'Prospective Agent'].includes(l.role)} /></div>
-      </div>
-    </>
-  );
-}
-
 /* ----------------------------- Agent manager ----------------------------- */
 function AgentManagerDashboard({ user }) {
   const { state } = useStore();
@@ -280,10 +233,11 @@ function AgentManagerDashboard({ user }) {
   const pendingOnboard = ag.filter((a) => !a.teamId && a.status === 'Active');
   const transfers = state.transferRequests.filter((r) => r.status === 'Pending');
   const renewals = state.renewals.filter((r) => !['Approved', 'Rejected'].includes(r.status));
+  const toReview = state.applications.filter((a) => ['Pending Review', 'Resubmitted'].includes(a.status));
   const max = Math.max(...state.teams.map((t) => ag.filter((a) => a.teamId === t.id).length), 1);
   return (
     <>
-      <Greeting user={user} subtitle={`${pendingOnboard.length} agent(s) waiting for onboarding · ${renewals.length} open renewal request(s)`}><Link to="/onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
+      <Greeting user={user} subtitle={`${toReview.length} application(s) to review · ${pendingOnboard.length} agent(s) waiting for onboarding · ${renewals.length} open renewal request(s)`}><Link to="/onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
       <div className="row g-3 mb-3">
         <div className="col-6 col-xl"><StatCard icon="bi-people" label="Total agents" value={ag.length} to="/agents" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-check-circle" label="Active" value={by('Active')} tone={TONES.green} to="/agent-status" /></div>
@@ -303,6 +257,12 @@ function AgentManagerDashboard({ user }) {
           </div></div>
         </div>
         <div className="col-lg-7 d-grid gap-3">
+          <div className="card"><div className="card-header d-flex justify-content-between"><span>Applications to review</span><Link to="/applications" className="small fw-normal">Open review queue</Link></div>
+            <div className="list-group list-group-flush">
+              {toReview.slice(0, 5).map((a) => <Link key={a.id} to={`/applications/${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2"><span className="lh-sm"><span className="d-block fw-medium">{a.personal.firstName} {a.personal.lastName}</span><small className="text-muted">{a.id} · {timeAgo(a.submittedAt)}</small></span><StatusBadge status={a.status} /></Link>)}
+              {!toReview.length && <div className="list-group-item small text-muted">No applications waiting for review.</div>}
+            </div>
+          </div>
           <div className="card"><div className="card-header d-flex justify-content-between"><span>Pending onboarding</span><Link to="/onboarding" className="small fw-normal">Open onboarding</Link></div>
             <div className="list-group list-group-flush">
               {pendingOnboard.map((a) => <Link key={a.id} to={`/onboarding?agent=${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span>{fullName(a)} <small className="text-muted">{a.id}</small></span><span className="btn btn-sm btn-outline-primary">Onboard</span></Link>)}
@@ -361,40 +321,9 @@ function SupportDashboard({ user }) {
   );
 }
 
-/* ----------------------------- IT admin ----------------------------- */
-function ItDashboard({ user }) {
-  const { state } = useStore();
-  const admins = state.admins;
-  const open = state.issues.filter((t) => !['Resolved', 'Closed'].includes(t.status));
-  return (
-    <>
-      <Greeting user={user} subtitle={`${open.filter((t) => !t.assignedTo).length} unassigned technical issue(s)`}><Link to="/system-issues" className="btn btn-light">Open issue dashboard</Link></Greeting>
-      <div className="row g-3 mb-3">
-        <div className="col-6 col-xl"><StatCard icon="bi-person-gear" label="Admin accounts" value={admins.length} to="/admin/accounts" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-person-check" label="Active administrators" value={admins.filter((a) => a.status === 'Active').length} tone={TONES.green} to="/admin/accounts" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-person-slash" label="Inactive administrators" value={admins.filter((a) => a.status !== 'Active').length} tone={TONES.gray} to="/admin/accounts" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-bug" label="Open technical issues" value={open.length} tone={TONES.blue} to="/system-issues" /></div>
-        <div className="col-6 col-xl"><StatCard icon="bi-person-dash" label="Unassigned issues" value={open.filter((t) => !t.assignedTo).length} tone={TONES.amber} to="/system-issues" /></div>
-      </div>
-      <div className="row g-3">
-        <div className="col-lg-7">
-          <div className="card mb-3"><div className="card-header d-flex justify-content-between"><span>Open issues</span><Link to="/system-issues" className="small fw-normal">View all</Link></div>
-            <div className="list-group list-group-flush">{open.slice(0, 6).map((t) => <Link key={t.id} to={`/system-issues?open=${t.id}`} className="list-group-item list-group-item-action d-flex justify-content-between gap-2 align-items-center"><span className="lh-sm text-truncate"><span className="d-block fw-medium text-truncate">{t.id} · {t.title}</span><small className="text-muted">{t.reporterName} · {fmtDateTime(t.createdAt)}</small></span><span className="d-flex gap-1"><StatusBadge status={t.priority} /><StatusBadge status={t.status} /></span></Link>)}</div>
-          </div>
-          <div className="card"><div className="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div><div className="fw-semibold">Role-based access control</div><small className="text-muted">4 back-office roles · permission matrix</small></div>
-            <div className="d-flex gap-2"><Link to="/admin/roles" className="btn btn-primary"><i className="bi bi-shield-lock me-1" />Manage RBAC</Link><Link to="/admin/accounts" className="btn btn-outline-primary">Admin accounts</Link></div>
-          </div></div>
-        </div>
-        <div className="col-lg-5"><ActivityFeed title="Recent admin activity" filter={(l) => !['Active Agent', 'Prospective Agent', 'Team Lead'].includes(l.role)} /></div>
-      </div>
-    </>
-  );
-}
-
 export default function Dashboard() {
   const { user } = useStore();
-  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, compliance: ComplianceDashboard, agentManager: AgentManagerDashboard, support: SupportDashboard, itAdmin: ItDashboard };
+  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard, support: SupportDashboard };
   const C = map[user.role];
   return <C user={user} />;
 }

@@ -134,7 +134,7 @@ function RegisterWizard() {
         inv.status = 'Registration In Progress'; inv.applicationId = id;
         notify(d, `agent:${inv.invitedBy}`, { category: 'Team invitations', title: `${form.firstName} ${form.lastName} submitted their registration`, body: `Application ${id} for ${invitedTeam?.name}.`, link: '/team/invitations' });
       }
-      notify(d, 'role:compliance', { category: 'Registration updates', title: `New application: ${form.firstName} ${form.lastName}`, body: `${id} is waiting for review.`, link: `/applications/${id}` });
+      notify(d, 'role:agentManager', { category: 'Registration updates', title: `New application: ${form.firstName} ${form.lastName}`, body: `${id} is waiting for review.`, link: `/applications/${id}` });
       notify(d, `applicant:${user.email}`, { category: 'Registration updates', title: 'Application submitted', body: `Your reference number is ${id}. Status: Pending Review.`, link: '/my-application' });
       logAction(d, { name: `${form.firstName} ${form.lastName}`, role: 'prospect' }, 'Submitted agent application', id);
     });

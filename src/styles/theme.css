@@ -332,3 +332,17 @@ body.sidebar-collapsed .sidebar .show-collapsed { display: inline; }
 @media (max-width: 575.98px) { .announce-topic-title.lg { font-size: 1.2rem; } .announce-nav { display: none; } }
 .announce-banner .announce-topic { padding: 1.5rem 4.5rem 3.5rem; }
 @media (max-width: 575.98px) { .announce-banner .announce-topic { padding: 1.25rem 1.25rem 3.5rem; } }
+
+/* Commission chart */
+.comm-chart { position: relative; padding-top: 1.2rem; }
+.comm-bars { display: flex; align-items: flex-end; gap: 10px; border-bottom: 1px solid var(--vb-border); background: linear-gradient(var(--vb-border) 1px, transparent 1px) 0 0 / 100% 50%; }
+.comm-col { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; position: relative; outline: none; cursor: default; }
+.comm-col:focus-visible .comm-bar { outline: 2px solid var(--vb-green-400); outline-offset: 2px; }
+.comm-bar { width: 100%; max-width: 44px; min-height: 2px; background: var(--vb-teal-600); border-radius: 4px 4px 0 0; transition: background 0.15s; }
+.comm-bar.active { background: var(--vb-teal-800); }
+.comm-tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid var(--vb-border); border-radius: 8px; box-shadow: 0 8px 24px rgba(16,40,44,0.14); padding: 0.45rem 0.65rem; font-size: 0.78rem; white-space: nowrap; z-index: 5; pointer-events: none; }
+.comm-col:first-child .comm-tip { left: 0; transform: none; }
+.comm-col:last-child .comm-tip { left: auto; right: 0; transform: none; }
+.comm-axis { display: flex; gap: 10px; margin-top: 6px; }
+.comm-axis span { flex: 1; text-align: center; font-size: 0.74rem; color: var(--vb-muted); }
+.comm-max { position: absolute; top: 0; left: 0; }

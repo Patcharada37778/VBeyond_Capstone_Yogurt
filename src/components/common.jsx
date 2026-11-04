@@ -4,8 +4,8 @@ import { initials, fileSize } from '../utils/format';
 
 const STATUS_COLORS = {
   green: ['Active', 'Approved', 'Verified', 'Resolved', 'Published', 'Accepted', 'Paid', 'Answered', 'Completed', 'Low'],
-  blue: ['Pending Review', 'In Progress', 'Resubmitted', 'Registration In Progress', 'Payment Verification', 'Open', 'Medium'],
-  amber: ['Clarification Required', 'Pending', 'Pending Payment', 'Waiting for User', 'Requires Replacement', 'Draft', 'Suspended', 'Unpaid', 'Pending Onboarding', 'High'],
+  blue: ['Processing', 'Pending Review', 'In Progress', 'Resubmitted', 'Registration In Progress', 'Payment Verification', 'Open', 'Medium'],
+  amber: ['Pending Transfer', 'Clarification Required', 'Pending', 'Pending Payment', 'Waiting for User', 'Requires Replacement', 'Draft', 'Suspended', 'Unpaid', 'Pending Onboarding', 'High'],
   red: ['Rejected', 'Expired', 'Critical', 'Inactive', 'Declined'],
   gray: ['Closed', 'Cancelled', 'Archived', 'Resigned', 'Not Yet Submitted', 'Unpublished'],
 };

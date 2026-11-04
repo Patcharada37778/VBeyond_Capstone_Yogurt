@@ -10,13 +10,13 @@ import { AGENT_STATUSES } from '../../services/agentLifecycle';
 export const mask = (s) => (s ? `${s.slice(0, 2)}••••${s.slice(-3)}` : '—');
 
 export default function AgentDirectory() {
-  const { state, user, can } = useStore();
+  const { state, can } = useStore();
   const navigate = useNavigate();
   const toast = useToast();
   const [q, setQ] = useState('');
   const [team, setTeam] = useState('All');
   const [status, setStatus] = useState('All');
-  const sensitive = can('agents', 'edit') || user.role === 'compliance';
+  const sensitive = can('agents', 'edit');
 
   const rows = state.agents.filter((a) => (team === 'All' || (team === 'none' ? !a.teamId : a.teamId === team))
     && (status === 'All' || a.status === status)

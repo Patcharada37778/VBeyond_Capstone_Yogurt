@@ -53,8 +53,8 @@ export default function ReportProblem() {
       d.issues.unshift({ id, title: form.title.trim(), category: form.category, description: form.description.trim(), priority: form.priority, status: 'Open',
         reporterKey: user.keys[0], reporterName: user.name, contact: form.contact.trim(), createdAt: new Date().toISOString(), assignedTo: null, escalated: false,
         attachment: form.attachment?.fileName || null, notes: [], responses: [], userReplies: [], history: [{ at: new Date().toISOString(), text: 'Ticket created', by: user.name }] });
-      notify(d, ['role:itAdmin', 'role:support'], { category: 'System issue updates', title: `New ticket: ${form.title.trim()}`, body: `${id} reported by ${user.name} · ${form.priority} priority`, link: `/system-issues?open=${id}` });
-      notify(d, user.keys[0], { category: 'System issue updates', title: `Your ticket ${id} was received`, body: 'The IT team will review it shortly.', link: '/report-problem' });
+      notify(d, ['role:support', 'role:support'], { category: 'System issue updates', title: `New ticket: ${form.title.trim()}`, body: `${id} reported by ${user.name} · ${form.priority} priority`, link: `/system-issues?open=${id}` });
+      notify(d, user.keys[0], { category: 'System issue updates', title: `Your ticket ${id} was received`, body: 'The support team will review it shortly.', link: '/report-problem' });
       logAction(d, user, 'Reported system problem', id);
     });
     toast(`Ticket ${id} created. You'll be notified when its status changes.`, 'success', 'Problem reported');
@@ -68,17 +68,17 @@ export default function ReportProblem() {
       t.userReplies = [...(t.userReplies || []), { at: new Date().toISOString(), by: user.name, text: reply.trim() }];
       if (t.status === 'Waiting for User') { t.status = 'In Progress'; t.history.push({ at: new Date().toISOString(), text: 'Reporter replied — status changed to In Progress', by: user.name }); }
       else t.history.push({ at: new Date().toISOString(), text: 'Reporter added a reply', by: user.name });
-      notify(d, t.assignedTo ? [`admin:${t.assignedTo}`] : ['role:itAdmin'], { category: 'System issue updates', title: `${user.name} replied on ${t.id}`, body: reply.trim().slice(0, 80), link: `/system-issues?open=${t.id}` });
+      notify(d, t.assignedTo ? [`admin:${t.assignedTo}`] : ['role:support'], { category: 'System issue updates', title: `${user.name} replied on ${t.id}`, body: reply.trim().slice(0, 80), link: `/system-issues?open=${t.id}` });
     });
     setReply('');
-    toast('Reply sent to the IT team.');
+    toast('Reply sent to the support team.');
   };
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   return (
     <>
-      <PageHeader title="Report a System Problem" subtitle="Tell the IT team about errors or issues with ARMS. You'll get a ticket ID to track progress." crumbs={[{ label: 'Common Services' }, { label: 'Report a Problem' }]} />
+      <PageHeader title="Report a System Problem" subtitle="Tell the support team about errors or issues with ARMS. You'll get a ticket ID to track progress." crumbs={[{ label: 'Common Services' }, { label: 'Report a Problem' }]} />
       <div className="row g-3">
         <div className="col-lg-5">
           <form className="card" onSubmit={submit} noValidate>
@@ -142,11 +142,11 @@ export default function ReportProblem() {
           {ticket.attachment && <p className="small"><i className="bi bi-paperclip" /> {ticket.attachment}</p>}
           <div className="row g-3">
             <div className="col-md-7">
-              <h3 className="h6">Conversation with IT</h3>
+              <h3 className="h6">Conversation with support</h3>
               <TicketThread ticket={ticket} />
               {!['Closed'].includes(ticket.status) && <div className="mt-3">
                 <label className="form-label" htmlFor="tr">Reply</label>
-                <textarea id="tr" className="form-control" rows={2} value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Add more details for the IT team" />
+                <textarea id="tr" className="form-control" rows={2} value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Add more details for the support team" />
                 <button className="btn btn-primary btn-sm mt-2" disabled={!reply.trim()} onClick={sendReply}>Send reply</button>
               </div>}
             </div>

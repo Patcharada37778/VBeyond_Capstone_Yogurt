@@ -82,7 +82,7 @@ export default function MyApplication() {
       a.status = 'Resubmitted';
       a.timeline.push({ at: now, text: `Application resubmitted${explanation.trim() ? ` — "${explanation.trim()}"` : ''}`, by: user.name });
       if (explanation.trim()) a.resubmitNote = explanation.trim();
-      notify(d, a.reviewer ? [`admin:${a.reviewer}`, 'role:compliance'] : 'role:compliance', { category: 'Registration updates', title: `Application resubmitted: ${a.personal.firstName} ${a.personal.lastName}`, body: `${a.id} has updated information or documents.`, link: `/applications/${a.id}` });
+      notify(d, a.reviewer ? [`admin:${a.reviewer}`, 'role:agentManager'] : 'role:agentManager', { category: 'Registration updates', title: `Application resubmitted: ${a.personal.firstName} ${a.personal.lastName}`, body: `${a.id} has updated information or documents.`, link: `/applications/${a.id}` });
       notify(d, `applicant:${user.email}`, { category: 'Registration updates', title: 'Your changes were resubmitted', body: `${a.id} is back in the review queue.`, link: '/my-application' });
       logAction(d, user, 'Resubmitted application', a.id);
     });
@@ -97,7 +97,7 @@ export default function MyApplication() {
 
       {params.get('submitted') && app.status === 'Pending Review' && (
         <div className="alert alert-success d-flex gap-3 align-items-center"><i className="bi bi-check-circle-fill fs-3" />
-          <div><strong>Application submitted!</strong> Your reference number is <strong>{app.id}</strong>. Our compliance team usually reviews applications within 3 business days.</div></div>
+          <div><strong>Application submitted!</strong> Your reference number is <strong>{app.id}</strong>. Our team usually reviews applications within 3 business days.</div></div>
       )}
       {app.status === 'Approved' && (
         <div className="hero-banner mb-3">
@@ -218,7 +218,7 @@ export default function MyApplication() {
       </div>
 
       <ConfirmModal open={confirm} onClose={() => setConfirm(false)} onConfirm={resubmit} title="Resubmit application?" confirmLabel="Resubmit">
-        Your updated {openClar ? 'response and ' : ''}documents will be sent to the compliance team, and the application status will change to <strong>Resubmitted</strong>.
+        Your updated {openClar ? 'response and ' : ''}documents will be sent to our review team, and the application status will change to <strong>Resubmitted</strong>.
       </ConfirmModal>
       <Modal open={!!preview} onClose={() => setPreview(null)} title={preview?.fileName} size="lg">
         {preview && <><DocPreview doc={preview} />

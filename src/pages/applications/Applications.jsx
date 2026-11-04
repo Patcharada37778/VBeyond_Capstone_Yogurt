@@ -34,7 +34,7 @@ export default function Applications() {
         <div className="card-body d-flex flex-wrap gap-2 border-bottom">
           <SearchInput value={q} onChange={setQ} placeholder="Search by ID, name or email" className="flex-grow-1" />
           <Select value={status} onChange={setStatus} label="Status" options={['All', ...APP_STATUSES].map((s) => ({ value: s, label: s === 'All' ? 'All statuses' : s }))} />
-          <Select value={reviewer} onChange={setReviewer} label="Reviewer" options={[{ value: 'All', label: 'Any reviewer' }, { value: 'none', label: 'Unassigned' }, ...admins.filter((a) => a.role === 'compliance').map((a) => ({ value: a.id, label: a.name }))]} />
+          <Select value={reviewer} onChange={setReviewer} label="Reviewer" options={[{ value: 'All', label: 'Any reviewer' }, { value: 'none', label: 'Unassigned' }, ...admins.filter((a) => a.role === 'agentManager').map((a) => ({ value: a.id, label: a.name }))]} />
         </div>
         <DataTable rows={rows} onRowClick={(r) => navigate(`/applications/${r.id}`)} initialSort={{ key: 'submittedAt', dir: 'desc' }} empty="No applications match these filters"
           columns={[
