@@ -106,21 +106,60 @@ export function Select({ value, onChange, options, label, className = '', style 
 }
 
 /** Mock file picker: uses the browser file dialog but only keeps name/size locally. */
-export function FilePicker({ label, onSelect, accept = '.pdf,.jpg,.jpeg,.png', buttonLabel = 'Choose file', current, required, error, id }) {
+export function FilePicker({ label, onSelect, accept = '.pdf,.jpg,.jpeg,.png', buttonLabel = 'Choose file', current, required, error, id, multiple = false, description }) {
   const ref = useRef(null);
+  const files = multiple ? (Array.isArray(current) ? current : current ? [current] : []) : current ? [current] : [];
   return (
     <div>
-      {label && <label className={`form-label ${required ? 'required' : ''}`} htmlFor={id}>{label}</label>}
-      <div className={`doc-tile ${error ? 'border-danger' : ''}`}>
-        <div className="doc-icon"><i className={`bi ${current ? 'bi-file-earmark-check' : 'bi-file-earmark-arrow-up'}`} aria-hidden="true" /></div>
-        <div className="flex-grow-1 text-truncate">
-          {current ? <><div className="fw-medium text-truncate">{current.fileName}</div><small className="text-muted">{fileSize(current.size)} · ready</small></>
-            : <small className="text-muted">PDF, JPG or PNG · max 10 MB</small>}
+      {label && (multiple ? (
+        <div className="doc-picker-label">
+          <div className="doc-picker-heading">
+            <label className={`form-label ${required ? 'required' : ''} mb-0`} htmlFor={id}>{label}</label>
+            {description && <small className="doc-file-description text-muted">{description}</small>}
+          </div>
+          <button type="button" className="btn btn-sm btn-success file-add-button" onClick={() => ref.current?.click()} aria-label={`Add files to ${label}`} title="Add more files">
+            <i className="bi bi-plus-lg" aria-hidden="true" />
+          </button>
         </div>
+      ) : <label className={`form-label ${required ? 'required' : ''}`} htmlFor={id}>{label}</label>)}
+      <div className={`doc-tile ${multiple ? 'doc-tile-multiple' : ''} ${error ? 'border-danger' : ''}`}>
+        <div className="doc-icon"><i className={`bi ${files.length ? 'bi-file-earmark-check' : 'bi-file-earmark-arrow-up'}`} aria-hidden="true" /></div>
+        {multiple ? (
+          <div className="doc-file-content">
+            <div className="doc-file-list">
+              {files.length
+                ? files.map((file, i) => (
+                  <div className="doc-file-row" key={`${file.fileName}-${i}`}>
+                    <span className="text-truncate"><span className="fw-medium">{file.fileName}</span> <small className="text-muted">{fileSize(file.size)}</small></span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-light doc-file-remove"
+                      aria-label={`Remove ${file.fileName}`}
+                      title={`Remove ${file.fileName}`}
+                      onClick={() => onSelect(files.filter((_, fileIndex) => fileIndex !== i))}
+                    >
+                      <i className="bi bi-x-lg" aria-hidden="true" />
+                    </button>
+                  </div>
+                ))
+                : <span className="text-muted">No files added</span>}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-grow-1 text-truncate">
+            {files.length ? <><div className="fw-medium text-truncate">{files[0].fileName}</div><small className="text-muted">{fileSize(files[0].size)} · ready</small></>
+              : <small className="text-muted">PDF, JPG or PNG · max 10 MB</small>}
+          </div>
+        )}
         <input ref={ref} id={id} type="file" className="d-none" accept={accept}
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) onSelect({ fileName: f.name, size: f.size }); e.target.value = ''; }} />
-        <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => ref.current?.click()}>{current ? 'Replace' : buttonLabel}</button>
-        {current && <button type="button" className="btn btn-sm btn-light" aria-label="Remove file" onClick={() => onSelect(null)}><i className="bi bi-x-lg" /></button>}
+          multiple={multiple}
+          onChange={(e) => {
+            const selected = Array.from(e.target.files || [], (file) => ({ fileName: file.name, size: file.size }));
+            if (selected.length) onSelect(multiple ? [...files, ...selected] : selected[0]);
+            e.target.value = '';
+          }} />
+        {!multiple && <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => ref.current?.click()}>{files.length ? 'Replace' : buttonLabel}</button>}
+        {!multiple && files.length > 0 && <button type="button" className="btn btn-sm btn-light" aria-label="Remove file" onClick={() => onSelect(null)}><i className="bi bi-x-lg" /></button>}
       </div>
       {error && <div className="text-danger small mt-1">{error}</div>}
     </div>

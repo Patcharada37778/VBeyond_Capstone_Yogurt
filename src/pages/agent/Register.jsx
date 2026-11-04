@@ -15,6 +15,15 @@ export const DOC_SLOTS = [
 
 const STEPS = ['Personal information', 'Professional information', 'Documents', 'Review & submit'];
 
+function RegistrationInput({ icon, ...inputProps }) {
+  return (
+    <div className="registration-input">
+      <i className={`bi ${icon}`} aria-hidden="true" />
+      <input {...inputProps} />
+    </div>
+  );
+}
+
 // Public invitation link copied by an agent: /join?team=T-ALP&ref=AG-1001
 function JoinPage() {
   const { state, signIn } = useStore();
@@ -52,13 +61,13 @@ function JoinPage() {
       <form onSubmit={start} noValidate className="d-grid gap-3">
         <div>
           <label className="form-label required" htmlFor="jn-n">Full name</label>
-          <input id="jn-n" className={`form-control form-control-lg ${errors.name ? 'is-invalid' : ''}`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="First and last name" />
-          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+          <RegistrationInput icon="bi-person" id="jn-n" className={`form-control form-control-lg ${errors.name ? 'is-invalid' : ''}`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="First and last name" />
+          {errors.name && <div className="invalid-feedback d-block">{errors.name}</div>}
         </div>
         <div>
           <label className="form-label required" htmlFor="jn-e">Email</label>
-          <input id="jn-e" className={`form-control form-control-lg ${errors.email ? 'is-invalid' : ''}`} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@example.com" />
-          {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+          <RegistrationInput icon="bi-envelope" id="jn-e" className={`form-control form-control-lg ${errors.email ? 'is-invalid' : ''}`} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@example.com" />
+          {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
         </div>
         <button className="btn btn-primary btn-lg">Continue to registration</button>
         <Link to="/login" className="small text-center">Already have an account? Sign in</Link>
@@ -84,6 +93,7 @@ function RegisterWizard() {
   const [nameFirst, ...nameRest] = (user.name || '').split(' ');
 
   const [step, setStep] = useState(1);
+  const [stepStatuses, setStepStatuses] = useState({});
   const [errors, setErrors] = useState({});
   const [agree, setAgree] = useState(true);
   const [form, setForm] = useState(() => {
@@ -121,7 +131,11 @@ function RegisterWizard() {
   }
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const validate = (s) => {
+  const docsForSlot = (key) => {
+    const files = form.docs[key];
+    return Array.isArray(files) ? files : files ? [files] : [];
+  };
+  const getStepErrors = (s) => {
     const e = {};
     if (s === 1) {
       if (!form.firstName.trim()) e.firstName = 'First name is required.';
@@ -136,25 +150,56 @@ function RegisterWizard() {
       if (!form.experience.trim()) e.experience = 'Describe your previous experience (or "None").';
       if (!form.occupation.trim()) e.occupation = 'Current occupation is required.';
     }
-    if (s === 3) DOC_SLOTS.filter((d) => d.required).forEach((d) => { if (!form.docs[d.key]) e[`doc_${d.key}`] = `${d.type} is required.`; });
+    if (s === 3) DOC_SLOTS.filter((d) => d.required).forEach((d) => { if (!docsForSlot(d.key).length) e[`doc_${d.key}`] = `${d.type} is required.`; });
+    return e;
+  };
+  const validate = (s) => {
+    const e = getStepErrors(s);
     setErrors(e);
     return !Object.keys(e).length;
   };
-  const next = () => { if (validate(step)) setStep(step + 1); };
+  const next = () => {
+    if (validate(step)) {
+      setStepStatuses((statuses) => ({ ...statuses, [step]: 'completed' }));
+      setStep(step + 1);
+    }
+  };
   const goto = (s) => { setErrors({}); setStep(s); };
+  const goToStep = (target) => {
+    if (target > step) {
+      const statuses = { ...stepStatuses };
+      statuses[step] = Object.keys(getStepErrors(step)).length ? 'skipped' : 'completed';
+      for (let skippedStep = step + 1; skippedStep < target; skippedStep++) {
+        if (!statuses[skippedStep]) statuses[skippedStep] = 'skipped';
+      }
+      setStepStatuses(statuses);
+    }
+    setErrors({});
+    setStep(target);
+  };
 
   const submit = () => {
     if (![1, 2, 3].every((s) => validate(s))) { toast('Some information is missing. Please check each step.', 'warning'); return; }
     if (!agree) { setErrors({ agree: 'You must agree to the terms and conditions.' }); return; }
     const id = `APP-${new Date().getFullYear()}-${String(state.counters.app).padStart(4, '0')}`;
     const now = new Date().toISOString();
+    const documents = DOC_SLOTS.reduce((all, slot) => {
+      docsForSlot(slot.key).forEach((file) => {
+        all.push({
+          id: `D${all.length + 1}`, type: slot.type, fileName: file.fileName, size: file.size,
+          uploadedAt: now, status: 'Pending', comment: '',
+          history: [{ at: now, text: `Uploaded ${file.fileName}` }],
+        });
+      });
+      return all;
+    }, []);
     mutate((d) => {
       d.counters.app++;
       d.applications.unshift({
         id, userKey: user.email,
         personal: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), email: form.email.trim(), phone: form.phone.trim(), dob: form.dob, nationality: form.nationality, address: form.address.trim() },
         professional: { experience: form.experience.trim(), occupation: form.occupation.trim(), qualifications: form.qualifications.trim(), referrer: form.referrer.trim() },
-        documents: DOC_SLOTS.filter((s) => form.docs[s.key]).map((s, i) => ({ id: `D${i + 1}`, type: s.type, fileName: form.docs[s.key].fileName, size: form.docs[s.key].size, uploadedAt: now, status: 'Pending', comment: '', history: [{ at: now, text: `Uploaded ${form.docs[s.key].fileName}` }] })),
+        documents,
         status: 'Pending Review', submittedAt: now, preferredTeamId: invitedTeam?.id || null, referredBy: inviter?.id || null,
         clarifications: [], agentId: null, decisionNote: '', timeline: [{ at: now, text: 'Application submitted', by: `${form.firstName} ${form.lastName}` }],
       });
@@ -172,8 +217,8 @@ function RegisterWizard() {
   const cls = (k) => `form-control ${errors[k] ? 'is-invalid' : ''}`;
 
   return (
-    <>
-      <PageHeader title="Register to Become an Agent" subtitle="Complete the four steps below. Your progress is saved automatically on this device." crumbs={[{ label: 'Agent Registration' }]} />
+    <div className="registration-page">
+      <PageHeader title="Register to Become an Agent" subtitle={`Step ${step} of 4`} crumbs={[{ label: 'Agent Registration' }]} />
       {invitedTeam && (
         <div className="alert alert-brand d-flex gap-3 align-items-center">
           <i className="bi bi-envelope-paper-heart fs-3" />
@@ -181,26 +226,41 @@ function RegisterWizard() {
             <div className="small">Your team is pre-assigned — after approval you'll be onboarded directly to {invitedTeam?.name}.</div></div>
         </div>
       )}
-      <div className="stepper mb-3">
-        {STEPS.map((s, i) => (
-          <button type="button" key={s} className={`step ${step === i + 1 ? 'active' : step > i + 1 ? 'done' : ''}`} onClick={() => (i + 1 < step ? goto(i + 1) : undefined)} style={{ cursor: i + 1 < step ? 'pointer' : 'default' }}>
-            <span className="num">{step > i + 1 ? <i className="bi bi-check" /> : i + 1}</span><span className="text-start">{s}</span>
-          </button>
-        ))}
-      </div>
+      <ol className="stepper mb-3" aria-label="Registration progress">
+        {STEPS.map((label, i) => {
+          const stepNumber = i + 1;
+          const status = stepNumber === step ? 'current' : stepStatuses[stepNumber] || 'upcoming';
+          const statusLabel = { current: 'current step', completed: 'completed', skipped: 'skipped, incomplete', upcoming: 'not started' }[status];
+          return (
+            <li className={`step-item ${status}`} key={label}>
+              <button
+                type="button"
+                className="step"
+                onClick={() => goToStep(stepNumber)}
+                aria-current={status === 'current' ? 'step' : undefined}
+                aria-label={`${label}, ${statusLabel}`}
+              >
+                <span className="num" aria-hidden="true">
+                  {status === 'completed' ? <i className="bi bi-check-lg" /> : status === 'skipped' ? <i className="bi bi-exclamation" /> : stepNumber}
+                </span>
+                <span className="step-label">{label}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
 
-      <div className="card">
+      <div className="card registration-card">
         <div className="card-body">
           {step === 1 && (
             <div className="row g-3">
-              <div className="col-md-6"><label className="form-label required" htmlFor="r-fn">First name</label><input id="r-fn" className={cls('firstName')} value={form.firstName} onChange={set('firstName')} />{err('firstName')}</div>
-              <div className="col-md-6"><label className="form-label required" htmlFor="r-ln">Last name</label><input id="r-ln" className={cls('lastName')} value={form.lastName} onChange={set('lastName')} />{err('lastName')}</div>
-              <div className="col-md-6"><label className="form-label required" htmlFor="r-em">Email</label><input id="r-em" className={cls('email')} value={form.email} readOnly /><div className="form-text">Your sign-in email — used for all notifications.</div>{err('email')}</div>
-              <div className="col-md-6"><label className="form-label required" htmlFor="r-ph">Phone number</label><input id="r-ph" className={cls('phone')} value={form.phone} onChange={set('phone')} placeholder="081-234-5678" />{err('phone')}</div>
-              <div className="col-md-4"><label className="form-label required" htmlFor="r-dob">Date of birth</label><input id="r-dob" type="date" className={cls('dob')} value={form.dob} onChange={set('dob')} />{err('dob')}</div>
-              <div className="col-md-4"><label className="form-label required" htmlFor="r-nat">Nationality</label>
+              <div className="col-md-6"><label className="form-label required" htmlFor="r-fn">First name</label><RegistrationInput icon="bi-person" id="r-fn" className={cls('firstName')} value={form.firstName} onChange={set('firstName')} />{err('firstName')}</div>
+              <div className="col-md-6"><label className="form-label required" htmlFor="r-ln">Last name</label><RegistrationInput icon="bi-person" id="r-ln" className={cls('lastName')} value={form.lastName} onChange={set('lastName')} />{err('lastName')}</div>
+              <div className="col-md-6"><label className="form-label required" htmlFor="r-em">Email</label><RegistrationInput icon="bi-envelope" id="r-em" className={cls('email')} value={form.email} readOnly /><div className="form-text">Your sign-in email — used for all notifications.</div>{err('email')}</div>
+              <div className="col-md-6"><label className="form-label required" htmlFor="r-ph">Phone number</label><RegistrationInput icon="bi-telephone" id="r-ph" className={cls('phone')} value={form.phone} onChange={set('phone')} placeholder="081-234-5678" />{err('phone')}</div>
+              <div className="col-md-6"><label className="form-label required" htmlFor="r-dob">Date of birth</label><input id="r-dob" type="date" className={cls('dob')} value={form.dob} onChange={set('dob')} />{err('dob')}</div>
+              <div className="col-md-6"><label className="form-label required" htmlFor="r-nat">Nationality</label>
                 <select id="r-nat" className="form-select" value={form.nationality} onChange={set('nationality')}>{['Thai', 'Myanmar', 'Lao', 'Cambodian', 'Chinese', 'Japanese', 'Other'].map((n) => <option key={n}>{n}</option>)}</select></div>
-              <div className="col-md-4"><label className="form-label">Preferred team</label><input className="form-control" readOnly value={invitedTeam ? `${invitedTeam.name} (invited)` : 'Assigned after approval'} /></div>
               <div className="col-12"><label className="form-label required" htmlFor="r-ad">Address</label><textarea id="r-ad" rows={2} className={cls('address')} value={form.address} onChange={set('address')} placeholder="House no., road, sub-district, district, province, postcode" />{err('address')}</div>
             </div>
           )}
@@ -217,26 +277,25 @@ function RegisterWizard() {
               <div className="col-12"><div className="alert alert-light border small mb-0"><i className="bi bi-info-circle me-1" />Files stay in your browser for this prototype — nothing is uploaded to a server.</div></div>
               {DOC_SLOTS.map((s) => (
                 <div className="col-md-6" key={s.key}>
-                  <FilePicker id={`doc-${s.key}`} label={s.type} required={s.required} current={form.docs[s.key]} error={errors[`doc_${s.key}`]}
+                  <FilePicker id={`doc-${s.key}`} label={s.type} required={s.required} current={form.docs[s.key]} multiple description={s.hint} error={errors[`doc_${s.key}`]}
                     onSelect={(f) => setForm({ ...form, docs: { ...form.docs, [s.key]: f || undefined } })} />
-                  <div className="form-text">{s.hint}</div>
                 </div>
               ))}
             </div>
           )}
           {step === 4 && (
-            <div className="d-grid gap-3">
+            <div className="review-summary">
               {[
                 { title: 'Personal information', s: 1, rows: [['Name', `${form.firstName} ${form.lastName}`], ['Email', form.email], ['Phone', form.phone], ['Date of birth', fmtDate(form.dob)], ['Nationality', form.nationality], ['Address', form.address], ['Team', invitedTeam?.name || 'Assigned after approval']] },
                 { title: 'Professional information', s: 2, rows: [['Previous experience', form.experience], ['Current occupation', form.occupation], ['Qualifications', form.qualifications || '—'], ['Referrer', form.referrer || '—']] },
-                { title: 'Documents', s: 3, rows: DOC_SLOTS.map((d) => [d.type, form.docs[d.key]?.fileName || (d.required ? 'Missing' : 'Not provided')]) },
+                { title: 'Documents', s: 3, rows: DOC_SLOTS.map((d) => [d.type, docsForSlot(d.key).map((file) => file.fileName).join(', ') || (d.required ? 'Missing' : 'Not provided')]) },
               ].map((sec) => (
-                <div key={sec.title} className="border rounded p-3">
-                  <div className="d-flex justify-content-between mb-2"><h3 className="h6 mb-0">{sec.title}</h3><button className="btn btn-sm btn-link p-0" onClick={() => goto(sec.s)}><i className="bi bi-pencil me-1" />Edit</button></div>
-                  <dl className="dl-grid mb-0">{sec.rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v || '—'}</dd></div>)}</dl>
+                <div key={sec.title} className="review-section">
+                  <div className="review-section-header"><h3>{sec.title}</h3><button className="btn btn-sm btn-link p-0" onClick={() => goto(sec.s)}><i className="bi bi-pencil me-1" />Edit</button></div>
+                  <dl className="dl-grid review-fields mb-0">{sec.rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v || '—'}</dd></div>)}</dl>
                 </div>
               ))}
-              <div className="form-check">
+              <div className="form-check review-agreement">
                 <input id="agree" type="checkbox" className={`form-check-input ${errors.agree ? 'is-invalid' : ''}`} checked={agree} onChange={(e) => { setAgree(e.target.checked); setErrors({}); }} />
                 <label className="form-check-label" htmlFor="agree">I confirm the information is accurate and agree to the VBEYOND Agent Terms & Conditions and Privacy Notice (PDPA).</label>
                 {errors.agree && <div className="invalid-feedback d-block">{errors.agree}</div>}
@@ -244,12 +303,12 @@ function RegisterWizard() {
             </div>
           )}
         </div>
-        <div className="card-footer bg-white d-flex justify-content-between">
-          <button className="btn btn-light" disabled={step === 1} onClick={() => goto(step - 1)}><i className="bi bi-arrow-left me-1" />Back</button>
-          {step < 4 ? <button className="btn btn-primary" onClick={next}>Continue<i className="bi bi-arrow-right ms-1" /></button>
-            : <button className="btn btn-success" onClick={submit}><i className="bi bi-send-check me-1" />Submit application</button>}
+        <div className="card-footer bg-transparent border-0 d-flex justify-content-between">
+          {step > 1 && <button className="btn btn-light" onClick={() => goto(step - 1)}><i className="bi bi-arrow-left me-1" />Back</button>}
+          {step < 4 ? <button className="btn btn-primary ms-auto" onClick={next}>Continue<i className="bi bi-arrow-right ms-1" /></button>
+            : <button className="btn btn-success ms-auto" onClick={submit}><i className="bi bi-send-check me-1" />Submit application</button>}
         </div>
       </div>
-    </>
+    </div>
   );
 }
