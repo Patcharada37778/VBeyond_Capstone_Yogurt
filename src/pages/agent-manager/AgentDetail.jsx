@@ -16,7 +16,7 @@ export default function AgentDetail() {
   const [edit, setEdit] = useState(null);
   const [errors, setErrors] = useState({});
   const a = state.agents.find((x) => x.id === id);
-  if (!a) return <><PageHeader title="Agent not found" crumbs={[{ label: 'Agent Directory', to: '/agents' }]} /><div className="card"><EmptyState title="No agent with this ID" /></div></>;
+  if (!a) return <><PageHeader title="Agent not found" crumbs={[{ label: 'Agent List', to: '/agents' }]} /><div className="card"><EmptyState title="No agent with this ID" /></div></>;
 
   const team = state.teams.find((t) => t.id === a.teamId);
   const lead = state.agents.find((x) => x.id === team?.leadId);
@@ -46,7 +46,7 @@ export default function AgentDetail() {
 
   return (
     <>
-      <PageHeader title={fullName(a)} subtitle={`${a.id}${a.legacyId ? ` · legacy ${a.legacyId}` : ''}`} crumbs={[{ label: 'Agent Team Management' }, { label: 'Agent Directory', to: '/agents' }, { label: a.id }]}
+      <PageHeader title={fullName(a)} subtitle={`${a.id}${a.legacyId ? ` · legacy ${a.legacyId}` : ''}`} crumbs={[{ label: 'Agent Team Management' }, { label: 'Agent List', to: '/agents' }, { label: a.id }]}
         actions={<>
           {canEdit && <button className="btn btn-light" onClick={() => { setErrors({}); setEdit({ ...a, membershipExpiry: toInputDate(a.membershipExpiry) }); }}><i className="bi bi-pencil me-1" />Edit information</button>}
           {can('agentStatus', 'edit') && <Link className="btn btn-outline-primary" to={`/agent-status?agent=${a.id}`}><i className="bi bi-toggles me-1" />Change status</Link>}

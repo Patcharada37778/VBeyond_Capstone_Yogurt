@@ -33,7 +33,9 @@ export function InvitationEmailPreview({ inv, team, inviter }) {
 export default function TeamInvitations() {
   const { state, mutate, user } = useStore();
   const toast = useToast();
-  const team = user.ledTeam;
+  // Team leads may pre-assign any team; agents invite people to their own team.
+  const isLead = !!user.ledTeam;
+  const team = user.ledTeam || state.teams.find((t) => t.id === user.agent.teamId);
   const restricted = ['Suspended', 'Resigned', 'Expired'].includes(user.agent.status);
   const blank = { name: '', email: '', phone: '', message: '', teamId: team?.id || '' };
   const [form, setForm] = useState(blank);
@@ -42,7 +44,7 @@ export default function TeamInvitations() {
   const [preview, setPreview] = useState(null);
   const [cancel, setCancel] = useState(null);
 
-  if (!team) return <><PageHeader title="Invitations" crumbs={[{ label: 'My Team' }]} /><div className="card"><EmptyState icon="bi-envelope" title="You don't currently lead a team" /></div></>;
+  if (!team) return <><PageHeader title="Invitations" crumbs={[{ label: 'My Team' }]} /><div className="card"><EmptyState icon="bi-envelope" title="You aren't assigned to a team yet">Invitations become available once you join a team.</EmptyState></div></>;
 
   const mine = state.invitations.filter((i) => i.invitedBy === user.agent.id).map((i) => ({ ...i, eff: effectiveInviteStatus(i) }));
   const rows = mine.filter((i) => filter === 'All' || i.eff === filter);
@@ -65,7 +67,7 @@ export default function TeamInvitations() {
       const exp = new Date(); exp.setDate(exp.getDate() + 14);
       d.invitations.unshift({ id, name: form.name.trim(), email: form.email.trim().toLowerCase(), phone: form.phone.trim(), message: form.message.trim(), teamId: form.teamId, invitedBy: user.agent.id, sentAt: new Date().toISOString(), expiresAt: exp.toISOString(), status: 'Pending', applicationId: null });
       notify(d, [`email:${form.email.trim().toLowerCase()}`], { category: 'Team invitations', title: `${user.name} invited you to join ${t.name}`, body: 'Open the link to start your agent registration. Your team is pre-assigned.', link: `/register?invite=${id}` });
-      notify(d, 'role:agentManager', { category: 'Team invitations', title: `${user.name} invited ${form.name.trim()}`, body: `Pre-assigned to ${t.name}`, link: '/invitations' });
+      notify(d, 'role:agentManager', { category: 'Team invitations', title: `${user.name} invited ${form.name.trim()}`, body: `Pre-assigned to ${t.name}`, link: '/onboarding' });
       logAction(d, user, 'Sent team invitation', `${id} → ${form.email.trim()} (${t.name})`);
     });
     toast(`Invitation sent to ${form.email.trim()} (simulated email).`, 'success', 'Invitation sent');
@@ -92,7 +94,7 @@ export default function TeamInvitations() {
 
   return (
     <>
-      <PageHeader title="Invite a Non-Agent to Join" subtitle="Invite people to register as VBEYOND agents with their team already assigned." crumbs={[{ label: 'My Team' }, { label: 'Invitations' }]} />
+      <PageHeader title="Invite a Non-Agent to Join" subtitle="Invite people to register as VBEYOND agents with their team already assigned." crumbs={[{ label: isLead ? 'My Team' : 'My Account' }, { label: 'Invitations' }]} />
       <div className="row g-3">
         <div className="col-lg-4">
           <form className="card" onSubmit={send} noValidate>
@@ -105,7 +107,7 @@ export default function TeamInvitations() {
               <div><label className="form-label required" htmlFor="iv-p">Phone number</label><input id="iv-p" className={`form-control ${errors.phone ? 'is-invalid' : ''}`} value={form.phone} onChange={set('phone')} />{errors.phone && <div className="invalid-feedback">{errors.phone}</div>}</div>
               <div><label className="form-label required" htmlFor="iv-t">Pre-assigned team</label>
                 <select id="iv-t" className={`form-select ${errors.teamId ? 'is-invalid' : ''}`} value={form.teamId} onChange={set('teamId')}>
-                  {state.teams.map((t) => <option key={t.id} value={t.id}>{t.name}{t.id === team.id ? ' (my team)' : ''}</option>)}
+                  {(isLead ? state.teams : [team]).map((t) => <option key={t.id} value={t.id}>{t.name}{t.id === team.id ? ' (my team)' : ''}</option>)}
                 </select>
                 <div className="form-text">The invitee will be onboarded to this team after approval.</div></div>
               <div><label className="form-label" htmlFor="iv-m">Message (optional)</label><textarea id="iv-m" rows={3} className="form-control" value={form.message} onChange={set('message')} /></div>

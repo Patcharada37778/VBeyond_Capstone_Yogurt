@@ -27,7 +27,7 @@ Use the quick sign-in buttons on the login page, or the **Demo role switcher** i
 | Prospective Agent | Nutnicha Rungroj |
 | Active Agent | Somchai Prasertsuk (AG-1001) |
 | Team Lead | Kanokwan Thongdee (AG-1002, Team Alpha) |
-| Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications, onboarding, renewals, teams, announcements and FAQ |
+| Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications (with fixed document slots), agent list, onboarding, renewals, teams, announcements and FAQ |
 
 Other entry points on the login page:
 - **First sign-in for migrated agents** — try `LG-20417` or `yupin.c@vbeyond-agent.co.th`

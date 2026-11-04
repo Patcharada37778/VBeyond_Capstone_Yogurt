@@ -4,7 +4,7 @@ import { logAction, notify, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
 import { EmptyState, PageHeader, StatusBadge, Tabs } from '../../components/common';
 import { Modal } from '../../components/modals/Modal';
-import DocumentReview from './DocumentReview';
+import DocumentReview, { isVerifiable } from './DocumentReview';
 import { addYears, fmtDate, fmtDateTime } from '../../utils/format';
 
 export default function ApplicationDetail() {
@@ -26,17 +26,12 @@ export default function ApplicationDetail() {
   const canApprove = can('applications', 'approve');
   const canEdit = can('applications', 'edit');
   const canDocs = can('documents', 'edit') || canEdit;
-  const reviewerName = state.admins.find((a) => a.id === app.reviewer)?.name;
   const team = state.teams.find((t) => t.id === app.preferredTeamId);
-  const unverified = app.documents.filter((d) => d.status !== 'Verified');
+  const verifiable = app.documents.filter(isVerifiable);
+  const unverified = verifiable.filter((d) => d.status !== 'Verified');
   const openClar = app.clarifications.find((c) => !c.response);
 
   const openModal = (m) => { setMsg(''); setError(''); setMarkDocs([]); setModal(m); };
-
-  const assignToMe = () => {
-    mutate((d) => { const a = d.applications.find((x) => x.id === id); a.reviewer = user.id; a.timeline.push({ at: new Date().toISOString(), text: `Assigned to reviewer ${user.name}`, by: user.name }); logAction(d, user, 'Assigned application to self', id); });
-    toast('Application assigned to you.');
-  };
 
   const approve = () => {
     const agentId = `AG-${state.counters.agent}`;
@@ -44,7 +39,7 @@ export default function ApplicationDetail() {
     mutate((d) => {
       d.counters.agent++;
       const a = d.applications.find((x) => x.id === id);
-      a.status = 'Approved'; a.agentId = agentId; a.decisionNote = msg.trim() || 'Approved'; a.reviewer = a.reviewer || user.id;
+      a.status = 'Approved'; a.agentId = agentId; a.decisionNote = msg.trim() || 'Approved';
       a.timeline.push({ at: now, text: `Application approved — agent ID ${agentId} generated`, by: user.name });
       d.agents.push({
         id: agentId, firstName: a.personal.firstName, lastName: a.personal.lastName, email: a.personal.email.toLowerCase(), phone: a.personal.phone, lineId: '',
@@ -67,7 +62,7 @@ export default function ApplicationDetail() {
     if (msg.trim().length < 10) return setError('Enter a rejection reason (at least 10 characters). It will be shared with the applicant.');
     mutate((d) => {
       const a = d.applications.find((x) => x.id === id);
-      a.status = 'Rejected'; a.decisionNote = msg.trim(); a.reviewer = a.reviewer || user.id;
+      a.status = 'Rejected'; a.decisionNote = msg.trim();
       a.timeline.push({ at: new Date().toISOString(), text: `Application rejected — ${msg.trim()}`, by: user.name });
       if (a.invitationId) { const inv = d.invitations.find((i) => i.id === a.invitationId); if (inv) inv.status = 'Cancelled'; }
       notify(d, `applicant:${a.userKey}`, { category: 'Registration updates', title: 'Your registration was not approved', body: msg.trim(), link: '/my-application' });
@@ -81,7 +76,7 @@ export default function ApplicationDetail() {
     if (msg.trim().length < 10) return setError('Explain what information is missing (at least 10 characters).');
     mutate((d) => {
       const a = d.applications.find((x) => x.id === id);
-      a.status = 'Clarification Required'; a.reviewer = a.reviewer || user.id;
+      a.status = 'Clarification Required';
       a.clarifications.push({ id: `CL-${a.clarifications.length + 1}`, message: msg.trim(), by: user.name, at: new Date().toISOString(), response: '', respondedAt: null });
       markDocs.forEach((docId) => { const doc = a.documents.find((x) => x.id === docId); doc.status = 'Requires Replacement'; doc.comment = doc.comment || msg.trim(); doc.history.push({ at: new Date().toISOString(), text: `Marked Requires Replacement by ${user.name}` }); });
       a.timeline.push({ at: new Date().toISOString(), text: 'Clarification requested', by: user.name });
@@ -97,17 +92,15 @@ export default function ApplicationDetail() {
       <PageHeader title={name} subtitle={`${app.id} · submitted ${fmtDateTime(app.submittedAt)}`}
         crumbs={[{ label: 'Agent Team Management' }, { label: 'Applications', to: '/applications' }, { label: app.id }]}
         actions={open && <>
-          {!app.reviewer && canEdit && <button className="btn btn-light" onClick={assignToMe}><i className="bi bi-person-check me-1" />Assign to me</button>}
           {canEdit && <button className="btn btn-outline-primary" onClick={() => openModal('clarify')}><i className="bi bi-question-diamond me-1" />Request clarification</button>}
           {canApprove && <button className="btn btn-outline-danger" onClick={() => openModal('reject')}><i className="bi bi-x-circle me-1" />Reject</button>}
           {canApprove && <button className="btn btn-success" onClick={() => openModal('approve')}><i className="bi bi-check-circle me-1" />Approve</button>}
         </>} />
 
       <div className="row g-3 mb-3">
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Status</div><div className="mt-1"><StatusBadge status={app.status} /></div></div></div></div>
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Reviewer</div><div className="fw-semibold mt-1">{reviewerName || 'Unassigned'}</div></div></div></div>
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Documents verified</div><div className="fw-semibold mt-1">{app.documents.length - unverified.length} / {app.documents.length}</div></div></div></div>
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">{app.agentId ? 'Agent ID' : 'Invited team'}</div><div className="fw-semibold mt-1">{app.agentId ? <Link to={`/agents/${app.agentId}`}>{app.agentId}</Link> : team?.name || '—'}</div></div></div></div>
+        <div className="col-md-4 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Status</div><div className="mt-1"><StatusBadge status={app.status} /></div></div></div></div>
+        <div className="col-md-4 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Documents verified</div><div className="fw-semibold mt-1">{verifiable.length - unverified.length} / {verifiable.length}</div></div></div></div>
+        <div className="col-md-4 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">{app.agentId ? 'Agent ID' : 'Invited team'}</div><div className="fw-semibold mt-1">{app.agentId ? <Link to={`/agents/${app.agentId}`}>{app.agentId}</Link> : team?.name || '—'}</div></div></div></div>
       </div>
 
       {app.status === 'Resubmitted' && <div className="alert alert-brand"><i className="bi bi-arrow-repeat me-2" />The applicant resubmitted this application{app.resubmitNote ? `: "${app.resubmitNote}"` : '.'} Review the updated documents and responses.</div>}
@@ -178,9 +171,9 @@ export default function ApplicationDetail() {
         <label className="form-label required" htmlFor="cl-n">What information is missing?</label>
         <textarea id="cl-n" rows={4} className={`form-control ${error ? 'is-invalid' : ''}`} value={msg} onChange={(e) => { setMsg(e.target.value); setError(''); }} placeholder="e.g. Please upload a clearer copy of your ID card — the expiry date is not readable." />
         {error && <div className="invalid-feedback">{error}</div>}
-        {app.documents.length > 0 && <>
+        {verifiable.length > 0 && <>
           <div className="form-label mt-3">Mark documents that need replacement (optional)</div>
-          {app.documents.map((d) => (
+          {verifiable.map((d) => (
             <div className="form-check" key={d.id}>
               <input id={`md-${d.id}`} className="form-check-input" type="checkbox" checked={markDocs.includes(d.id)} onChange={(e) => setMarkDocs(e.target.checked ? [...markDocs, d.id] : markDocs.filter((x) => x !== d.id))} />
               <label className="form-check-label small" htmlFor={`md-${d.id}`}>{d.type} — {d.fileName}</label>

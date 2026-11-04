@@ -23,7 +23,6 @@ import TeamHierarchy from './pages/team-lead/TeamHierarchy';
 
 import Applications from './pages/applications/Applications';
 import ApplicationDetail from './pages/applications/ApplicationDetail';
-import Documents from './pages/applications/Documents';
 
 import AgentDirectory from './pages/agent-manager/AgentDirectory';
 import AgentDetail from './pages/agent-manager/AgentDetail';
@@ -31,7 +30,6 @@ import Teams from './pages/agent-manager/Teams';
 import Onboarding from './pages/agent-manager/Onboarding';
 import Renewals from './pages/agent-manager/Renewals';
 import AgentStatus from './pages/agent-manager/AgentStatus';
-import InvitationsAdmin from './pages/agent-manager/InvitationsAdmin';
 
 import FaqManage from './pages/support/FaqManage';
 
@@ -64,11 +62,9 @@ export default function App() {
 
         <Route path="/applications" element={<Applications />} />
         <Route path="/applications/:id" element={<ApplicationDetail />} />
-        <Route path="/documents" element={<Documents />} />
         <Route path="/agents" element={<AgentDirectory />} />
         <Route path="/agents/:id" element={<AgentDetail />} />
         <Route path="/teams" element={<Teams />} />
-        <Route path="/invitations" element={<InvitationsAdmin />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/renewals" element={<Renewals />} />
         <Route path="/agent-status" element={<AgentStatus />} />

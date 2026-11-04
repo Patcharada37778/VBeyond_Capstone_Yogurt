@@ -157,7 +157,9 @@ function AgentBlocks({ user }) {
 function AgentDashboard({ user }) {
   return (
     <>
-      <Greeting user={user} subtitle={`Agent ID ${user.agent.id}${user.agent.migrated ? ' · migrated from the legacy system' : ''}`} />
+      <Greeting user={user} subtitle={`Agent ID ${user.agent.id}${user.agent.migrated ? ' · migrated from the legacy system' : ''}`}>
+        {user.agent.teamId && <Link to="/team/invitations" className="btn btn-light"><i className="bi bi-person-plus me-1" />Invite someone</Link>}
+      </Greeting>
       <AgentAnnouncements />
       <AgentBlocks user={user} />
     </>

@@ -12,7 +12,7 @@ export default function Help({ embedded = false }) {
   const [q, setQ] = useState(params.get('q') || '');
   const [cat, setCat] = useState('All');
   const [openFaq, setOpenFaq] = useState(null);
-  const faqs = state.faqs.filter((f) => f.published && (cat === 'All' || f.category === cat) && (!q || `${f.q} ${f.a}`.toLowerCase().includes(q.toLowerCase())));
+  const faqs = state.faqs.filter((f) => (cat === 'All' || f.category === cat) && (!q || `${f.q} ${f.a}`.toLowerCase().includes(q.toLowerCase())));
 
   return (
     <>

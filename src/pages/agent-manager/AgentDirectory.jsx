@@ -34,7 +34,7 @@ export default function AgentDirectory() {
 
   return (
     <>
-      <PageHeader title="Agent Directory" subtitle="View agent information and contact details." crumbs={[{ label: 'Agent Team Management' }, { label: 'Agent Directory' }]}
+      <PageHeader title="Agent List" subtitle="View agent information and contact details." crumbs={[{ label: 'Agent Team Management' }, { label: 'Agent List' }]}
         actions={<button className="btn btn-outline-primary" onClick={exportCsv}><i className="bi bi-download me-1" />Export CSV</button>} />
       {!sensitive && <div className="alert alert-light border small"><i className="bi bi-shield-lock me-1" />Contact details are partially hidden for your role.</div>}
       <div className="card">

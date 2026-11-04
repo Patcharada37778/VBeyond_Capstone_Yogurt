@@ -172,7 +172,7 @@ function app({ id, first, last, email, phone, daysAgo, status, reviewer = null, 
 function makeApplications() {
   const list = [
     app({ id: 'APP-2026-0141', first: 'Supansa', last: 'Meechai', email: 'supansa.m@gmail.com', phone: '081-552-1934', daysAgo: 1, status: 'Pending Review',
-      docs: [doc('D1', 'Identification document', 'national_id_supansa.pdf', 1), doc('D2', 'Professional certificate', 'treba_certificate.pdf', 1), doc('D3', 'House registration', 'house_registration.jpg', 1)] }),
+      docs: [doc('D1', 'Identification document', 'national_id_supansa.pdf', 1), doc('D2', 'Professional certificate', 'treba_certificate.pdf', 1), doc('D3', 'Other supporting document', 'house_registration.jpg', 1)] }),
     app({ id: 'APP-2026-0140', first: 'Krit', last: 'Phanomwan', email: 'krit.phanom@outlook.com', phone: '089-114-7720', daysAgo: 2, status: 'Pending Review', reviewer: 'ADM-02',
       docs: [doc('D1', 'Identification document', 'id_card_krit.png', 2, 'Verified'), doc('D2', 'Professional certificate', 'broker_course_cert.pdf', 2)] }),
     app({ id: 'APP-2026-0139', first: 'Lalita', last: 'Suwan', email: 'lalita.suwan@gmail.com', phone: '086-430-2281', daysAgo: 4, status: 'Clarification Required', reviewer: 'ADM-02',
@@ -273,7 +273,7 @@ const FAQS = [
   { id: 'FAQ-06', category: 'Membership', q: 'When should I renew my membership?', a: 'You can renew from 90 days before your membership expires. Renewal is free — you only need a completed PDPA refresher certificate.', published: true, updatedAt: daysFromNow(-12) },
   { id: 'FAQ-07', category: 'Membership', q: 'What happens if my membership expires?', a: 'Expired agents cannot reserve units or receive new leads. Existing deals are preserved and followed up by your team lead until you renew.', published: true, updatedAt: daysFromNow(-8) },
   { id: 'FAQ-08', category: 'Account', q: 'I was an agent in the old system. Do I need to register again?', a: 'No. Use "First sign-in for migrated agents" on the login page with your registered email or legacy agent ID.', published: true, updatedAt: daysFromNow(-10) },
-  { id: 'FAQ-09', category: 'Commission', q: 'When are commissions paid?', a: 'Commissions are paid on the 25th of the month after the buyer completes the ownership transfer.', published: false, updatedAt: daysFromNow(-2) },
+  { id: 'FAQ-09', category: 'Commission', q: 'When are commissions paid?', a: 'Commissions are paid on the 25th of the month after the buyer completes the ownership transfer.', published: true, updatedAt: daysFromNow(-2) },
 ];
 
 
