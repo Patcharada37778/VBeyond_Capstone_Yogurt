@@ -159,7 +159,7 @@ function app({ id, first, last, email, phone, daysAgo, status, reviewer = null, 
     status,
     submittedAt,
     reviewer,
-    invitationId: null,
+    referredBy: null,
     preferredTeamId: null,
     clarifications: [],
     agentId: null,
@@ -279,14 +279,6 @@ const FAQS = [
 
 
 
-const INVITATIONS = [
-  { id: 'INV-0412', name: 'Thanaporn Kaewta', email: 'thanaporn.k@gmail.com', phone: '086-221-4410', message: 'We would love to have you on Team Alpha!', teamId: 'T-ALP', invitedBy: 'AG-1002', sentAt: daysFromNow(-2, 10), expiresAt: daysFromNow(12), status: 'Pending', applicationId: null },
-  { id: 'INV-0411', name: 'Weerapong Sangthong', email: 'weerapong.s@gmail.com', phone: '089-310-7782', message: '', teamId: 'T-ALP', invitedBy: 'AG-1002', sentAt: daysFromNow(-6, 15), expiresAt: daysFromNow(8), status: 'Registration In Progress', applicationId: null },
-  { id: 'INV-0410', name: 'Natthapong Srisuk', email: 'natthapong.sri@vbeyond-agent.co.th', phone: '085-117-9902', message: 'Join us for the Sukhumvit launches.', teamId: 'T-ALP', invitedBy: 'AG-1002', sentAt: daysFromNow(-100), expiresAt: daysFromNow(-86), status: 'Approved', applicationId: 'APP-2026-0130' },
-  { id: 'INV-0409', name: 'Rungnapa Ditsa', email: 'rungnapa.d@gmail.com', phone: '081-447-3365', message: '', teamId: 'T-ALP', invitedBy: 'AG-1002', sentAt: daysFromNow(-40), expiresAt: daysFromNow(-26), status: 'Expired', applicationId: null },
-  { id: 'INV-0408', name: 'Kriangsak Mool', email: 'kriangsak.m@gmail.com', phone: '082-990-1123', message: '', teamId: 'T-BRV', invitedBy: 'AG-1010', sentAt: daysFromNow(-4), expiresAt: daysFromNow(10), status: 'Pending', applicationId: null },
-  { id: 'INV-0407', name: 'Sasithorn Lee', email: 'sasithorn.lee@gmail.com', phone: '090-554-2201', message: '', teamId: 'T-DLT', invitedBy: 'AG-1030', sentAt: daysFromNow(-9), expiresAt: daysFromNow(5), status: 'Cancelled', applicationId: null },
-];
 
 const RENEWALS = [
   { id: 'REN-0091', agentId: 'AG-1011', requestedAt: daysFromNow(-3, 11), period: '1 year', status: 'Pending Review',
@@ -314,7 +306,6 @@ const TRANSFER_REQUESTS = [
 function makeNotifications() {
   return [
     { id: 'N-2', to: ['allAgents'], category: 'Company announcements', title: 'New announcement: Q4 commission structure update', body: 'Revised commission tiers for condominium sales.', link: '/announcements?open=AN-031', at: daysFromNow(-1, 9), readBy: [] },
-    { id: 'N-4', to: ['agent:AG-1002'], category: 'Team invitations', title: 'Weerapong Sangthong opened your invitation', body: 'Registration is in progress for Team Alpha.', link: '/team/invitations', at: daysFromNow(-5, 11), readBy: [] },
     { id: 'N-5', to: ['agent:AG-1002'], category: 'Team assignment', title: 'New team member: Natthapong Srisuk', body: 'Natthapong Srisuk (AG-1006) joined Team Alpha.', link: '/team/members?highlight=AG-1006', at: daysFromNow(-92), readBy: ['agent:AG-1002'] },
     { id: 'N-6', to: ['role:agentManager'], category: 'Registration updates', title: 'New application: Supansa Meechai', body: 'APP-2026-0141 is waiting for review.', link: '/applications/APP-2026-0141', at: daysFromNow(-1, 9), readBy: [] },
     { id: 'N-7', to: ['role:agentManager'], category: 'Registration updates', title: 'Application resubmitted: Phakphum Yodsri', body: 'APP-2026-0138 was resubmitted with a new ID document.', link: '/applications/APP-2026-0138', at: daysFromNow(-1, 16), readBy: [] },
@@ -350,7 +341,6 @@ export function createSeed() {
     applications: makeApplications(),
     announcements: ANNOUNCEMENTS,
     faqs: FAQS,
-    invitations: INVITATIONS,
     renewals: RENEWALS,
     transferRequests: TRANSFER_REQUESTS,
     notifications: makeNotifications(),

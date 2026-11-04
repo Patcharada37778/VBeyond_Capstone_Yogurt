@@ -88,7 +88,7 @@ export default function Onboarding() {
                   <Link to={`/agents/${selected.id}`} className="btn btn-sm btn-light">View details</Link>
                 </div>
                 {!selected.activated && <div className="alert alert-light border small"><i className="bi bi-info-circle me-1" />This agent hasn't completed first login yet. You can still onboard them now.</div>}
-                {invitedTeamId && <div className="alert alert-brand small"><i className="bi bi-envelope-paper me-1" />Invited by a team lead and pre-assigned to <strong>{state.teams.find((t) => t.id === invitedTeamId)?.name}</strong>.</div>}
+                {invitedTeamId && <div className="alert alert-brand small"><i className="bi bi-envelope-paper me-1" />Joined through an invitation link — pre-assigned to <strong>{state.teams.find((t) => t.id === invitedTeamId)?.name}</strong>.</div>}
                 <div className="row g-3">
                   <div className="col-md-6">
                     <label className="form-label required" htmlFor="ob-t">Team</label>

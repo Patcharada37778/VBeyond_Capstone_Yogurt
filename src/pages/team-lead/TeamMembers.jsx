@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 import { Avatar, EmptyState, PageHeader, SearchInput, Select, StatusBadge } from '../../components/common';
 import DataTable from '../../components/tables/DataTable';
 import { AgentProfileModal } from '../../components/dashboard/AgentShared';
+import InviteButton from '../../components/InviteButton';
 import { daysUntil, fmtDate, fullName } from '../../utils/format';
 
 export default function TeamMembers() {
@@ -24,7 +25,7 @@ export default function TeamMembers() {
   return (
     <>
       <PageHeader title={`${team.name} — Members`} subtitle={`${team.region} · ${team.focus}`} crumbs={[{ label: 'My Team' }, { label: 'Team Members' }]}
-        actions={<Link to="/team/invitations" className="btn btn-primary"><i className="bi bi-person-plus me-1" />Invite someone</Link>} />
+        actions={<InviteButton className="btn btn-primary" />} />
 
       {newJoin && newJoin.teamId === team.id && (
         <div className="alert alert-success d-flex flex-wrap gap-3 align-items-center">

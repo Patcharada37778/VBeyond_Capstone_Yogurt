@@ -49,7 +49,7 @@ export default function ApplicationDetail() {
         onboardedAt: null, teamHistory: [], preferredTeamId: a.preferredTeamId, sourceAppId: a.id,
         activity: [{ at: now, text: `Agent account created after registration approval (${a.id}) by ${user.name}` }],
       });
-      if (a.invitationId) { const inv = d.invitations.find((i) => i.id === a.invitationId); if (inv) { inv.status = 'Approved'; notify(d, `agent:${inv.invitedBy}`, { category: 'Team invitations', title: `${a.personal.firstName} ${a.personal.lastName}'s registration was approved`, body: 'The Agent Manager will onboard them to your team.', link: '/team/invitations' }); } }
+      if (a.referredBy) notify(d, `agent:${a.referredBy}`, { category: 'Team invitations', title: `${a.personal.firstName} ${a.personal.lastName}'s registration was approved`, body: 'The Agent Manager will onboard them to the team.', link: '/dashboard' });
       notify(d, `applicant:${a.userKey}`, { category: 'Registration approval', title: 'Your registration has been approved!', body: `Your agent ID is ${agentId}. Proceed to first login to activate your account.`, link: '/my-application' });
       notify(d, 'role:agentManager', { category: 'Registration updates', title: `Approved agent ready for onboarding: ${a.personal.firstName} ${a.personal.lastName}`, body: `${agentId}${a.preferredTeamId ? ` · invited to ${d.teams.find((t) => t.id === a.preferredTeamId)?.name}` : ''}`, link: `/onboarding?agent=${agentId}` });
       logAction(d, user, 'Approved application', `${id} → ${agentId}`);
@@ -64,7 +64,6 @@ export default function ApplicationDetail() {
       const a = d.applications.find((x) => x.id === id);
       a.status = 'Rejected'; a.decisionNote = msg.trim();
       a.timeline.push({ at: new Date().toISOString(), text: `Application rejected — ${msg.trim()}`, by: user.name });
-      if (a.invitationId) { const inv = d.invitations.find((i) => i.id === a.invitationId); if (inv) inv.status = 'Cancelled'; }
       notify(d, `applicant:${a.userKey}`, { category: 'Registration updates', title: 'Your registration was not approved', body: msg.trim(), link: '/my-application' });
       logAction(d, user, 'Rejected application', id);
     });

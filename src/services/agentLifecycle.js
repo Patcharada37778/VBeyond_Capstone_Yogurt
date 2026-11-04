@@ -12,7 +12,7 @@ export function statusConsequences(agent, target, state) {
   const n = deals.length;
   const c = {
     Suspended: [
-      'Agent cannot access restricted agent functions (renewal, invitations, new reservations).',
+      'Agent cannot access restricted agent functions (renewal, inviting others, new reservations).',
       `${n} existing deal record${n === 1 ? '' : 's'} will be preserved.`,
       `Team assignment is kept${team ? ` (${team.name})` : ''} and recorded in history.`,
       `${n} active deal${n === 1 ? '' : 's'} will be flagged for manager review.`,
@@ -134,9 +134,9 @@ export function onboardAgent(d, user, agentId, { teamId, onboardDate, notes, rep
   a.teamId = teamId; a.onboardedAt = at; a.onboardNotes = notes; a.reportsTo = reportsTo || team.leadId;
   a.teamHistory.push({ teamId, from: at, to: null, reason: 'Initial onboarding' });
   a.activity.unshift({ at: new Date().toISOString(), text: `Onboarded to ${team.name} by ${user.name}${notes ? ` — ${notes}` : ''}` });
-  const inv = d.invitations.find((i) => i.email.toLowerCase() === a.email.toLowerCase() && i.status === 'Approved');
+  const referred = d.applications.find((x) => x.agentId === a.id)?.referredBy === team.leadId;
   notify(d, `agent:${agentId}`, { category: 'Team assignment', title: `Welcome to ${team.name}!`, body: `You've been assigned to ${team.name}${team.leadId ? ` led by ${fullName(d.agents.find((x) => x.id === team.leadId))}` : ''}.`, link: '/profile' });
-  if (team.leadId) notify(d, `agent:${team.leadId}`, { category: 'Team assignment', title: `New team member: ${fullName(a)}`, body: `${a.id} joined ${team.name} · onboarding date ${new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}${inv ? ' (your invitation)' : ''}.`, link: `/team/members?highlight=${a.id}` });
+  if (team.leadId) notify(d, `agent:${team.leadId}`, { category: 'Team assignment', title: `New team member: ${fullName(a)}`, body: `${a.id} joined ${team.name} · onboarding date ${new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}${referred ? ' (joined with your invitation link)' : ''}.`, link: `/team/members?highlight=${a.id}` });
   if (reportsTo && reportsTo !== team.leadId) notify(d, `agent:${reportsTo}`, { category: 'Team assignment', title: `${fullName(a)} will report to you`, body: `New ${team.name} member onboarded by ${user.name}.`, link: `/team/members?highlight=${a.id}` });
   logAction(d, user, 'Onboarded agent to team', `${fullName(a)} (${a.id}) → ${team.name}`);
 }

@@ -25,7 +25,6 @@ export const MODULES = [
   { key: 'faq', label: 'FAQ Management' },
   { key: 'agents', label: 'Agent List' },
   { key: 'teams', label: 'Team Management' },
-  { key: 'invitations', label: 'Invitations' },
   { key: 'onboarding', label: 'Onboarding' },
   { key: 'renewals', label: 'Membership Renewals' },
   { key: 'agentStatus', label: 'Agent Status Management' },
@@ -63,7 +62,6 @@ export const NAV = [
   ] },
   { group: 'My Team', items: [
     { path: '/team/members', label: 'Team Members', icon: 'bi-people', roles: ['teamLead'] },
-    { path: '/team/invitations', label: 'Invitations', icon: 'bi-envelope-paper', roles: ['teamLead', 'agent'], hideFor: ['agent'] },
     { path: '/team/hierarchy', label: 'Team Hierarchy', icon: 'bi-diagram-3', roles: ['teamLead'] },
   ] },
   { group: 'Common Services', items: [

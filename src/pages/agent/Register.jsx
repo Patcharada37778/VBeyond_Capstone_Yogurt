@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import AuthShell from '../../components/layout/AuthShell';
 import { logAction, notify, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
 import { FilePicker, PageHeader } from '../../components/common';
@@ -14,32 +15,60 @@ export const DOC_SLOTS = [
 
 const STEPS = ['Personal information', 'Professional information', 'Documents', 'Review & submit'];
 
-// Public invitation link: /join?invite=INV-xxxx
-function JoinInvite() {
-  const { state, mutate, signIn } = useStore();
+// Public invitation link copied by an agent: /join?team=T-ALP&ref=AG-1001
+function JoinPage() {
+  const { state, signIn } = useStore();
   const [params] = useSearchParams();
-  const inv = state.invitations.find((i) => i.id === params.get('invite'));
-  useEffect(() => {
-    if (!inv || !['Pending', 'Accepted', 'Registration In Progress'].includes(inv.status)) return;
-    if (inv.status === 'Pending') {
-      mutate((d) => {
-        const x = d.invitations.find((i) => i.id === inv.id);
-        x.status = 'Accepted';
-        notify(d, `agent:${x.invitedBy}`, { category: 'Team invitations', title: `${x.name} accepted your invitation`, body: 'They have opened the registration form.', link: '/team/invitations' });
-      });
-    }
-    signIn({ applicantKey: inv.email.toLowerCase(), name: inv.name });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  if (!inv) return <Navigate to="/login" replace />;
-  if (!['Pending', 'Accepted', 'Registration In Progress'].includes(inv.status)) {
-    return <div className="container py-5 text-center"><h1 className="h4">This invitation is {inv.status.toLowerCase()}</h1><Link to="/login">Go to sign in</Link></div>;
-  }
-  if (state.session?.applicantKey !== inv.email.toLowerCase()) return <div className="p-5 text-center text-muted">Opening your invitation…</div>;
-  return <Navigate to={`/register?invite=${inv.id}`} replace />;
+  const navigate = useNavigate();
+  const team = state.teams.find((t) => t.id === params.get('team'));
+  const inviter = state.agents.find((a) => a.id === params.get('ref'));
+  const [form, setForm] = useState({ name: '', email: '' });
+  const [errors, setErrors] = useState({});
+
+  const start = (e) => {
+    e.preventDefault();
+    const er = {};
+    const email = form.email.trim().toLowerCase();
+    if (form.name.trim().split(' ').filter(Boolean).length < 2) er.name = 'Enter your first and last name.';
+    if (!isEmail(email)) er.email = 'Enter a valid email address.';
+    else if (state.agents.some((a) => a.email.toLowerCase() === email)) er.email = 'This email already belongs to a VBEYOND agent. Please sign in instead.';
+    setErrors(er);
+    if (Object.keys(er).length) return;
+    signIn({ applicantKey: email, name: form.name.trim(), inviteTeam: team?.id || null, inviteRef: inviter?.id || null });
+    navigate('/register', { replace: true });
+  };
+
+  return (
+    <AuthShell title="Join VBEYOND as an agent" subtitle="Register online — your team is already reserved for you.">
+      {team ? (
+        <div className="alert alert-brand d-flex gap-3 align-items-center">
+          <i className="bi bi-envelope-paper-heart fs-3" aria-hidden="true" />
+          <div><strong>{inviter ? `${inviter.firstName} ${inviter.lastName}` : 'A VBEYOND agent'} invited you to join {team.name}</strong>
+            <div className="small">{team.region}</div></div>
+        </div>
+      ) : <div className="alert alert-warning small">This invitation link is not valid. You can still register as an agent.</div>}
+      <h2 className="mb-1">Start your registration</h2>
+      <p className="text-muted">Enter your name and email to continue to the registration form.</p>
+      <form onSubmit={start} noValidate className="d-grid gap-3">
+        <div>
+          <label className="form-label required" htmlFor="jn-n">Full name</label>
+          <input id="jn-n" className={`form-control form-control-lg ${errors.name ? 'is-invalid' : ''}`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="First and last name" />
+          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+        </div>
+        <div>
+          <label className="form-label required" htmlFor="jn-e">Email</label>
+          <input id="jn-e" className={`form-control form-control-lg ${errors.email ? 'is-invalid' : ''}`} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@example.com" />
+          {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+        </div>
+        <button className="btn btn-primary btn-lg">Continue to registration</button>
+        <Link to="/login" className="small text-center">Already have an account? Sign in</Link>
+      </form>
+    </AuthShell>
+  );
 }
 
 export default function Register({ publicMode }) {
-  if (publicMode) return <JoinInvite />;
+  if (publicMode) return <JoinPage />;
   return <RegisterWizard />;
 }
 
@@ -48,11 +77,11 @@ function RegisterWizard() {
   const toast = useToast();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const invite = state.invitations.find((i) => i.id === params.get('invite')) || state.invitations.find((i) => i.email.toLowerCase() === user.email && ['Pending', 'Accepted', 'Registration In Progress'].includes(i.status));
-  const invitedTeam = state.teams.find((t) => t.id === invite?.teamId);
-  const inviter = state.agents.find((a) => a.id === invite?.invitedBy);
+  // Team and referrer come from the invitation link (kept in the session after /join).
+  const invitedTeam = state.teams.find((t) => t.id === (params.get('team') || state.session?.inviteTeam));
+  const inviter = state.agents.find((a) => a.id === (params.get('ref') || state.session?.inviteRef));
   const draftKey = `arms-reg-draft-v2-${user.email}`;
-  const [nameFirst, ...nameRest] = (invite?.name || user.name || '').split(' ');
+  const [nameFirst, ...nameRest] = (user.name || '').split(' ');
 
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
@@ -61,7 +90,7 @@ function RegisterWizard() {
     try { const saved = JSON.parse(localStorage.getItem(draftKey)); if (saved) return saved; } catch { /* no draft */ }
     return {
       // Demo: every field is pre-filled so the registration can be submitted in a few clicks.
-      firstName: nameFirst || 'Nutnicha', lastName: nameRest.join(' ') || 'Rungroj', email: user.email, phone: invite?.phone || '089-456-7123', dob: '1996-04-12', nationality: 'Thai',
+      firstName: nameFirst || 'Nutnicha', lastName: nameRest.join(' ') || 'Rungroj', email: user.email, phone: '089-456-7123', dob: '1996-04-12', nationality: 'Thai',
       address: '88/5 Sukhumvit Soi 50, Phra Khanong, Khlong Toei, Bangkok 10260',
       experience: '3 years selling condominiums with a residential brokerage in Bangkok', occupation: 'Property Sales Executive',
       qualifications: 'Bachelor of Business Administration (Marketing), Chulalongkorn University; Real Estate Agent Course (TREBA)',
@@ -76,15 +105,6 @@ function RegisterWizard() {
   });
 
   useEffect(() => { try { localStorage.setItem(draftKey, JSON.stringify(form)); } catch { /* ignore */ } }, [form, draftKey]);
-  useEffect(() => {
-    if (invite && ['Pending', 'Accepted'].includes(invite.status) && !user.application) {
-      mutate((d) => {
-        const x = d.invitations.find((i) => i.id === invite.id);
-        x.status = 'Registration In Progress';
-        notify(d, `agent:${x.invitedBy}`, { category: 'Team invitations', title: `${x.name} started registration`, body: `Invitation ${x.id} is now Registration In Progress.`, link: '/team/invitations' });
-      });
-    }
-  }, [invite, mutate]);
 
   if (user.application && !['Rejected'].includes(user.application.status)) {
     return (
@@ -135,14 +155,10 @@ function RegisterWizard() {
         personal: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), email: form.email.trim(), phone: form.phone.trim(), dob: form.dob, nationality: form.nationality, address: form.address.trim() },
         professional: { experience: form.experience.trim(), occupation: form.occupation.trim(), qualifications: form.qualifications.trim(), referrer: form.referrer.trim() },
         documents: DOC_SLOTS.filter((s) => form.docs[s.key]).map((s, i) => ({ id: `D${i + 1}`, type: s.type, fileName: form.docs[s.key].fileName, size: form.docs[s.key].size, uploadedAt: now, status: 'Pending', comment: '', history: [{ at: now, text: `Uploaded ${form.docs[s.key].fileName}` }] })),
-        status: 'Pending Review', submittedAt: now, reviewer: null, invitationId: invite?.id || null, preferredTeamId: invite?.teamId || null,
+        status: 'Pending Review', submittedAt: now, preferredTeamId: invitedTeam?.id || null, referredBy: inviter?.id || null,
         clarifications: [], agentId: null, decisionNote: '', timeline: [{ at: now, text: 'Application submitted', by: `${form.firstName} ${form.lastName}` }],
       });
-      if (invite) {
-        const inv = d.invitations.find((i) => i.id === invite.id);
-        inv.status = 'Registration In Progress'; inv.applicationId = id;
-        notify(d, `agent:${inv.invitedBy}`, { category: 'Team invitations', title: `${form.firstName} ${form.lastName} submitted their registration`, body: `Application ${id} for ${invitedTeam?.name}.`, link: '/team/invitations' });
-      }
+      if (inviter) notify(d, `agent:${inviter.id}`, { category: 'Team invitations', title: `${form.firstName} ${form.lastName} registered with your invitation link`, body: `Application ${id}${invitedTeam ? ` for ${invitedTeam.name}` : ''}.`, link: '/dashboard' });
       notify(d, 'role:agentManager', { category: 'Registration updates', title: `New application: ${form.firstName} ${form.lastName}`, body: `${id} is waiting for review.`, link: `/applications/${id}` });
       notify(d, `applicant:${user.email}`, { category: 'Registration updates', title: 'Application submitted', body: `Your reference number is ${id}. Status: Pending Review.`, link: '/my-application' });
       logAction(d, { name: `${form.firstName} ${form.lastName}`, role: 'prospect' }, 'Submitted agent application', id);
@@ -158,10 +174,10 @@ function RegisterWizard() {
   return (
     <>
       <PageHeader title="Register to Become an Agent" subtitle="Complete the four steps below. Your progress is saved automatically on this device." crumbs={[{ label: 'Agent Registration' }]} />
-      {invite && (
+      {invitedTeam && (
         <div className="alert alert-brand d-flex gap-3 align-items-center">
           <i className="bi bi-envelope-paper-heart fs-3" />
-          <div><strong>You were invited to join {invitedTeam?.name}</strong> by {inviter ? `${inviter.firstName} ${inviter.lastName}` : 'a team lead'}.
+          <div><strong>You were invited to join {invitedTeam?.name}</strong> by {inviter ? `${inviter.firstName} ${inviter.lastName}` : 'a VBEYOND agent'}.
             <div className="small">Your team is pre-assigned — after approval you'll be onboarded directly to {invitedTeam?.name}.</div></div>
         </div>
       )}

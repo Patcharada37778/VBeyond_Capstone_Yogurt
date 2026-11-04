@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AnnouncementBanner, AnnouncementDetailModal } from '../../components/dashboard/AnnouncementBanner';
 import { RENEWAL_REMINDER_DAYS, useStore } from '../../context/StoreContext';
 import { Avatar, StatCard, StatusBadge, TONES } from '../../components/common';
-import { effectiveInviteStatus } from '../../components/dashboard/AgentShared';
+import InviteButton from '../../components/InviteButton';
 import { ApplicationProgress } from '../agent/MyApplication';
 import { CommissionBars, commissionSummary, monthlyCommission } from '../../components/dashboard/Commission';
 import Help from '../agent/Help';
@@ -49,7 +49,6 @@ function ProspectDashboard({ user }) {
   const { state } = useStore();
   const app = user.application;
   const agent = state.agents.find((a) => a.id === app?.agentId);
-  const invites = state.invitations.filter((i) => i.email.toLowerCase() === user.email && ['Pending', 'Accepted', 'Registration In Progress'].includes(effectiveInviteStatus(i)));
   const openClar = app?.clarifications.find((c) => !c.response);
   return (
     <>
@@ -57,13 +56,6 @@ function ProspectDashboard({ user }) {
         {!app && <Link to="/register" className="btn btn-light btn-lg">Start registration</Link>}
         {app?.status === 'Approved' && !agent?.activated && <Link to={`/first-login?app=${app.id}`} className="btn btn-light btn-lg">Proceed to first login</Link>}
       </Greeting>
-      {invites.map((i) => (
-        <div key={i.id} className="alert alert-brand d-flex flex-wrap gap-3 align-items-center">
-          <i className="bi bi-envelope-paper-heart fs-3" />
-          <div className="flex-grow-1"><strong>{fullName(state.agents.find((a) => a.id === i.invitedBy))} invited you to join {state.teams.find((t) => t.id === i.teamId)?.name}</strong><div className="small">Your team is pre-assigned. Expires {fmtDate(i.expiresAt)}.</div></div>
-          {!app && <Link to={`/register?invite=${i.id}`} className="btn btn-primary">Open registration</Link>}
-        </div>
-      ))}
       {openClar && <div className="alert alert-warning d-flex flex-wrap gap-3 align-items-center"><i className="bi bi-question-diamond fs-4" /><div className="flex-grow-1"><strong>Action needed:</strong> {openClar.message}</div><Link to="/my-application" className="btn btn-warning">Respond now</Link></div>}
       <div className="d-grid gap-3">
           <div className="card">
@@ -130,7 +122,7 @@ function AgentBlocks({ user }) {
   const deals = state.deals.filter((d) => d.agentId === a.id);
   return (
     <>
-      {a.status === 'Suspended' && <div className="alert alert-warning"><i className="bi bi-pause-circle me-2" /><strong>Your account is suspended.</strong> Restricted functions such as renewal, invitations and new reservations are unavailable. Your existing deals are preserved and under manager review. {a.statusNote?.reason && `Reason: ${a.statusNote.reason}.`}</div>}
+      {a.status === 'Suspended' && <div className="alert alert-warning"><i className="bi bi-pause-circle me-2" /><strong>Your account is suspended.</strong> Restricted functions such as renewal, inviting others and new reservations are unavailable. Your existing deals are preserved and under manager review. {a.statusNote?.reason && `Reason: ${a.statusNote.reason}.`}</div>}
       {a.status === 'Expired' && <div className="alert alert-danger d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-calendar-x me-1" /><span className="flex-grow-1"><strong>Your membership has expired.</strong> Membership-dependent functions are restricted until you renew.</span><Link to="/renewal" className="btn btn-sm btn-danger">Renew now</Link></div>}
       {!a.teamId && a.status === 'Active' && <div className="alert alert-brand"><i className="bi bi-hourglass-split me-2" /><strong>Welcome aboard!</strong> An Agent Manager will assign you to a team shortly — you'll get a notification.</div>}
       {a.status === 'Active' && left <= RENEWAL_REMINDER_DAYS && !renewal && <div className="alert alert-warning d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-bell me-1" /><span className="flex-grow-1"><strong>Renewal reminder:</strong> your membership expires in {left} days ({fmtDate(a.membershipExpiry)}).</span><Link to="/renewal" className="btn btn-sm btn-warning">Start renewal</Link></div>}
@@ -158,7 +150,7 @@ function AgentDashboard({ user }) {
   return (
     <>
       <Greeting user={user} subtitle={`Agent ID ${user.agent.id}${user.agent.migrated ? ' · migrated from the legacy system' : ''}`}>
-        {user.agent.teamId && <Link to="/team/invitations" className="btn btn-light"><i className="bi bi-person-plus me-1" />Invite someone</Link>}
+        <InviteButton />
       </Greeting>
       <AgentAnnouncements />
       <AgentBlocks user={user} />
@@ -171,19 +163,18 @@ function TeamLeadDashboard({ user }) {
   const { state } = useStore();
   const team = user.ledTeam;
   const members = state.agents.filter((a) => a.teamId === team.id);
-  const invites = state.invitations.filter((i) => i.invitedBy === user.agent.id);
-  const pendingInv = invites.filter((i) => ['Pending', 'Accepted', 'Registration In Progress'].includes(effectiveInviteStatus(i)));
+  const referrals = state.applications.filter((x) => x.referredBy === user.agent.id && !['Approved', 'Rejected'].includes(x.status));
   const recent = members.filter((a) => a.onboardedAt && Date.now() - new Date(a.teamHistory[a.teamHistory.length - 1]?.from || a.onboardedAt) < 45 * 86400000 && a.id !== user.agent.id);
   return (
     <>
       <Greeting user={user} subtitle={`Team lead of ${team.name} · ${team.region}`}>
-        <Link to="/team/invitations" className="btn btn-light"><i className="bi bi-person-plus me-1" />Invite someone</Link>
+        <InviteButton />
       </Greeting>
       <AgentAnnouncements />
       <div className="row g-3 mb-3">
         <div className="col-6 col-lg-3"><StatCard icon="bi-people" label="Total team members" value={members.length} to="/team/members" /></div>
         <div className="col-6 col-lg-3"><StatCard icon="bi-check-circle" label="Active agents" value={members.filter((a) => a.status === 'Active').length} tone={TONES.green} to="/team/members" /></div>
-        <div className="col-6 col-lg-3"><StatCard icon="bi-envelope-paper" label="Pending invitations" value={pendingInv.length} tone={TONES.amber} to="/team/invitations" /></div>
+        <div className="col-6 col-lg-3"><StatCard icon="bi-envelope-paper" label="Invited applicants in review" value={referrals.length} tone={TONES.amber} /></div>
         <div className="col-6 col-lg-3"><StatCard icon="bi-person-plus" label="Recently joined" value={recent.length} tone={TONES.blue} to="/team/members" /></div>
       </div>
       <div className="row g-3 mb-3">

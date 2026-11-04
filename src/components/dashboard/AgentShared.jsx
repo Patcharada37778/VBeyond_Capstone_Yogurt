@@ -75,7 +75,3 @@ export function OrgChart({ teams, agents, onlyTeamId, onSelect }) {
     </div>
   );
 }
-
-export function effectiveInviteStatus(inv) {
-  return inv.status === 'Pending' && new Date(inv.expiresAt) < new Date() ? 'Expired' : inv.status;
-}
