@@ -52,7 +52,7 @@ export default function ContactSupport() {
       const now = new Date().toISOString();
       d.threads.unshift({ id, subject: form.subject.trim(), relatedIssue: form.relatedIssue, fromKey: user.keys[0], fromName: user.name, status: 'Open', createdAt: now,
         messages: [{ by: user.name, staff: false, at: now, text: form.message.trim() }] });
-      notify(d, 'role:support', { category: 'System issue updates', title: `New message from ${user.name}`, body: form.subject.trim(), link: `/support-inbox?open=${id}` });
+      notify(d, 'role:agentManager', { category: 'System issue updates', title: `New message from ${user.name}`, body: form.subject.trim(), link: `/support-inbox?open=${id}` });
       logAction(d, user, 'Contacted support', id);
     });
     autoAck(id);
@@ -66,7 +66,7 @@ export default function ContactSupport() {
       const t = d.threads.find((x) => x.id === activeId);
       t.messages.push({ by: user.name, staff: false, at: new Date().toISOString(), text: reply.trim() });
       t.status = 'Open';
-      notify(d, 'role:support', { category: 'System issue updates', title: `${user.name} replied`, body: t.subject, link: `/support-inbox?open=${t.id}` });
+      notify(d, 'role:agentManager', { category: 'System issue updates', title: `${user.name} replied`, body: t.subject, link: `/support-inbox?open=${t.id}` });
     });
     setReply('');
   };

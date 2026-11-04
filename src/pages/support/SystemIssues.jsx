@@ -22,7 +22,7 @@ export default function SystemIssues() {
   const [text, setText] = useState('');
   const canResolve = can('issues', 'approve');
   const canEdit = can('issues', 'edit');
-  const supportStaff = state.admins.filter((a) => a.role === 'support' && a.status === 'Active');
+  const staff = state.admins.filter((a) => a.role === 'agentManager' && a.status === 'Active');
   const t = state.issues.find((x) => x.id === params.get('open'));
 
   const rows = state.issues.filter((x) => (status === 'All' || (status === 'Active' ? !['Resolved', 'Closed'].includes(x.status) : x.status === status))
@@ -69,7 +69,7 @@ export default function SystemIssues() {
           <SearchInput value={q} onChange={setQ} placeholder="Search tickets" className="flex-grow-1" />
           <Select value={status} onChange={setStatus} label="Status" options={[{ value: 'Active', label: 'Active (not resolved)' }, { value: 'All', label: 'All statuses' }, ...ISSUE_STATUSES]} />
           <Select value={priority} onChange={setPriority} label="Priority" options={[{ value: 'All', label: 'All priorities' }, ...PRIORITIES]} />
-          <Select value={assignee} onChange={setAssignee} label="Assignee" options={[{ value: 'All', label: 'Anyone' }, { value: 'none', label: 'Unassigned' }, ...supportStaff.map((a) => ({ value: a.id, label: a.name }))]} />
+          <Select value={assignee} onChange={setAssignee} label="Assignee" options={[{ value: 'All', label: 'Anyone' }, { value: 'none', label: 'Unassigned' }, ...staff.map((a) => ({ value: a.id, label: a.name }))]} />
         </div>
         <DataTable rows={rows} onRowClick={(x) => setParams({ open: x.id })} initialSort={{ key: 'createdAt', dir: 'desc' }} empty="No tickets match"
           columns={[
@@ -114,7 +114,7 @@ export default function SystemIssues() {
               <div>
                 <label className="form-label" htmlFor="is-a">Assigned administrator</label>
                 <select id="is-a" className="form-select" value={t.assignedTo || ''} disabled={!canResolve} onChange={(e) => assign(e.target.value)}>
-                  <option value="">Unassigned</option>{supportStaff.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  <option value="">Unassigned</option>{staff.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
               <div>

@@ -40,7 +40,7 @@ export default function SupportInbox() {
       d.issues.unshift({ id, title: t.subject, category: 'Other', description: t.messages.map((m) => `${m.by}: ${m.text}`).join('\n'), priority: 'Medium', status: 'Open', reporterKey: t.fromKey, reporterName: t.fromName, contact: '', createdAt: now, assignedTo: null, escalated: true, attachment: null, notes: [{ at: now, by: user.name, text: `Escalated from support message ${t.id}` }], responses: [], userReplies: [], history: [{ at: now, text: `Escalated to IT from ${t.id}`, by: user.name }] });
       t.relatedIssue = id;
       t.messages.push({ by: user.name, staff: true, at: now, text: `I've logged this as support ticket ${id}. You can track it under Report a Problem.` });
-      notify(d, 'role:support', { category: 'System issue updates', title: `New ticket from message: ${t.subject}`, body: `${id} from ${t.fromName}`, link: `/system-issues?open=${id}` });
+      notify(d, 'role:agentManager', { category: 'System issue updates', title: `New ticket from message: ${t.subject}`, body: `${id} from ${t.fromName}`, link: `/system-issues?open=${id}` });
       notify(d, t.fromKey, { category: 'System issue updates', title: `Your message was logged as ticket ${id}`, body: t.subject, link: '/report-problem' });
       logAction(d, user, 'Converted support message to ticket', `${t.id} → ${id}`);
     });

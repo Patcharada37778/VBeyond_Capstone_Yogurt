@@ -53,7 +53,7 @@ export default function ReportProblem() {
       d.issues.unshift({ id, title: form.title.trim(), category: form.category, description: form.description.trim(), priority: form.priority, status: 'Open',
         reporterKey: user.keys[0], reporterName: user.name, contact: form.contact.trim(), createdAt: new Date().toISOString(), assignedTo: null, escalated: false,
         attachment: form.attachment?.fileName || null, notes: [], responses: [], userReplies: [], history: [{ at: new Date().toISOString(), text: 'Ticket created', by: user.name }] });
-      notify(d, ['role:support', 'role:support'], { category: 'System issue updates', title: `New ticket: ${form.title.trim()}`, body: `${id} reported by ${user.name} · ${form.priority} priority`, link: `/system-issues?open=${id}` });
+      notify(d, 'role:agentManager', { category: 'System issue updates', title: `New ticket: ${form.title.trim()}`, body: `${id} reported by ${user.name} · ${form.priority} priority`, link: `/system-issues?open=${id}` });
       notify(d, user.keys[0], { category: 'System issue updates', title: `Your ticket ${id} was received`, body: 'The support team will review it shortly.', link: '/report-problem' });
       logAction(d, user, 'Reported system problem', id);
     });
@@ -68,7 +68,7 @@ export default function ReportProblem() {
       t.userReplies = [...(t.userReplies || []), { at: new Date().toISOString(), by: user.name, text: reply.trim() }];
       if (t.status === 'Waiting for User') { t.status = 'In Progress'; t.history.push({ at: new Date().toISOString(), text: 'Reporter replied — status changed to In Progress', by: user.name }); }
       else t.history.push({ at: new Date().toISOString(), text: 'Reporter added a reply', by: user.name });
-      notify(d, t.assignedTo ? [`admin:${t.assignedTo}`] : ['role:support'], { category: 'System issue updates', title: `${user.name} replied on ${t.id}`, body: reply.trim().slice(0, 80), link: `/system-issues?open=${t.id}` });
+      notify(d, t.assignedTo ? [`admin:${t.assignedTo}`] : ['role:agentManager'], { category: 'System issue updates', title: `${user.name} replied on ${t.id}`, body: reply.trim().slice(0, 80), link: `/system-issues?open=${t.id}` });
     });
     setReply('');
     toast('Reply sent to the support team.');

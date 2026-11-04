@@ -6,10 +6,9 @@ export const ROLES = {
   agent: { label: 'Active Agent', portal: 'agent' },
   teamLead: { label: 'Team Lead', portal: 'agent' },
   agentManager: { label: 'Agent Manager', portal: 'backoffice' },
-  support: { label: 'Support Staff', portal: 'backoffice' },
 };
 
-export const BACKOFFICE_ROLES = ['agentManager', 'support'];
+export const BACKOFFICE_ROLES = ['agentManager'];
 export const ACTIONS = [
   { key: 'view', label: 'View' },
   { key: 'create', label: 'Create' },
@@ -46,8 +45,7 @@ function build(map) {
 }
 
 export const DEFAULT_PERMISSIONS = {
-  agentManager: build({ announcements: 'VCED', applications: 'VCEA', documents: 'VEA', agents: 'VCE', teams: 'VCEA', invitations: 'VE', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA' }),
-  support: build({ announcements: 'V', issues: 'VCEAD', messages: 'VCE', inquiries: 'VCE', faq: 'VCED', agents: 'V', applications: 'V' }),
+  agentManager: build({ announcements: 'VCED', issues: 'VCEAD', messages: 'VCE', applications: 'VCEA', documents: 'VEA', inquiries: 'VCE', faq: 'VCED', agents: 'VCE', teams: 'VCEA', invitations: 'VE', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA' }),
 };
 
 // Navigation. `hideFor` = roles that can open the page but don't see it in the sidebar.
@@ -75,7 +73,7 @@ export const NAV = [
     { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', roles: ['prospect', 'agent', 'teamLead'], module: 'announcements', hideFor: ['prospect'] },
     { path: '/notifications', label: 'Notifications', icon: 'bi-bell', roles: 'all', badge: 'notifications', hideFor: ['prospect'] },
     { path: '/report-problem', label: 'Report a Problem', icon: 'bi-bug', roles: 'all', hideFor: ['prospect'] },
-    { path: '/contact-support', label: 'Contact Support', icon: 'bi-headset', roles: ['prospect', 'agent', 'teamLead', 'agentManager'], hideFor: ['prospect'] },
+    { path: '/contact-support', label: 'Contact Support', icon: 'bi-headset', roles: ['prospect', 'agent', 'teamLead'], hideFor: ['prospect'] },
     { path: '/support-inbox', label: 'Support Messages', icon: 'bi-chat-left-text', module: 'messages' },
     { path: '/system-issues', label: 'System Issues', icon: 'bi-tools', module: 'issues' },
   ] },

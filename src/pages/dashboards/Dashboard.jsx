@@ -234,6 +234,9 @@ function AgentManagerDashboard({ user }) {
   const transfers = state.transferRequests.filter((r) => r.status === 'Pending');
   const renewals = state.renewals.filter((r) => !['Approved', 'Rejected'].includes(r.status));
   const toReview = state.applications.filter((a) => ['Pending Review', 'Resubmitted'].includes(a.status));
+  const unanswered = state.inquiries.filter((i) => i.status === 'Open' && !i.messages[i.messages.length - 1].staff);
+  const openTickets = state.issues.filter((t) => !['Resolved', 'Closed'].includes(t.status));
+  const openMsgs = state.threads.filter((t) => t.status === 'Open');
   const max = Math.max(...state.teams.map((t) => ag.filter((a) => a.teamId === t.id).length), 1);
   return (
     <>
@@ -244,6 +247,12 @@ function AgentManagerDashboard({ user }) {
         <div className="col-6 col-xl"><StatCard icon="bi-pause-circle" label="Suspended" value={by('Suspended')} tone={TONES.amber} to="/agent-status" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-calendar-x" label="Expired" value={by('Expired')} tone={TONES.red} to="/agent-status" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-box-arrow-right" label="Resigned" value={by('Resigned')} tone={TONES.gray} to="/agent-status" /></div>
+      </div>
+      <div className="row g-3 mb-3">
+        <div className="col-6 col-xl-3"><StatCard icon="bi-inboxes" label="Applications to review" value={toReview.length} tone={TONES.blue} to="/applications" /></div>
+        <div className="col-6 col-xl-3"><StatCard icon="bi-chat-square-dots" label="Unanswered inquiries" value={unanswered.length} tone={TONES.amber} to="/inquiries" /></div>
+        <div className="col-6 col-xl-3"><StatCard icon="bi-tools" label="Open support tickets" value={openTickets.length} tone={TONES.purple} to="/system-issues" /></div>
+        <div className="col-6 col-xl-3"><StatCard icon="bi-chat-left-text" label="Open messages" value={openMsgs.length} tone={TONES.gray} to="/support-inbox" /></div>
       </div>
       <div className="row g-3">
         <div className="col-lg-5">
@@ -283,47 +292,9 @@ function AgentManagerDashboard({ user }) {
   );
 }
 
-/* ----------------------------- Support ----------------------------- */
-function SupportDashboard({ user }) {
-  const { state, can } = useStore();
-  const openInq = state.inquiries.filter((i) => i.status === 'Open');
-  const unanswered = openInq.filter((i) => !i.messages[i.messages.length - 1].staff);
-  const openTickets = state.issues.filter((t) => !['Resolved', 'Closed'].includes(t.status));
-  const recentTickets = [...state.issues].sort((a, b) => new Date(b.history[b.history.length - 1].at) - new Date(a.history[a.history.length - 1].at)).slice(0, 5);
-  const openMsgs = state.threads.filter((t) => t.status === 'Open');
-  return (
-    <>
-      <Greeting user={user} subtitle={`${unanswered.length} unanswered inquiry(ies) · ${openMsgs.length} open message(s)`}><Link to="/inquiries" className="btn btn-light">Answer inquiries</Link></Greeting>
-      <div className="row g-3 mb-3">
-        <div className="col-6 col-xl-3"><StatCard icon="bi-chat-square-dots" label="Open inquiries" value={openInq.length} to="/inquiries" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-exclamation-circle" label="Unanswered inquiries" value={unanswered.length} tone={TONES.amber} to="/inquiries" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-tools" label="Open support tickets" value={openTickets.length} tone={TONES.blue} to={can('issues', 'view') ? '/system-issues' : undefined} /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-chat-left-text" label="Open messages" value={openMsgs.length} tone={TONES.purple} to={can('messages', 'view') ? '/support-inbox' : undefined} /></div>
-      </div>
-      <div className="row g-3">
-        <div className="col-lg-6">
-          <div className="card h-100"><div className="card-header d-flex justify-content-between"><span>Unanswered inquiries</span><Link to="/inquiries" className="small fw-normal">View all</Link></div>
-            <div className="list-group list-group-flush">{unanswered.map((i) => <Link key={i.id} to={`/inquiries?open=${i.id}`} className="list-group-item list-group-item-action"><div className="d-flex justify-content-between"><span className="fw-medium">{i.subject}</span><small className="text-muted">{timeAgo(i.createdAt)}</small></div><small className="text-muted">{i.name}</small></Link>)}
-              {!unanswered.length && <div className="list-group-item small text-muted">All inquiries answered.</div>}</div>
-          </div>
-        </div>
-        <div className="col-lg-6">
-          <div className="card mb-3"><div className="card-header">Recently updated tickets</div>
-            <div className="list-group list-group-flush">{recentTickets.map((t) => <Link key={t.id} to={`/system-issues?open=${t.id}`} className="list-group-item list-group-item-action d-flex justify-content-between gap-2"><span className="text-truncate"><strong>{t.id}</strong> {t.title}</span><StatusBadge status={t.status} /></Link>)}</div>
-          </div>
-          <div className="card"><div className="card-body d-flex justify-content-between align-items-center gap-2 flex-wrap">
-            <div><div className="fw-semibold">FAQ management</div><small className="text-muted">{state.faqs.filter((f) => f.published).length} published · {state.faqs.filter((f) => !f.published).length} unpublished</small></div>
-            <Link to="/faq" className="btn btn-outline-primary"><i className="bi bi-journal-text me-1" />Manage FAQ</Link>
-          </div></div>
-        </div>
-      </div>
-    </>
-  );
-}
-
 export default function Dashboard() {
   const { user } = useStore();
-  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard, support: SupportDashboard };
+  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard };
   const C = map[user.role];
   return <C user={user} />;
 }

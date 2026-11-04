@@ -39,7 +39,7 @@ export default function Help({ embedded = false }) {
       const now = new Date().toISOString();
       d.inquiries.unshift({ id, name: user.name, email: user.email, userKey: user.email, subject: form.subject.trim(), category: form.category, status: 'Open', assignedTo: null, createdAt: now, applicationId: user.application?.id || null,
         messages: [{ by: user.name, staff: false, at: now, text: form.message.trim() }] });
-      notify(d, ['role:support', 'role:agentManager'], { category: 'Registration updates', title: `New applicant inquiry from ${user.name}`, body: form.subject.trim(), link: `/inquiries?open=${id}` });
+      notify(d, 'role:agentManager', { category: 'Registration updates', title: `New applicant inquiry from ${user.name}`, body: form.subject.trim(), link: `/inquiries?open=${id}` });
       logAction(d, user, 'Submitted applicant inquiry', id);
     });
     setAsk(false); setForm({ subject: '', category: 'Registration', message: '' });
@@ -52,7 +52,7 @@ export default function Help({ embedded = false }) {
       const i = d.inquiries.find((x) => x.id === viewId);
       i.messages.push({ by: user.name, staff: false, at: new Date().toISOString(), text: reply.trim() });
       i.status = 'Open';
-      notify(d, i.assignedTo ? [`admin:${i.assignedTo}`] : ['role:support'], { category: 'Registration updates', title: `${user.name} replied to ${i.id}`, body: i.subject, link: `/inquiries?open=${i.id}` });
+      notify(d, i.assignedTo ? [`admin:${i.assignedTo}`] : ['role:agentManager'], { category: 'Registration updates', title: `${user.name} replied to ${i.id}`, body: i.subject, link: `/inquiries?open=${i.id}` });
     });
     setReply('');
   };
