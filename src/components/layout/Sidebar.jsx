@@ -1,12 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { useMyNotifications, useStore } from '../../context/StoreContext';
-import { navForRole, ROLES } from '../../utils/permissions';
+import { navForRole } from '../../utils/permissions';
 
 export default function Sidebar() {
   const { user, state } = useStore();
   const { unread } = useMyNotifications();
   const groups = navForRole(user.role, state.permissions);
-  const isBackoffice = ROLES[user.role].portal === 'backoffice';
 
   return (
     <aside className="sidebar" aria-label="Main navigation">
@@ -16,9 +15,6 @@ export default function Sidebar() {
         <span className="show-collapsed font-brand fw-semibold text-white">VB</span>
       </div>
       <nav>
-        <div className="px-2 pb-2 hide-collapsed">
-          <div className="small" style={{ color: '#8fb0b1' }}>{isBackoffice ? 'Back-office Portal' : 'Agent Portal'}</div>
-        </div>
         {groups.map((g) => (
           <div key={g.group}>
             <div className="nav-group"><span>{g.group}</span></div>
