@@ -115,11 +115,8 @@ function CommissionOverview({ agentId }) {
 function AgentBlocks({ user }) {
   const { state } = useStore();
   const a = user.agent;
-  const team = state.teams.find((t) => t.id === a.teamId);
-  const lead = state.agents.find((x) => x.id === team?.leadId);
   const left = daysUntil(a.membershipExpiry);
   const renewal = state.renewals.find((r) => r.agentId === a.id && !['Approved', 'Rejected'].includes(r.status));
-  const deals = state.deals.filter((d) => d.agentId === a.id);
   return (
     <>
       {a.status === 'Suspended' && <div className="alert alert-warning"><i className="bi bi-pause-circle me-2" /><strong>Your account is suspended.</strong> Restricted functions such as renewal, inviting others and new reservations are unavailable. Your existing deals are preserved and under manager review. {a.statusNote?.reason && `Reason: ${a.statusNote.reason}.`}</div>}
@@ -127,21 +124,7 @@ function AgentBlocks({ user }) {
       {!a.teamId && a.status === 'Active' && <div className="alert alert-brand"><i className="bi bi-hourglass-split me-2" /><strong>Welcome aboard!</strong> An Agent Manager will assign you to a team shortly — you'll get a notification.</div>}
       {a.status === 'Active' && left <= RENEWAL_REMINDER_DAYS && !renewal && <div className="alert alert-warning d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-bell me-1" /><span className="flex-grow-1"><strong>Renewal reminder:</strong> your membership expires in {left} days ({fmtDate(a.membershipExpiry)}).</span><Link to="/renewal" className="btn btn-sm btn-warning">Start renewal</Link></div>}
       {renewal && <div className="alert alert-brand d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-arrow-repeat me-1" /><span className="flex-grow-1">Renewal {renewal.id}: <strong>{renewal.status}</strong></span><Link to="/renewal" className="btn btn-sm btn-outline-primary">View renewal</Link></div>}
-      <div className="row g-3 mb-3">
-        <div className="col-6 col-lg-3"><div className="card h-100"><div className="card-body"><div className="small text-muted">Membership status</div><div className="mt-2"><StatusBadge status={a.status} /></div></div></div></div>
-        <div className="col-6 col-lg-3"><div className="card h-100"><div className="card-body"><div className="small text-muted">Membership expiry</div><div className={`fw-semibold mt-1 ${left < 60 ? 'text-danger' : ''}`}>{fmtDate(a.membershipExpiry)}</div><small className="text-muted">{left > 0 ? `${left} days left` : 'Expired'}</small></div></div></div>
-        <div className="col-6 col-lg-3"><div className="card h-100"><div className="card-body"><div className="small text-muted">Current team</div><div className="fw-semibold mt-1">{team?.name || 'Pending onboarding'}</div><small className="text-muted">{team?.region}</small></div></div></div>
-        <div className="col-6 col-lg-3"><div className="card h-100"><div className="card-body"><div className="small text-muted">Team lead</div>
-          {lead ? <div className="d-flex align-items-center gap-2 mt-1"><Avatar name={fullName(lead)} color={lead.avatarColor} photo={lead.photo} size={28} /><div className="lh-sm"><div className="fw-semibold small">{lead.id === a.id ? 'You' : fullName(lead)}</div><small className="text-muted">{lead.phone}</small></div></div> : <div className="fw-semibold mt-1">—</div>}
-        </div></div></div>
-      </div>
       <CommissionOverview agentId={a.id} />
-      {deals.length > 0 && (
-        <div className="card mb-3"><div className="card-header">My active deals</div><div className="table-responsive"><table className="table mb-0">
-          <thead><tr><th>Deal</th><th>Project</th><th>Stage</th><th>Value</th><th /></tr></thead>
-          <tbody>{deals.map((d) => <tr key={d.id}><td>{d.id}</td><td>{d.project}<div className="small text-muted">Unit {d.unit}</div></td><td>{d.stage}</td><td>{fmtMoney(d.value)}</td><td>{d.flag && <span className="status-badge sb-amber">{d.flag}</span>}</td></tr>)}</tbody>
-        </table></div></div>
-      )}
     </>
   );
 }
@@ -205,7 +188,6 @@ function TeamLeadDashboard({ user }) {
           </div>
         </div>
       </div>
-      <h2 className="h5 mt-4 mb-3">My agent account</h2>
       <AgentBlocks user={user} />
     </>
   );
