@@ -110,7 +110,6 @@ function ProfileMenu() {
   // Extra demo accounts created during the session (e.g. newly approved agents, other admins).
   const personaIds = PERSONAS.map((p) => p.session.agentId || p.session.adminId).filter(Boolean);
   const extraAgents = state.agents.filter((a) => a.activated && !personaIds.includes(a.id) && (a.sourceDemo || a.migrated));
-  const extraAdmins = state.admins.filter((a) => !personaIds.includes(a.id) && a.status === 'Active');
 
   return (
     <>
@@ -146,17 +145,11 @@ function ProfileMenu() {
                 <span className="lh-sm"><span className="d-block">{p.label}</span><small className="text-muted">{p.name}</small></span>
               </button>
             ))}
-            {(extraAgents.length > 0 || extraAdmins.length > 0) && <div className="px-2 pt-2 small-caps">Other demo accounts</div>}
+            {extraAgents.length > 0 && <div className="px-2 pt-2 small-caps">Other demo accounts</div>}
             {extraAgents.map((a) => (
               <button key={a.id} data-close className={`vb-dropdown-item ${isCurrent({ agentId: a.id }) ? 'active' : ''}`} onClick={() => switchTo({ agentId: a.id }, fullName(a))}>
                 <i className="bi bi-person text-brand" aria-hidden="true" />
                 <span className="lh-sm"><span className="d-block">{fullName(a)}</span><small className="text-muted">Agent · {a.id}{a.migrated ? ' · migrated' : ''}</small></span>
-              </button>
-            ))}
-            {extraAdmins.map((a) => (
-              <button key={a.id} data-close className={`vb-dropdown-item ${isCurrent({ adminId: a.id }) ? 'active' : ''}`} onClick={() => switchTo({ adminId: a.id }, a.name)}>
-                <i className="bi bi-person-gear text-brand" aria-hidden="true" />
-                <span className="lh-sm"><span className="d-block">{a.name}</span><small className="text-muted">{ROLES[a.role].label}</small></span>
               </button>
             ))}
           </div>

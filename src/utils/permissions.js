@@ -5,7 +5,7 @@ export const ROLES = {
   prospect: { label: 'Prospective Agent', portal: 'agent' },
   agent: { label: 'Active Agent', portal: 'agent' },
   teamLead: { label: 'Team Lead', portal: 'agent' },
-  agentManager: { label: 'Agent Manager', portal: 'backoffice' },
+  agentManager: { label: 'Back-office Agent Manager', portal: 'backoffice' },
 };
 
 export const BACKOFFICE_ROLES = ['agentManager'];
