@@ -118,15 +118,15 @@ function RegisterWizard() {
 
   if (user.application && !['Rejected'].includes(user.application.status)) {
     return (
-      <>
+      <div className="my-application-page">
         <PageHeader title="Agent Registration" crumbs={[{ label: 'Agent Registration' }]} />
-        <div className="card"><div className="card-body text-center py-5">
+        <div className="card application-details-card"><div className="card-body text-center py-5">
           <i className="bi bi-file-earmark-check display-5 text-green" />
           <h2 className="h5 mt-2">You've already submitted an application</h2>
           <p className="text-muted">Reference <strong>{user.application.id}</strong> · submitted {fmtDate(user.application.submittedAt)}</p>
           <Link to="/my-application" className="btn btn-primary">Track my application</Link>
         </div></div>
-      </>
+      </div>
     );
   }
 
