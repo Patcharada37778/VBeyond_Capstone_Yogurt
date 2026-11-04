@@ -2,7 +2,7 @@
 
 A clickable, frontend-only prototype of the VBEYOND Agent Relationship Management System.
 It covers the full agent lifecycle: registration, compliance review, first login, team onboarding,
-membership renewal, commission overview, status changes, team transfers, and support.
+membership renewal, commission overview, status changes and team transfers. There is no chat: support is by email (info@vbeyond.co.th, shown in the dashboard footer).
 
 - React 19 + React Router + Bootstrap 5 + Bootstrap Icons (Vite)
 - No backend, database, real auth, or external APIs
@@ -27,7 +27,7 @@ Use the quick sign-in buttons on the login page, or the **Demo role switcher** i
 | Prospective Agent | Nutnicha Rungroj |
 | Active Agent | Somchai Prasertsuk (AG-1001) |
 | Team Lead | Kanokwan Thongdee (AG-1002, Team Alpha) |
-| Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications, onboarding, renewals, teams, inquiries, FAQ, support messages and reported problems |
+| Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications, onboarding, renewals, teams, announcements and FAQ |
 
 Other entry points on the login page:
 - **First sign-in for migrated agents** — try `LG-20417` or `yupin.c@vbeyond-agent.co.th`
@@ -48,8 +48,7 @@ Other entry points on the login page:
 8. Active Agent → dashboard shows announcement banners, renewal reminder (30 days before expiry) and overall commission → *My Commission* for the statement
 9. Active Agent → *Membership Renewal* → upload the PDPA certificate → submit (renewal is free)
 10. Agent Manager → *Membership Renewals* → verify documents → approve (expiry is extended)
-11. Any user → *Report a Problem* → Agent Manager → *System Issues* → assign → resolve → reporter is notified
-12. Agent Manager → *Announcements* → create a banner with or without an image
+11. Agent Manager → *Announcements* → create a banner with or without an image
 
 ## Project structure
 

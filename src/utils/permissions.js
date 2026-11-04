@@ -20,11 +20,8 @@ export const ACTIONS = [
 
 export const MODULES = [
   { key: 'announcements', label: 'Announcements & News' },
-  { key: 'issues', label: 'System Issues & Tickets' },
-  { key: 'messages', label: 'Support Messages' },
   { key: 'applications', label: 'Agent Applications' },
   { key: 'documents', label: 'Document Verification' },
-  { key: 'inquiries', label: 'Applicant Inquiries' },
   { key: 'faq', label: 'FAQ Management' },
   { key: 'agents', label: 'Agent Directory' },
   { key: 'teams', label: 'Team Management' },
@@ -45,7 +42,7 @@ function build(map) {
 }
 
 export const DEFAULT_PERMISSIONS = {
-  agentManager: build({ announcements: 'VCED', issues: 'VCEAD', messages: 'VCE', applications: 'VCEA', documents: 'VEA', inquiries: 'VCE', faq: 'VCED', agents: 'VCE', teams: 'VCEA', invitations: 'VE', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA' }),
+  agentManager: build({ announcements: 'VCED', applications: 'VCEA', documents: 'VEA', faq: 'VCED', agents: 'VCE', teams: 'VCEA', invitations: 'VE', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA' }),
 };
 
 // Navigation. `hideFor` = roles that can open the page but don't see it in the sidebar.
@@ -57,7 +54,7 @@ export const NAV = [
   { group: 'My Application', items: [
     { path: '/my-application', label: 'My Application', icon: 'bi-file-earmark-person', roles: ['prospect'] },
     { path: '/register', label: 'Agent Registration', icon: 'bi-pencil-square', roles: ['prospect'] },
-    { path: '/help', label: 'Help & Inquiries', icon: 'bi-question-circle', roles: ['prospect'], hideFor: ['prospect'] },
+    { path: '/help', label: 'FAQ', icon: 'bi-question-circle', roles: ['prospect'], hideFor: ['prospect'] },
   ] },
   { group: 'My Account', items: [
     { path: '/profile', label: 'My Profile', icon: 'bi-person-badge', roles: ['agent', 'teamLead'] },
@@ -72,14 +69,9 @@ export const NAV = [
   { group: 'Common Services', items: [
     { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', roles: ['prospect', 'agent', 'teamLead'], module: 'announcements', hideFor: ['prospect'] },
     { path: '/notifications', label: 'Notifications', icon: 'bi-bell', roles: 'all', badge: 'notifications', hideFor: ['prospect'] },
-    { path: '/report-problem', label: 'Report a Problem', icon: 'bi-bug', roles: 'all', hideFor: ['prospect'] },
-    { path: '/contact-support', label: 'Contact Support', icon: 'bi-headset', roles: ['prospect', 'agent', 'teamLead'], hideFor: ['prospect'] },
-    { path: '/support-inbox', label: 'Support Messages', icon: 'bi-chat-left-text', module: 'messages' },
-    { path: '/system-issues', label: 'System Issues', icon: 'bi-tools', module: 'issues' },
   ] },
   { group: 'Agent Team Management', items: [
     { path: '/applications', label: 'Agent Applications', icon: 'bi-inboxes', module: 'applications' },
-    { path: '/inquiries', label: 'Applicant Inquiries', icon: 'bi-chat-square-dots', module: 'inquiries' },
     { path: '/documents', label: 'Document Verification', icon: 'bi-file-earmark-check', module: 'documents' },
     { path: '/agents', label: 'Agent Directory', icon: 'bi-person-lines-fill', module: 'agents' },
     { path: '/teams', label: 'Team Management', icon: 'bi-diagram-3', module: 'teams' },

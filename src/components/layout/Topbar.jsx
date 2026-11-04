@@ -20,7 +20,6 @@ function useSearchIndex() {
     if (allow('/agents')) state.agents.filter((a) => a.activated).forEach((a) => out.push({ type: 'Agent', icon: 'bi-person', label: `${fullName(a)} · ${a.id}`, to: `/agents/${a.id}` }));
     if (user.role === 'teamLead' && user.ledTeam) state.agents.filter((a) => a.teamId === user.ledTeam.id).forEach((a) => out.push({ type: 'Team member', icon: 'bi-person', label: `${fullName(a)} · ${a.id}`, to: `/team/members?highlight=${a.id}` }));
     if (allow('/applications')) state.applications.forEach((a) => out.push({ type: 'Application', icon: 'bi-inboxes', label: `${a.id} · ${a.personal.firstName} ${a.personal.lastName}`, to: `/applications/${a.id}` }));
-    if (allow('/system-issues')) state.issues.forEach((t) => out.push({ type: 'Ticket', icon: 'bi-tools', label: `${t.id} · ${t.title}`, to: `/system-issues?open=${t.id}` }));
     if (allow('/announcements')) state.announcements.filter((a) => a.status === 'Published' || ROLES[user.role].portal === 'backoffice').forEach((a) => out.push({ type: 'Announcement', icon: 'bi-megaphone', label: a.title, to: `/announcements?open=${a.id}` }));
     if (allow('/help')) state.faqs.filter((f) => f.published).forEach((f) => out.push({ type: 'FAQ', icon: 'bi-question-circle', label: f.q, to: `/help?q=${encodeURIComponent(f.q.slice(0, 20))}` }));
     if (allow('/faq')) state.faqs.forEach((f) => out.push({ type: 'FAQ', icon: 'bi-journal-text', label: f.q, to: '/faq' }));
@@ -40,7 +39,7 @@ function GlobalSearch() {
   return (
     <div className="topbar-search d-none d-md-block" ref={ref} onBlur={(e) => { if (!ref.current.contains(e.relatedTarget)) setOpen(false); }}>
       <i className="bi bi-search" aria-hidden="true" />
-      <input className="form-control" type="search" placeholder="Search pages, agents, applications, tickets…" value={q} aria-label="Global search"
+      <input className="form-control" type="search" placeholder="Search pages, agents, applications…" value={q} aria-label="Global search"
         onChange={(e) => { setQ(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)}
         onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) go(results[0]); if (e.key === 'Escape') setOpen(false); }} />
       {open && q.trim().length >= 2 && (

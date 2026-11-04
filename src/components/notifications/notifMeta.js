@@ -7,7 +7,6 @@ export const NOTIF_CATEGORIES = [
   'Team assignment',
   'Team invitations',
   'Company announcements',
-  'System issue updates',
 ];
 
 export const NOTIF_ICON = {
@@ -19,5 +18,4 @@ export const NOTIF_ICON = {
   'Team assignment': 'bi-people',
   'Team invitations': 'bi-envelope-paper',
   'Company announcements': 'bi-megaphone',
-  'System issue updates': 'bi-tools',
 };

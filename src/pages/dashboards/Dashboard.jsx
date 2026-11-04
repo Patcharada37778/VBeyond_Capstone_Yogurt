@@ -234,9 +234,6 @@ function AgentManagerDashboard({ user }) {
   const transfers = state.transferRequests.filter((r) => r.status === 'Pending');
   const renewals = state.renewals.filter((r) => !['Approved', 'Rejected'].includes(r.status));
   const toReview = state.applications.filter((a) => ['Pending Review', 'Resubmitted'].includes(a.status));
-  const unanswered = state.inquiries.filter((i) => i.status === 'Open' && !i.messages[i.messages.length - 1].staff);
-  const openTickets = state.issues.filter((t) => !['Resolved', 'Closed'].includes(t.status));
-  const openMsgs = state.threads.filter((t) => t.status === 'Open');
   const max = Math.max(...state.teams.map((t) => ag.filter((a) => a.teamId === t.id).length), 1);
   return (
     <>
@@ -247,12 +244,6 @@ function AgentManagerDashboard({ user }) {
         <div className="col-6 col-xl"><StatCard icon="bi-pause-circle" label="Suspended" value={by('Suspended')} tone={TONES.amber} to="/agent-status" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-calendar-x" label="Expired" value={by('Expired')} tone={TONES.red} to="/agent-status" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-box-arrow-right" label="Resigned" value={by('Resigned')} tone={TONES.gray} to="/agent-status" /></div>
-      </div>
-      <div className="row g-3 mb-3">
-        <div className="col-6 col-xl-3"><StatCard icon="bi-inboxes" label="Applications to review" value={toReview.length} tone={TONES.blue} to="/applications" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-chat-square-dots" label="Unanswered inquiries" value={unanswered.length} tone={TONES.amber} to="/inquiries" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-tools" label="Open support tickets" value={openTickets.length} tone={TONES.purple} to="/system-issues" /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-chat-left-text" label="Open messages" value={openMsgs.length} tone={TONES.gray} to="/support-inbox" /></div>
       </div>
       <div className="row g-3">
         <div className="col-lg-5">
@@ -296,5 +287,13 @@ export default function Dashboard() {
   const { user } = useStore();
   const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard };
   const C = map[user.role];
-  return <C user={user} />;
+  return (
+    <>
+      <C user={user} />
+      <footer className="dash-footer">
+        <span className="fw-semibold"><i className="bi bi-headset me-2" aria-hidden="true" />Contact support</span>
+        <a href="mailto:info@vbeyond.co.th"><i className="bi bi-envelope me-1" aria-hidden="true" />info@vbeyond.co.th</a>
+      </footer>
+    </>
+  );
 }

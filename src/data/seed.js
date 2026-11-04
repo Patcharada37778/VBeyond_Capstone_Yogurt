@@ -252,7 +252,7 @@ const ANNOUNCEMENTS = [
     body: 'To stay compliant with the Personal Data Protection Act (PDPA), every agent must complete the online refresher module before the end of this month.\n\nThe module covers handling customer ID copies, sharing buyer information with banks, and secure use of messaging apps. Agents who do not complete the training may have membership renewal delayed.', readBy: ['agent:AG-1001'] },
   { id: 'AN-028', title: 'New ARMS agent portal is live', category: 'System', date: daysFromNow(-10), status: 'Published', author: 'Suchada Chaiyaporn',
     summary: 'The new Agent Relationship Management System replaces the legacy agent portal. Migrated agents must complete first sign-in.',
-    body: 'The ARMS portal is now the single place to manage your profile, renewals and team information.\n\nAgents migrated from the legacy system should use "First sign-in for migrated agents" on the login page with their registered email or legacy agent ID. Report any problems through Report a Problem in the portal.', readBy: ['agent:AG-1001', 'agent:AG-1002'] },
+    body: 'The ARMS portal is now the single place to manage your profile, renewals and team information.\n\nAgents migrated from the legacy system should use "First sign-in for migrated agents" on the login page with their registered email or legacy agent ID. For help, email info@vbeyond.co.th.', readBy: ['agent:AG-1001', 'agent:AG-1002'] },
   { id: 'AN-027', title: 'Year-end top agent awards — nomination period', category: 'Event', image: '/banners/top-agent-awards.svg', date: daysFromNow(-15), status: 'Published', author: 'Suchada Chaiyaporn',
     summary: 'Team leads can nominate agents for the year-end awards until the 30th.',
     body: 'Nominations are open for Top Closer, Rising Star and Customer Excellence. Team leads may nominate up to two agents per category. Winners will be announced at the year-end gala.', readBy: [] },
@@ -276,50 +276,8 @@ const FAQS = [
   { id: 'FAQ-09', category: 'Commission', q: 'When are commissions paid?', a: 'Commissions are paid on the 25th of the month after the buyer completes the ownership transfer.', published: false, updatedAt: daysFromNow(-2) },
 ];
 
-const INQUIRIES = [
-  { id: 'INQ-0218', name: 'Supansa Meechai', email: 'supansa.m@gmail.com', userKey: 'supansa.m@gmail.com', subject: 'Can I register without a broker certificate?', category: 'Registration', status: 'Open', assignedTo: null, createdAt: daysFromNow(-1, 15),
-    messages: [{ by: 'Supansa Meechai', staff: false, at: daysFromNow(-1, 15), text: 'I have three years of sales experience but no broker certificate yet. Can I still apply?' }] },
-  { id: 'INQ-0217', name: 'Lalita Suwan', email: 'lalita.suwan@gmail.com', userKey: 'lalita.suwan@gmail.com', subject: 'Clarification request — which ID copy?', category: 'Documents', status: 'Open', assignedTo: 'ADM-02', createdAt: daysFromNow(-2, 11),
-    messages: [{ by: 'Lalita Suwan', staff: false, at: daysFromNow(-2, 11), text: 'Should I upload both the front and back of my ID card, or only the front?' }] },
-  { id: 'INQ-0216', name: 'Krit Phanomwan', email: 'krit.phanom@outlook.com', userKey: 'krit.phanom@outlook.com', subject: 'Application status', category: 'Registration', status: 'Answered', assignedTo: 'ADM-02', createdAt: daysFromNow(-3, 9),
-    messages: [{ by: 'Krit Phanomwan', staff: false, at: daysFromNow(-3, 9), text: 'I submitted my application two days ago. Is there anything else I need to do?' }, { by: 'Suchada Chaiyaporn', staff: true, at: daysFromNow(-2, 10), text: 'Thank you, Krit. Your application is under review and no further action is needed right now. You will be notified within 3 business days.' }] },
-  { id: 'INQ-0215', name: 'Chalida Sripan', email: 'chalida.sp@gmail.com', userKey: 'chalida.sp@gmail.com', subject: 'Joining a specific team', category: 'Teams', status: 'Open', assignedTo: null, createdAt: daysFromNow(-5, 13),
-    messages: [{ by: 'Chalida Sripan', staff: false, at: daysFromNow(-5, 13), text: 'A friend of mine is in Team Charlie. Can I request to join the same team?' }] },
-  { id: 'INQ-0214', name: 'Benjamas Ruangsri', email: 'benjamas.r@hotmail.com', userKey: 'benjamas.r@hotmail.com', subject: 'Reapplying after rejection', category: 'Registration', status: 'Closed', assignedTo: 'ADM-02', createdAt: daysFromNow(-9, 16),
-    messages: [{ by: 'Benjamas Ruangsri', staff: false, at: daysFromNow(-9, 16), text: 'My application was rejected. Can I apply again?' }, { by: 'Suchada Chaiyaporn', staff: true, at: daysFromNow(-8, 10), text: 'Yes — you may reapply after 30 days with a verified professional certificate.' }] },
-];
 
-const ISSUES = [
-  { id: 'TCK-1088', title: 'Profile photo upload fails on mobile', category: 'Bug / Error', description: 'Uploading a profile photo from iPhone Safari shows a spinner forever. Works on desktop.', priority: 'Medium', status: 'Open',
-    reporterKey: 'agent:AG-1003', reporterName: 'Apinya Saetang', contact: 'apinya.sae@vbeyond-agent.co.th', createdAt: daysFromNow(-1, 16), assignedTo: null, escalated: false, attachment: 'screenshot_iphone.png',
-    notes: [], responses: [], history: [{ at: daysFromNow(-1, 16), text: 'Ticket created', by: 'Apinya Saetang' }] },
-  { id: 'TCK-1087', title: 'Renewal page times out on upload', category: 'Bug / Error', description: 'The renewal page timed out after I uploaded my PDPA certificate. Not sure if it went through.', priority: 'High', status: 'In Progress',
-    reporterKey: 'agent:AG-1011', reporterName: 'Ratana Kongsak', contact: '082-271-1271', createdAt: daysFromNow(-2, 10), assignedTo: 'ADM-02', escalated: true, attachment: null,
-    notes: [{ at: daysFromNow(-2, 14), by: 'Suchada Chaiyaporn', text: 'Server logs show the upload was received. Checking the renewal record.' }], responses: [],
-    history: [{ at: daysFromNow(-2, 10), text: 'Ticket created', by: 'Ratana Kongsak' }, { at: daysFromNow(-2, 13), text: 'Assigned to Agent Manager', by: 'Suchada Chaiyaporn' }, { at: daysFromNow(-2, 14), text: 'Status changed to In Progress', by: 'Suchada Chaiyaporn' }] },
-  { id: 'TCK-1086', title: 'Cannot see my team members list', category: 'Access / Login', description: 'The My Team page shows empty even though I lead Team Charlie.', priority: 'Medium', status: 'Waiting for User',
-    reporterKey: 'agent:AG-1020', reporterName: 'Siriporn Kaewmanee', contact: 'siriporn.kae@vbeyond-agent.co.th', createdAt: daysFromNow(-4, 9), assignedTo: 'ADM-02', escalated: true, attachment: null,
-    notes: [], responses: [{ at: daysFromNow(-3, 11), by: 'Suchada Chaiyaporn', text: 'Could you clear your browser cache and try again? If it is still empty, send us a screenshot.' }],
-    history: [{ at: daysFromNow(-4, 9), text: 'Ticket created', by: 'Siriporn Kaewmanee' }, { at: daysFromNow(-3, 11), text: 'Status changed to Waiting for User', by: 'Suchada Chaiyaporn' }] },
-  { id: 'TCK-1085', title: 'Notification emails arriving late', category: 'Notifications', description: 'Approval emails are arriving 2–3 hours after the status changes in the portal.', priority: 'Low', status: 'Resolved',
-    reporterKey: 'admin:ADM-02', reporterName: 'Suchada Chaiyaporn', contact: 'suchada.c@vbeyond.co.th', createdAt: daysFromNow(-8, 15), assignedTo: 'ADM-02', escalated: false, attachment: null,
-    notes: [{ at: daysFromNow(-7, 10), by: 'Suchada Chaiyaporn', text: 'Mail queue worker was throttled. Raised the limit.' }], responses: [{ at: daysFromNow(-7, 11), by: 'Suchada Chaiyaporn', text: 'Fixed — emails should now arrive within a few minutes.' }],
-    history: [{ at: daysFromNow(-8, 15), text: 'Ticket created', by: 'Suchada Chaiyaporn' }, { at: daysFromNow(-7, 11), text: 'Status changed to Resolved', by: 'Suchada Chaiyaporn' }] },
-  { id: 'TCK-1084', title: 'Agent directory export missing phone numbers', category: 'Data / Reports', description: 'Exported CSV of the agent directory has empty phone column.', priority: 'Low', status: 'Closed',
-    reporterKey: 'admin:ADM-02', reporterName: 'Suchada Chaiyaporn', contact: 'suchada.c@vbeyond.co.th', createdAt: daysFromNow(-14, 11), assignedTo: 'ADM-02', escalated: false, attachment: null,
-    notes: [], responses: [{ at: daysFromNow(-12, 9), by: 'Suchada Chaiyaporn', text: 'Corrected the export mapping.' }],
-    history: [{ at: daysFromNow(-14, 11), text: 'Ticket created', by: 'Suchada Chaiyaporn' }, { at: daysFromNow(-12, 9), text: 'Status changed to Resolved', by: 'Suchada Chaiyaporn' }, { at: daysFromNow(-10, 9), text: 'Status changed to Closed', by: 'Suchada Chaiyaporn' }] },
-  { id: 'TCK-1083', title: 'Login page shows error after password reset', category: 'Access / Login', description: 'After resetting my password I see "session expired" on first login attempt.', priority: 'High', status: 'Open',
-    reporterKey: 'agent:AG-1001', reporterName: 'Somchai Prasertsuk', contact: '081-234-1000', createdAt: daysFromNow(-3, 18), assignedTo: null, escalated: false, attachment: null,
-    notes: [], responses: [], history: [{ at: daysFromNow(-3, 18), text: 'Ticket created', by: 'Somchai Prasertsuk' }] },
-];
 
-const THREADS = [
-  { id: 'MSG-301', subject: 'Commission statement for last month', relatedIssue: '', fromKey: 'agent:AG-1001', fromName: 'Somchai Prasertsuk', status: 'Answered', createdAt: daysFromNow(-6, 10),
-    messages: [{ by: 'Somchai Prasertsuk', staff: false, at: daysFromNow(-6, 10), text: 'Could you resend my commission statement for last month? I cannot find the email.' }, { by: 'Suchada Chaiyaporn', staff: true, at: daysFromNow(-6, 14), text: 'Hi Somchai, the statement has been re-sent to your registered email. Please check your spam folder as well.' }] },
-  { id: 'MSG-300', subject: 'Unable to update bank account', relatedIssue: '', fromKey: 'agent:AG-1012', fromName: 'Chaiwat Boonyarit', status: 'Open', createdAt: daysFromNow(-1, 9),
-    messages: [{ by: 'Chaiwat Boonyarit', staff: false, at: daysFromNow(-1, 9), text: 'I changed banks. Where can I update my bank account for commission payments?' }] },
-];
 
 const INVITATIONS = [
   { id: 'INV-0412', name: 'Thanaporn Kaewta', email: 'thanaporn.k@gmail.com', phone: '086-221-4410', message: 'We would love to have you on Team Alpha!', teamId: 'T-ALP', invitedBy: 'AG-1002', sentAt: daysFromNow(-2, 10), expiresAt: daysFromNow(12), status: 'Pending', applicationId: null },
@@ -356,16 +314,12 @@ const TRANSFER_REQUESTS = [
 function makeNotifications() {
   return [
     { id: 'N-2', to: ['allAgents'], category: 'Company announcements', title: 'New announcement: Q4 commission structure update', body: 'Revised commission tiers for condominium sales.', link: '/announcements?open=AN-031', at: daysFromNow(-1, 9), readBy: [] },
-    { id: 'N-3', to: ['agent:AG-1001'], category: 'System issue updates', title: 'Your ticket TCK-1083 was received', body: 'Our IT team will review "Login page shows error after password reset".', link: '/report-problem', at: daysFromNow(-3, 18), readBy: [] },
     { id: 'N-4', to: ['agent:AG-1002'], category: 'Team invitations', title: 'Weerapong Sangthong opened your invitation', body: 'Registration is in progress for Team Alpha.', link: '/team/invitations', at: daysFromNow(-5, 11), readBy: [] },
     { id: 'N-5', to: ['agent:AG-1002'], category: 'Team assignment', title: 'New team member: Natthapong Srisuk', body: 'Natthapong Srisuk (AG-1006) joined Team Alpha.', link: '/team/members?highlight=AG-1006', at: daysFromNow(-92), readBy: ['agent:AG-1002'] },
     { id: 'N-6', to: ['role:agentManager'], category: 'Registration updates', title: 'New application: Supansa Meechai', body: 'APP-2026-0141 is waiting for review.', link: '/applications/APP-2026-0141', at: daysFromNow(-1, 9), readBy: [] },
     { id: 'N-7', to: ['role:agentManager'], category: 'Registration updates', title: 'Application resubmitted: Phakphum Yodsri', body: 'APP-2026-0138 was resubmitted with a new ID document.', link: '/applications/APP-2026-0138', at: daysFromNow(-1, 16), readBy: [] },
     { id: 'N-8', to: ['role:agentManager'], category: 'Registration updates', title: 'Approved agent waiting for onboarding', body: 'Sakda Nimitr (AG-1041) has not been assigned to a team.', link: '/onboarding', at: daysFromNow(-12), readBy: [] },
     { id: 'N-9', to: ['role:agentManager'], category: 'Membership renewal reminders', title: 'Renewal request: Ratana Kongsak', body: 'REN-0091 is ready for review.', link: '/renewals', at: daysFromNow(-2, 16), readBy: [] },
-    { id: 'N-10', to: ['role:agentManager'], category: 'System issue updates', title: 'New ticket: Profile photo upload fails on mobile', body: 'TCK-1088 reported by Apinya Saetang.', link: '/system-issues?open=TCK-1088', at: daysFromNow(-1, 16), readBy: [] },
-    { id: 'N-11', to: ['role:agentManager'], category: 'Registration updates', title: 'New applicant inquiry', body: 'Supansa Meechai asked: Can I register without a broker certificate?', link: '/inquiries?open=INQ-0218', at: daysFromNow(-1, 15), readBy: [] },
-    { id: 'N-12', to: ['role:agentManager'], category: 'System issue updates', title: 'New message from Chaiwat Boonyarit', body: 'Unable to update bank account', link: '/support-inbox?open=MSG-300', at: daysFromNow(-1, 9), readBy: [] },
     { id: 'N-13', to: ['applicant:nutnicha.rungroj@gmail.com'], category: 'Registration updates', title: 'Welcome to VBEYOND ARMS', body: 'Start your agent registration — it takes about 10 minutes.', link: '/register', at: daysFromNow(0, 8), readBy: [] },
   ];
 }
@@ -376,9 +330,6 @@ function makeLogs() {
     [-0.2, 'Suchada Chaiyaporn', 'Agent Manager', 'Viewed application', 'APP-2026-0140'],
     [-1, 'Kittipong Saengthong', 'Agent Manager', 'Verified document', 'APP-2026-0140 / ID card'],
     [-2, 'Suchada Chaiyaporn', 'Agent Manager', 'Verified renewal documents', 'REN-0091'],
-    [-2, 'Suchada Chaiyaporn', 'Agent Manager', 'Started work on ticket', 'TCK-1087'],
-    [-3, 'Suchada Chaiyaporn', 'Agent Manager', 'Replied to ticket', 'TCK-1086'],
-    [-4, 'Suchada Chaiyaporn', 'Agent Manager', 'Closed support message', 'MSG-299'],
     [-5, 'Suchada Chaiyaporn', 'Agent Manager', 'Changed agent status', 'Pornthip Wongchai → Suspended'],
     [-7, 'Suchada Chaiyaporn', 'Agent Manager', 'Published FAQ', 'When should I renew my membership?'],
     [-9, 'Suchada Chaiyaporn', 'Agent Manager', 'Approved application', 'APP-2026-0136'],
@@ -399,9 +350,6 @@ export function createSeed() {
     applications: makeApplications(),
     announcements: ANNOUNCEMENTS,
     faqs: FAQS,
-    inquiries: INQUIRIES,
-    issues: ISSUES,
-    threads: THREADS,
     invitations: INVITATIONS,
     renewals: RENEWALS,
     transferRequests: TRANSFER_REQUESTS,

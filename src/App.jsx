@@ -9,8 +9,6 @@ import MigratedLogin from './pages/common/MigratedLogin';
 import Dashboard from './pages/dashboards/Dashboard';
 import Announcements from './pages/common/Announcements';
 import Notifications from './pages/common/Notifications';
-import ReportProblem from './pages/common/ReportProblem';
-import ContactSupport from './pages/common/ContactSupport';
 
 import Register from './pages/agent/Register';
 import MyApplication from './pages/agent/MyApplication';
@@ -35,11 +33,8 @@ import Renewals from './pages/agent-manager/Renewals';
 import AgentStatus from './pages/agent-manager/AgentStatus';
 import InvitationsAdmin from './pages/agent-manager/InvitationsAdmin';
 
-import Inquiries from './pages/support/Inquiries';
 import FaqManage from './pages/support/FaqManage';
-import SupportInbox from './pages/support/SupportInbox';
 
-import SystemIssues from './pages/support/SystemIssues';
 
 export default function App() {
   const { user } = useStore();
@@ -55,10 +50,6 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/notifications" element={<Notifications />} />
-        <Route path="/report-problem" element={<ReportProblem />} />
-        <Route path="/contact-support" element={<ContactSupport />} />
-        <Route path="/support-inbox" element={<SupportInbox />} />
-        <Route path="/system-issues" element={<SystemIssues />} />
 
         <Route path="/register" element={<Register />} />
         <Route path="/my-application" element={<MyApplication />} />
@@ -74,7 +65,6 @@ export default function App() {
         <Route path="/applications" element={<Applications />} />
         <Route path="/applications/:id" element={<ApplicationDetail />} />
         <Route path="/documents" element={<Documents />} />
-        <Route path="/inquiries" element={<Inquiries />} />
         <Route path="/agents" element={<AgentDirectory />} />
         <Route path="/agents/:id" element={<AgentDetail />} />
         <Route path="/teams" element={<Teams />} />
