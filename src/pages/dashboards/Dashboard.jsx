@@ -193,13 +193,6 @@ function TeamLeadDashboard({ user }) {
           </div>
         </div>
         <div className="col-lg-5">
-          <div className="card mb-3">
-            <div className="card-header">Recently joined</div>
-            <div className="list-group list-group-flush">
-              {recent.map((a) => <Link key={a.id} to={`/team/members?highlight=${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between"><span>{fullName(a)} <small className="text-muted">{a.id}</small></span><small className="text-muted">{fmtDate(a.teamHistory[a.teamHistory.length - 1]?.from || a.onboardedAt)}</small></Link>)}
-              {!recent.length && <div className="list-group-item small text-muted">No new members in the last 45 days.</div>}
-            </div>
-          </div>
           <div className="card">
             <div className="card-header">Team overview</div>
             <div className="card-body small">
