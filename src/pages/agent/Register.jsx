@@ -48,14 +48,14 @@ function JoinPage() {
   };
 
   return (
-    <AuthShell title="Join VBEYOND as an agent" subtitle="Register online — your team is already reserved for you.">
+    <AuthShell title="Join VBEYOND as an agent" subtitle={team ? 'Register online — your team is already reserved for you.' : 'Register online in a few minutes.'}>
       {team ? (
         <div className="alert alert-brand d-flex gap-3 align-items-center">
           <i className="bi bi-envelope-paper-heart fs-3" aria-hidden="true" />
           <div><strong>{inviter ? `${inviter.firstName} ${inviter.lastName}` : 'A VBEYOND agent'} invited you to join {team.name}</strong>
             <div className="small">{team.region}</div></div>
         </div>
-      ) : <div className="alert alert-warning small">This invitation link is not valid. You can still register as an agent.</div>}
+      ) : params.has('team') && <div className="alert alert-warning small">This invitation link is not valid. You can still register as an agent.</div>}
       <h2 className="mb-1">Start your registration</h2>
       <p className="text-muted">Enter your name and email to continue to the registration form.</p>
       <form onSubmit={start} noValidate className="d-grid gap-3">

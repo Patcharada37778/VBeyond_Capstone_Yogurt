@@ -8,6 +8,7 @@ import { ApplicationProgress } from '../agent/MyApplication';
 import { CommissionBars, commissionSummary, monthlyCommission } from '../../components/dashboard/Commission';
 import Help from '../agent/Help';
 import { ROLES } from '../../utils/permissions';
+import { periodSales, tierFor } from '../../utils/commission';
 import { daysUntil, fmtDate, fmtMoney, fullName, timeAgo } from '../../utils/format';
 
 function Greeting({ user, subtitle, children }) {
@@ -112,6 +113,34 @@ function CommissionOverview({ agentId }) {
   );
 }
 
+function TierTracker({ agentId }) {
+  const { state } = useStore();
+  const rules = state.commissionRules;
+  const sales = periodSales(state.commissions, agentId, rules);
+  const t = tierFor(sales, rules);
+  const tiers = [...rules.tiers].sort((a, b) => a.minSales - b.minSales);
+  return (
+    <div className="card mb-3">
+      <div className="card-header">Commission tier</div>
+      <div className="card-body">
+        <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
+          <div>
+            <div className="font-brand fs-4 lh-1">{t.tier.name} <span className="fs-6 text-muted">· {t.rate.toFixed(1)}% commission</span></div>
+            <small className="text-muted">Sales in the last {rules.tierPeriodMonths} month{rules.tierPeriodMonths > 1 ? 's' : ''}: <strong className="text-body">{fmtMoney(sales)}</strong></small>
+          </div>
+          <small className="text-muted">{t.next ? <><strong className="text-body">{fmtMoney(t.remaining)}</strong> more to reach {t.next.name} ({(rules.baseRate + t.next.bonus).toFixed(1)}%)</> : 'You are in the highest tier.'}</small>
+        </div>
+        <div className="bar-track" style={{ height: 10 }} role="progressbar" aria-label={`Progress to ${t.next?.name || 'top tier'}`} aria-valuenow={Math.round(t.progress)} aria-valuemin={0} aria-valuemax={100}>
+          <div className="bar-fill" style={{ width: `${t.progress}%` }} />
+        </div>
+        <div className="d-flex justify-content-between small text-muted mt-2">
+          {tiers.map((x) => <span key={x.id} className={x.id === t.tier.id ? 'fw-semibold text-body' : ''}>{x.name} · {fmtMoney(x.minSales)}+</span>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DashboardAnnouncementFeed() {
   const { state, user, mutate } = useStore();
   const [query, setQuery] = useState('');
@@ -198,6 +227,7 @@ function AgentBlocks({ user }) {
       {!a.teamId && a.status === 'Active' && <div className="alert alert-brand"><i className="bi bi-hourglass-split me-2" /><strong>Welcome aboard!</strong> An Agent Manager will assign you to a team shortly — you'll get a notification.</div>}
       {a.status === 'Active' && left <= RENEWAL_REMINDER_DAYS && !renewal && <div className="alert alert-warning d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-bell me-1" /><span className="flex-grow-1"><strong>Renewal reminder:</strong> your membership expires in {left} days ({fmtDate(a.membershipExpiry)}).</span><Link to="/renewal" className="btn btn-sm btn-warning">Start renewal</Link></div>}
       {renewal && <div className="alert alert-brand d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-arrow-repeat me-1" /><span className="flex-grow-1">Renewal {renewal.id}: <strong>{renewal.status}</strong></span><Link to="/renewal" className="btn btn-sm btn-outline-primary">View renewal</Link></div>}
+      <TierTracker agentId={a.id} />
       <CommissionOverview agentId={a.id} />
       <DashboardAnnouncementFeed />
     </>

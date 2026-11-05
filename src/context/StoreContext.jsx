@@ -3,11 +3,11 @@ import { createSeed } from '../data/seed';
 import { ROLES, BACKOFFICE_ROLES } from '../utils/permissions';
 import { fullName } from '../utils/format';
 
-const STORAGE_KEY = 'vbeyond-arms-demo-v7';
+const STORAGE_KEY = 'vbeyond-arms-demo-v9';
 export const RENEWAL_REMINDER_DAYS = 30;
 const StoreContext = createContext(null);
 
-// The seven demo personas shown in the role switcher.
+// The demo personas shown in the role switcher.
 export const PERSONAS = [
   { key: 'prospect', label: 'Prospective Agent', name: 'Nutnicha Rungroj', session: { applicantKey: 'nutnicha.rungroj@gmail.com', name: 'Nutnicha Rungroj' }, color: '#3aa845' },
   { key: 'agent', label: 'Active Agent', name: 'Somchai Prasertsuk', session: { agentId: 'AG-1001' } },

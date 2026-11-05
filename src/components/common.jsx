@@ -5,9 +5,9 @@ import { initials, fileSize } from '../utils/format';
 const STATUS_COLORS = {
   green: ['Active', 'Approved', 'Verified', 'Resolved', 'Published', 'Accepted', 'Paid', 'Answered', 'Completed', 'Low'],
   blue: ['Processing', 'Pending Review', 'In Progress', 'Resubmitted', 'Registration In Progress', 'Open', 'Medium'],
-  amber: ['Pending Transfer', 'Clarification Required', 'Pending', 'Waiting for User', 'Requires Replacement', 'Draft', 'Suspended', 'Unpaid', 'Pending Onboarding', 'High'],
+  amber: ['Pending Transfer', 'Clarification Required', 'Pending', 'Waiting for User', 'Requires Replacement', 'Draft', 'Suspended', 'Unpaid', 'Pending Onboarding', 'High', 'Reserved'],
   red: ['Rejected', 'Expired', 'Critical', 'Inactive', 'Declined'],
-  gray: ['Closed', 'Cancelled', 'Archived', 'Resigned', 'Not Yet Submitted', 'Unpublished'],
+  gray: ['Closed', 'Cancelled', 'Archived', 'Resigned', 'Not Yet Submitted', 'Unpublished', 'Sold Out'],
 };
 
 export function StatusBadge({ status, className = '' }) {

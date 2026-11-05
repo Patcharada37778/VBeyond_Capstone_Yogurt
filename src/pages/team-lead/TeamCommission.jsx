@@ -4,6 +4,7 @@ import { Avatar, EmptyState, PageHeader } from '../../components/common';
 import DataTable from '../../components/tables/DataTable';
 import { CommissionBars } from '../../components/dashboard/Commission';
 import { Modal } from '../../components/modals/Modal';
+import { periodSales, tierFor } from '../../utils/commission';
 import { fmtDate, fmtMoney, fullName } from '../../utils/format';
 
 const MONTHS = Array.from({ length: 12 }, (_, month) => ({
@@ -42,12 +43,6 @@ function getHierarchyLevel(agent, team, members) {
     level += 1;
   }
   return level;
-}
-
-function getCommissionTier(sales) {
-  if (sales > 40_000_000) return { name: 'Tier 3', rate: '3.0%' };
-  if (sales > 15_000_000) return { name: 'Tier 2', rate: '2.5%' };
-  return { name: 'Tier 1', rate: '2.0%' };
 }
 
 function monthChange(current, previous) {
@@ -109,14 +104,9 @@ export default function TeamCommission() {
     ? filteredRecords.filter((record) => record.agentId === selectedAgent.id)
     : [];
   const selectedAgentTotals = sumSales(selectedAgentSales);
-  const quarterStart = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1);
-  const selectedAgentQuarterSales = selectedAgent
-    ? teamSales.filter((record) => {
-      const closedAt = new Date(record.closedAt);
-      return record.agentId === selectedAgent.id && closedAt >= quarterStart && closedAt <= today;
-    }).reduce((total, record) => total + record.saleValue, 0)
-    : 0;
-  const selectedAgentTier = getCommissionTier(selectedAgentQuarterSales);
+  const rules = state.commissionRules;
+  const selectedAgentQuarterSales = selectedAgent ? periodSales(state.commissions, selectedAgent.id, rules) : 0;
+  const selectedAgentTier = tierFor(selectedAgentQuarterSales, rules).tier;
   const chartData = MONTHS.map((item, index) => {
     const totals = sumSales(periodRecords(teamSales, year, index));
     return {
@@ -183,7 +173,7 @@ export default function TeamCommission() {
               <div className="team-commission-agent-name">
                 <h3 className="h6 mb-0">{fullName(selectedAgent)}</h3>
                 <span className="team-commission-tag">{`Level ${getHierarchyLevel(selectedAgent, team, members)}`}</span>
-                <span className="team-commission-tag team-commission-tier-tag" title={`Based on this quarter's sales: ${fmtMoney(selectedAgentQuarterSales)}`}>{selectedAgentTier.name}</span>
+                <span className="team-commission-tag team-commission-tier-tag" title={`Based on sales in the last ${rules.tierPeriodMonths} months: ${fmtMoney(selectedAgentQuarterSales)}`}>{selectedAgentTier.name}</span>
               </div>
               <div className="small text-muted">{selectedAgent.id} · {selectedPeriodLabel}</div>
             </div>

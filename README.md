@@ -2,11 +2,11 @@
 
 A clickable, frontend-only prototype of the VBEYOND Agent Relationship Management System.
 It covers the full agent lifecycle: registration, compliance review, first login, team onboarding,
-membership renewal, commission overview, status changes and team transfers. There is no chat: support is by email (info@vbeyond.co.th, shown in the dashboard footer).
+membership renewal, property directory, sales and commission, status changes and team transfers. There is no chat: support is by email (info@vbeyond.co.th, shown in the dashboard footer).
 
 - React 19 + React Router + Bootstrap 5 + Bootstrap Icons (Vite)
 - No backend, database, real auth, or external APIs
-- All data is mock data stored in `localStorage` (key `vbeyond-arms-demo-v1`), so changes survive a refresh
+- All data is mock data stored in `localStorage` (key `vbeyond-arms-demo-v9`), so changes survive a refresh
 
 ## Run it
 
@@ -27,7 +27,9 @@ Use the quick sign-in buttons on the login page, or the **Demo role switcher** i
 | Prospective Agent | Nutnicha Rungroj |
 | Active Agent | Somchai Prasertsuk (AG-1001) |
 | Team Lead | Kanokwan Thongdee (AG-1002, Team Alpha) |
-| Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications (with fixed document slots), agent list, onboarding, renewals, teams, announcements and FAQ |
+| Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications (with fixed document slots), agent list, onboarding, renewals, teams, announcements, FAQ, commission rules and monthly sales upload |
+
+Visitors who are not signed in see the landing page at `/`.
 
 Other entry points on the login page:
 - **First sign-in for migrated agents** — try `LG-20417` or `yupin.c@vbeyond-agent.co.th`
@@ -49,6 +51,10 @@ Other entry points on the login page:
 9. Active Agent → *Membership Renewal* → upload the PDPA certificate → submit (renewal is free)
 10. Agent Manager → *Membership Renewals* → verify documents → approve (expiry is extended)
 11. Agent Manager → *Announcements* → create a banner with or without an image
+12. Active Agent → *Property Directory* → filter and sort → save favorites → open a property → *Share with team* or *Co-branded PDF*
+13. Agent Manager → *Commission Rules* → edit the base rate, tiers and team lead split
+14. Agent Manager → *Monthly Sales Upload* → download the template → upload it (Excel or CSV) → check the preview → publish
+15. Active Agent → dashboard shows the commission tier and progress to the next tier
 
 ## Project structure
 

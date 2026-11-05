@@ -28,6 +28,8 @@ export const MODULES = [
   { key: 'onboarding', label: 'Onboarding' },
   { key: 'renewals', label: 'Membership Renewals' },
   { key: 'agentStatus', label: 'Agent Status Management' },
+  { key: 'commissionRules', label: 'Commission Rules' },
+  { key: 'salesUpload', label: 'Monthly Sales Upload' },
 ];
 
 const p = (s) => ({
@@ -41,7 +43,7 @@ function build(map) {
 }
 
 export const DEFAULT_PERMISSIONS = {
-  agentManager: build({ announcements: 'VCED', applications: 'VCEA', faq: 'VCED', agents: 'VCE', teams: 'VCEA', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA' }),
+  agentManager: build({ announcements: 'VCED', applications: 'VCEA', faq: 'VCED', agents: 'VCE', teams: 'VCEA', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA', commissionRules: 'VE', salesUpload: 'VCA' }),
 };
 
 // Navigation. `hideFor` = roles that can open the page but don't see it in the sidebar.
@@ -60,6 +62,10 @@ export const NAV = [
     { path: '/renewal', label: 'Membership Renewal', icon: 'bi-arrow-repeat', roles: ['agent', 'teamLead'] },
     { path: '/commission', label: 'My Commission', icon: 'bi-cash-coin', roles: ['agent', 'teamLead'] },
   ] },
+  { group: 'Properties', items: [
+    { path: '/properties', label: 'Property Directory', icon: 'bi-buildings', roles: ['agent', 'teamLead'] },
+    { path: '/properties/favorites', label: 'Favorites', icon: 'bi-heart', roles: ['agent', 'teamLead'] },
+  ] },
   { group: 'My Team', items: [
     { path: '/team/members', label: 'Team Member', icon: 'bi-people', roles: ['teamLead'] },
     { path: '/team/commission', label: 'Team Commission', icon: 'bi-cash-stack', roles: ['teamLead'] },
@@ -71,6 +77,10 @@ export const NAV = [
     { path: '/renewals', label: 'Membership Renewals', icon: 'bi-arrow-repeat', module: 'renewals' },
     { path: '/agent-status', label: 'Agent Status Management', icon: 'bi-toggles', module: 'agentStatus' },
     { path: '/faq', label: 'FAQ', icon: 'bi-journal-text', module: 'faq' },
+  ] },
+  { group: 'Sales & Commission', items: [
+    { path: '/commission-rules', label: 'Commission Rules', icon: 'bi-sliders', module: 'commissionRules' },
+    { path: '/sales-upload', label: 'Monthly Sales Upload', icon: 'bi-file-earmark-spreadsheet', module: 'salesUpload' },
   ] },
 ];
 
