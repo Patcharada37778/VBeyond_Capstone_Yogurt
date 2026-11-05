@@ -169,6 +169,37 @@ h1, h2, h3, h4, h5, .font-brand {
 .team-page .table td { color: var(--vb-ink); font-size: 0.86rem; }
 .team-page .table td a { white-space: nowrap; }
 .team-hierarchy-level { display: inline-block; padding: 0.3rem 0.55rem; border: 1px solid #d5e7d8; border-radius: 999px; background: #f0f8f1; color: var(--vb-green-700); font-size: 0.76rem; font-weight: 600; white-space: nowrap; }
+.team-commission-overview { display: grid; gap: 0.85rem; }
+.team-commission-overview-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.team-commission-overview-heading h2 { color: var(--vb-teal-800); }
+.team-commission-period { padding: 0.35rem 0.65rem; border: 1px solid #cfe0e0; border-radius: 999px; background: var(--vb-teal-50); color: var(--vb-teal-800); font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+.team-commission-summary-card { background: #f7f8f7; }
+.team-commission-summary-card .card-body { display: flex; align-items: flex-start; gap: 0.85rem; }
+.team-commission-summary-icon { display: grid; flex: 0 0 40px; width: 40px; height: 40px; place-items: center; border-radius: 10px; background: var(--vb-teal-50); color: var(--vb-teal-700); font-size: 1.15rem; }
+.team-commission-summary-content { display: grid; min-width: 0; gap: 0.15rem; }
+.team-commission-summary-content > strong { color: var(--vb-ink); font-size: 1.35rem; line-height: 1.3; }
+.team-commission-period-card .card-body { padding: 1rem 1.25rem; }
+.team-commission-period-controls { display: grid; grid-template-columns: minmax(150px, 0.7fr) minmax(120px, 0.5fr) minmax(220px, 1fr); align-items: end; gap: 1rem; }
+.team-commission-period-controls > div { min-width: 0; }
+.team-commission-period-controls .form-label { display: block; }
+.team-commission-selected-total { display: grid; justify-items: end; gap: 0.15rem; }
+.team-commission-selected-total strong { color: var(--vb-teal-800); font-size: 0.86rem; }
+.team-commission-agent-link { display: inline-flex; align-items: center; gap: 0.65rem; padding: 0.2rem 0.35rem; border: 0; border-radius: 8px; background: transparent; color: inherit; text-align: left; }
+.team-commission-agent-link:hover, .team-commission-agent-link:focus-visible { background: var(--vb-teal-50); outline: none; }
+.team-commission-agent-details { display: grid; gap: 1rem; }
+.team-commission-agent-heading { display: flex; align-items: center; gap: 0.75rem; }
+.team-commission-agent-identity { display: grid; min-width: 0; gap: 0.3rem; }
+.team-commission-agent-name { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+.team-commission-tag { display: inline-flex; align-items: center; padding: 0.2rem 0.5rem; border: 1px solid #cfe0e0; border-radius: 999px; background: var(--vb-teal-50); color: var(--vb-teal-800); font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
+.team-commission-tier-tag { border-color: #d5e7d8; background: #f0f8f1; color: var(--vb-green-700); }
+.team-commission-agent-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.team-commission-agent-totals > div { display: grid; gap: 0.2rem; padding: 0.75rem 0.9rem; border: 1px solid var(--vb-border); border-radius: 9px; background: #f7f8f7; }
+.team-commission-agent-totals span { color: var(--vb-muted); font-size: 0.78rem; }
+.team-commission-agent-totals strong { color: var(--vb-teal-800); font-size: 1.05rem; }
+.team-commission-sales-table { border: 1px solid var(--vb-border); border-radius: 9px; }
+.team-commission-sales-table .table { min-width: 700px; }
+.team-commission-sales-table .table th { color: var(--vb-teal-800); font-size: 0.76rem; white-space: nowrap; }
+.team-commission-sales-table .table td { font-size: 0.84rem; }
 .org-folder-tree { max-height: 520px; overflow: auto; padding: 0.1rem; }
 .org-folder-root, .org-folder-team { min-width: 0; }
 .org-folder-tree details > summary { display: flex; align-items: center; gap: 0.65rem; min-height: 44px; padding: 0.6rem 0.8rem; border: 1px solid var(--vb-border); border-radius: 9px; background: #fff; cursor: pointer; list-style: none; }
@@ -495,6 +526,10 @@ tr.row-highlight td { background: var(--vb-green-50) !important; }
   .team-page .card-body { padding: 1rem; }
   .team-member-filters { align-items: stretch; flex-direction: column; }
   .team-member-filters > :first-child, .team-member-filters .form-select { width: 100%; min-width: 0; }
+  .team-commission-period-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .team-commission-selected-total { grid-column: 1 / -1; justify-items: start; padding-top: 0.35rem; }
+  .team-commission-agent-totals { grid-template-columns: 1fr; }
+  .team-commission-overview-heading { align-items: flex-start; }
   .team-hierarchy-card .card-header { align-items: flex-start; }
   .org-folder-children { margin-left: 0.55rem; padding-left: 0.55rem; }
   .org-folder-members { margin-left: 0.45rem; padding-left: 0.4rem; }
