@@ -62,29 +62,31 @@ export default function Renewal() {
   const stepIdx = RENEWAL_FLOW.indexOf(status);
 
   return (
-    <>
+    <div className="renewal-page">
       <PageHeader title="Membership Renewal" subtitle="Renew your VBEYOND agent membership before it expires." crumbs={[{ label: 'My Account' }, { label: 'Membership Renewal' }]} />
       <div className="row g-3 mb-3">
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Membership status</div><div className="mt-1"><StatusBadge status={agent.status} /></div></div></div></div>
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Start date</div><div className="fw-semibold mt-1">{fmtDate(agent.membershipStart)}</div></div></div></div>
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Expiration date</div><div className={`fw-semibold mt-1 ${left < 60 ? 'text-danger' : ''}`}>{fmtDate(agent.membershipExpiry)}</div><small className="text-muted">{left > 0 ? `${left} days left` : `Expired ${-left} days ago`}</small></div></div></div>
-        <div className="col-md-3 col-6"><div className="card h-100"><div className="card-body"><div className="small text-muted">Renewal eligibility</div>
+        <div className="col-12 col-sm-6 col-xl-3"><div className="card h-100"><div className="card-body renewal-summary-card"><i className="bi bi-person-check text-brand" aria-hidden="true" /><div><div className="small text-muted">Membership status</div><div className="mt-1"><StatusBadge status={agent.status} /></div></div></div></div></div>
+        <div className="col-12 col-sm-6 col-xl-3"><div className="card h-100"><div className="card-body renewal-summary-card"><i className="bi bi-calendar-plus text-brand" aria-hidden="true" /><div><div className="small text-muted">Start date</div><div className="fw-semibold mt-1">{fmtDate(agent.membershipStart)}</div></div></div></div></div>
+        <div className="col-12 col-sm-6 col-xl-3"><div className="card h-100"><div className="card-body renewal-summary-card"><i className="bi bi-calendar-x text-brand" aria-hidden="true" /><div><div className="small text-muted">Expiration date</div><div className={`fw-semibold mt-1 ${left < 60 ? 'text-danger' : ''}`}>{fmtDate(agent.membershipExpiry)}</div><small className="text-muted">{left > 0 ? `${left} days left` : `Expired ${-left} days ago`}</small></div></div></div></div>
+        <div className="col-12 col-sm-6 col-xl-3"><div className="card h-100"><div className="card-body renewal-summary-card"><i className="bi bi-check2-circle text-brand" aria-hidden="true" /><div><div className="small text-muted">Renewal eligibility</div>
           <div className="mt-1">{eligible ? <span className="status-badge sb-green">Eligible</span> : <span className="status-badge sb-gray">Not yet eligible</span>}</div>
-          <small className="text-muted">{['Suspended', 'Resigned'].includes(agent.status) ? `Not available while ${agent.status.toLowerCase()}` : eligible ? 'Window open' : `Opens ${fmtDate(new Date(new Date(agent.membershipExpiry) - 90 * 86400000).toISOString())}`}</small></div></div></div>
+          <small className="text-muted">{['Suspended', 'Resigned'].includes(agent.status) ? `Not available while ${agent.status.toLowerCase()}` : eligible ? 'Window open' : `Opens ${fmtDate(new Date(new Date(agent.membershipExpiry) - 90 * 86400000).toISOString())}`}</small></div></div></div></div>
       </div>
 
-      <div className="card mb-3"><div className="card-body">
-        <div className="d-flex justify-content-between flex-wrap gap-2 mb-3"><h2 className="h6 mb-0">Renewal status</h2><StatusBadge status={last && !active ? last.status : status} /></div>
+      <div className="card renewal-progress-card mb-3">
+        <div className="card-header renewal-section-header"><h2 className="h6 mb-0"><i className="bi bi-arrow-repeat me-2" aria-hidden="true" />Renewal status</h2><StatusBadge status={last && !active ? last.status : status} /></div>
+        <div className="card-body">
         <div className="stepper">
           {RENEWAL_FLOW.map((s, i) => <div key={s} className={`step ${stepIdx > i || (last?.status === 'Approved' && !active) ? 'done' : stepIdx === i ? 'active' : ''}`}><span className="num">{stepIdx > i ? <i className="bi bi-check" /> : i + 1}</span>{s}</div>)}
         </div>
-      </div></div>
+        </div>
+      </div>
 
-      <div className="row g-3">
+      <div className="row g-3 renewal-content-row">
         <div className="col-lg-7">
           {!active && (
-            <div className="card">
-              <div className="card-header">Submit a renewal request</div>
+            <div className="card h-100">
+              <div className="card-header renewal-section-header"><h2 className="h6 mb-0"><i className="bi bi-file-earmark-plus me-2" aria-hidden="true" />Submit a renewal request</h2></div>
               <div className="card-body">
                 {!eligible ? (
                   <div className="alert alert-light border mb-0">
@@ -97,7 +99,7 @@ export default function Renewal() {
                       <label className="form-label required">Renewal period</label>
                       <div className="d-flex gap-2 flex-wrap">
                         {['1 year', '2 years'].map((p) => (
-                          <label key={p} className={`border rounded p-3 flex-fill ${form.period === p ? 'border-primary bg-brand-soft' : ''}`} style={{ cursor: 'pointer', minWidth: 160 }}>
+                          <label key={p} className={`renewal-period-option border rounded p-3 flex-fill ${form.period === p ? 'border-primary bg-brand-soft' : ''}`}>
                             <input type="radio" className="form-check-input me-2" name="period" checked={form.period === p} onChange={() => setForm({ ...form, period: p })} />
                             <strong>{p}</strong><div className="small text-muted">Free</div>
                           </label>
@@ -118,8 +120,8 @@ export default function Renewal() {
             </div>
           )}
           {active && (
-            <div className="card">
-              <div className="card-header d-flex justify-content-between"><span>Request {active.id}</span><small className="text-muted fw-normal">Submitted {fmtDateTime(active.requestedAt)}</small></div>
+            <div className="card h-100">
+              <div className="card-header renewal-section-header"><h2 className="h6 mb-0">Request {active.id}</h2><small className="text-muted fw-normal">Submitted {fmtDateTime(active.requestedAt)}</small></div>
               <div className="card-body d-grid gap-3">
                 <dl className="dl-grid mb-0">
                   <div><dt>Period</dt><dd>{active.period}</dd></div>
@@ -148,7 +150,7 @@ export default function Renewal() {
         </div>
         <div className="col-lg-5">
           <div className="card mb-3">
-            <div className="card-header">Renewal instructions</div>
+            <div className="card-header renewal-section-header"><h2 className="h6 mb-0"><i className="bi bi-info-circle me-2" aria-hidden="true" />Renewal instructions</h2></div>
             <div className="card-body small">
               <ol className="ps-3 mb-0 d-grid gap-1">
                 <li>Renewal opens 90 days before your membership expires.</li>
@@ -160,7 +162,7 @@ export default function Renewal() {
             </div>
           </div>
           <div className="card">
-            <div className="card-header">Renewal history</div>
+            <div className="card-header renewal-section-header"><h2 className="h6 mb-0"><i className="bi bi-clock-history me-2" aria-hidden="true" />Renewal history</h2></div>
             <div className="list-group list-group-flush">
               {requests.map((r) => (
                 <div key={r.id} className="list-group-item">
@@ -185,6 +187,6 @@ export default function Renewal() {
         <p className="small text-muted mt-3 mb-0">Renewal is free. The back office will review your documents and approve the renewal.</p>
       </ConfirmModal>
 
-    </>
+    </div>
   );
 }
