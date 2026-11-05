@@ -34,7 +34,7 @@ export default function Help({ embedded = false }) {
         <div className="list-group list-group-flush">
           {faqs.map((f) => (
             <div key={f.id} className="list-group-item">
-              <button className="btn w-100 text-start d-flex justify-content-between align-items-center px-0 fw-semibold" aria-expanded={openFaq === f.id} onClick={() => setOpenFaq(openFaq === f.id ? null : f.id)}>
+              <button className="btn faq-question w-100 text-start d-flex justify-content-between align-items-center px-0 fw-semibold" aria-expanded={openFaq === f.id} onClick={() => setOpenFaq(openFaq === f.id ? null : f.id)}>
                 <span className="flex-grow-1">{f.q}</span>
                 <span className="status-badge sb-teal ms-2 me-2">{f.category}</span>
                 <i className={`bi ${openFaq === f.id ? 'bi-dash' : 'bi-plus'} fs-5 text-brand`} />
