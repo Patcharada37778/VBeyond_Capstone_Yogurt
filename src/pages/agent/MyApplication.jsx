@@ -62,13 +62,13 @@ export default function MyApplication() {
 
   if (!app) {
     return (
-      <>
-        <PageHeader title="My Application" crumbs={[{ label: 'My Application' }]} />
-        <div className="card"><EmptyState icon="bi-file-earmark-plus" title="You haven't submitted an application yet">
+      <div className="my-application-page">
+        <PageHeader title="My Application" subtitle="Track your agent registration and application status." crumbs={[{ label: 'My Application' }]} />
+        <div className="card application-progress-card mb-3"><EmptyState icon="bi-file-earmark-plus" title="You haven't submitted an application yet">
           Registration takes about 10 minutes. Have your ID card and bank book ready.
           <div className="mt-3"><Link to="/register" className="btn btn-primary">Start registration</Link></div>
         </EmptyState></div>
-      </>
+      </div>
     );
   }
 
