@@ -30,7 +30,6 @@ export default function Landing() {
           <p>Become an authorised VBEYOND agent and sell homes and condominiums by VBEYOND Development.</p>
           <div className="d-flex flex-wrap gap-2 mt-4">
             <Link to="/join" className="btn btn-success btn-lg">Get started</Link>
-            <Link to="/login" className="btn btn-outline-light btn-lg">Agent sign in</Link>
           </div>
         </div>
       </section>
