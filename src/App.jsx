@@ -18,7 +18,7 @@ import Renewal from './pages/agent/Renewal';
 import Commission from './pages/agent/Commission';
 
 import TeamMembers from './pages/team-lead/TeamMembers';
-import TeamHierarchy from './pages/team-lead/TeamHierarchy';
+import TeamCommission from './pages/team-lead/TeamCommission';
 
 import Applications from './pages/applications/Applications';
 import ApplicationDetail from './pages/applications/ApplicationDetail';
@@ -34,7 +34,6 @@ import Landing from './pages/common/Landing';
 import PropertyDirectory from './pages/properties/PropertyDirectory';
 import PropertyDetail from './pages/properties/PropertyDetail';
 import PropertyBrochure from './pages/properties/PropertyBrochure';
-import TeamSales from './pages/team-lead/TeamSales';
 import CommissionRules from './pages/sales/CommissionRules';
 import SalesUpload from './pages/sales/SalesUpload';
 
@@ -71,8 +70,8 @@ export default function App() {
         <Route path="/commission" element={<Commission />} />
 
         <Route path="/team/members" element={<TeamMembers />} />
-        <Route path="/team/hierarchy" element={<TeamHierarchy />} />
-        <Route path="/team/sales" element={<TeamSales />} />
+        <Route path="/team/commission" element={<TeamCommission />} />
+        <Route path="/team/hierarchy" element={<Navigate to="/team/members" replace />} />
         <Route path="/properties" element={<PropertyDirectory />} />
         <Route path="/properties/favorites" element={<PropertyDirectory favoritesOnly />} />
         <Route path="/properties/:id" element={<PropertyDetail />} />

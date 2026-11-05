@@ -55,7 +55,7 @@ Other entry points on the login page:
 12. Active Agent → *Property Directory* → filter and sort → save favorites → open a property → *Share with team* or *Co-branded PDF*
 13. Agent Manager → *Commission Rules* → edit the base rate, tiers and team lead split
 14. Agent Manager → *Monthly Sales Upload* → download the template → upload it (Excel or CSV) → check the preview → publish
-15. Team Lead → *Team Sales* → pick a month to see the member ranking; agents see their tier on the dashboard
+15. Active Agent → dashboard shows the commission tier and progress to the next tier
 16. Executive → dashboard → change the period to compare revenue, units sold and team sales
 
 ## Project structure

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnnouncementBanner, AnnouncementDetailModal } from '../../components/dashboard/AnnouncementBanner';
+import { AnnouncementBanner, AnnouncementDetailModal, AnnouncementVisual } from '../../components/dashboard/AnnouncementBanner';
 import { RENEWAL_REMINDER_DAYS, useStore } from '../../context/StoreContext';
-import { Avatar, Select, StatCard, StatusBadge, TONES } from '../../components/common';
+import { Avatar, EmptyState, SearchInput, Select, StatCard, StatusBadge, TONES } from '../../components/common';
 import InviteButton from '../../components/InviteButton';
 import { ApplicationProgress } from '../agent/MyApplication';
 import { CommissionBars, commissionSummary, monthlyCommission } from '../../components/dashboard/Commission';
@@ -40,20 +40,6 @@ function AgentAnnouncements() {
   return (
     <>
       <AnnouncementBanner items={items} onOpen={show} />
-      <div className="card mb-3">
-        <div className="card-header d-flex justify-content-between"><span>News</span><Link to="/announcements" className="small fw-normal">View all</Link></div>
-        <div className="list-group list-group-flush">
-          {items.slice(0, 4).map((a) => (
-            <button key={a.id} className="list-group-item list-group-item-action d-flex gap-3 align-items-start text-start" onClick={() => show(a)}>
-              <span className="lh-sm flex-grow-1" style={{ minWidth: 0 }}>
-                <span className="d-block fw-medium text-truncate">{!a.readBy.includes(me) && <span className="news-dot" aria-label="Unread" />}{a.title}</span>
-                <small className="text-muted d-block text-truncate">{a.summary}</small>
-              </span>
-              <small className="text-muted text-nowrap">{a.category} · {fmtDate(a.date)}</small>
-            </button>
-          ))}
-        </div>
-      </div>
       <AnnouncementDetailModal a={open} onClose={() => setOpen(null)} />
     </>
   );
@@ -115,8 +101,6 @@ function CommissionOverview({ agentId }) {
             <div className="row g-2 small">
               <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Earned in {new Date().getFullYear()}</div><div className="fw-semibold">{fmtMoney(s.ytd)}</div></div></div>
               <div className="col-6"><div className="border rounded p-2"><div className="text-muted">This month</div><div className="fw-semibold">{fmtMoney(s.thisMonth)}</div></div></div>
-              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Paid out</div><div className="fw-semibold text-green">{fmtMoney(s.paid)}</div></div></div>
-              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Upcoming</div><div className="fw-semibold">{fmtMoney(s.upcoming)}</div></div></div>
             </div>
           </div>
           <div className="col-lg-7">
@@ -157,6 +141,80 @@ function TierTracker({ agentId }) {
   );
 }
 
+function DashboardAnnouncementFeed() {
+  const { state, user, mutate } = useStore();
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('All');
+  const [sort, setSort] = useState('newest');
+  const [open, setOpen] = useState(null);
+  const me = user.keys[0];
+  const published = state.announcements.filter((announcement) => announcement.status === 'Published');
+  const categories = [...new Set(published.map((announcement) => announcement.category))].sort();
+  const announcements = published
+    .filter((announcement) => category === 'All' || announcement.category === category)
+    .filter((announcement) => !query || `${announcement.title} ${announcement.summary || ''} ${announcement.body}`.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => sort === 'oldest'
+      ? new Date(a.date) - new Date(b.date)
+      : sort === 'title'
+        ? a.title.localeCompare(b.title)
+        : new Date(b.date) - new Date(a.date));
+  const showAnnouncement = (announcement) => {
+    setOpen(announcement);
+    if (!announcement.readBy.includes(me)) {
+      mutate((draft) => {
+        const item = draft.announcements.find((entry) => entry.id === announcement.id);
+        if (item && !item.readBy.includes(me)) item.readBy.push(me);
+      });
+    }
+  };
+
+  return (
+    <section className="card dashboard-announcement-feed mb-3" aria-labelledby="dashboard-announcements-heading">
+      <div className="card-header dashboard-announcement-feed-header">
+        <div>
+          <h2 id="dashboard-announcements-heading" className="h6 mb-1"><i className="bi bi-megaphone me-2" aria-hidden="true" />News & announcements</h2>
+          <small className="text-muted">{published.length} published update{published.length === 1 ? '' : 's'}</small>
+        </div>
+        <Link to="/announcements" className="small fw-normal">View all</Link>
+      </div>
+      <div className="card-body dashboard-announcement-filters">
+        <SearchInput value={query} onChange={setQuery} placeholder="Search announcements" className="dashboard-announcement-search" />
+        <Select value={category} onChange={setCategory} label="Filter announcements by topic" options={[{ value: 'All', label: 'All topics' }, ...categories.map((value) => ({ value, label: value }))]} />
+        <Select value={sort} onChange={setSort} label="Sort announcements" options={[{ value: 'newest', label: 'Newest first' }, { value: 'oldest', label: 'Oldest first' }, { value: 'title', label: 'Title A–Z' }]} />
+      </div>
+      {announcements.length ? (
+        <div className="row g-3 dashboard-announcement-grid">
+          {announcements.map((announcement) => {
+            const unread = !announcement.readBy.includes(me);
+            const summary = announcement.summary || announcement.body;
+            const excerpt = summary.length > 130 ? `${summary.slice(0, 127).trimEnd()}...` : summary;
+            return (
+              <div className="col-md-6 col-xl-4" key={announcement.id}>
+                <article className="card dashboard-announcement-card h-100">
+                  <AnnouncementVisual a={announcement} height={150} />
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center gap-2 mb-2">
+                      <span className="status-badge sb-teal">{announcement.category}</span>
+                      {unread && <span className="badge bg-success">New</span>}
+                    </div>
+                    <h3 className="h6 dashboard-announcement-title">{announcement.title}</h3>
+                    <p className="small text-muted dashboard-announcement-excerpt">{excerpt}</p>
+                    <div className="d-flex justify-content-between align-items-center gap-2 mt-auto">
+                      <small className="text-muted"><i className="bi bi-calendar3 me-1" aria-hidden="true" />{fmtDate(announcement.date)}</small>
+                      <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => showAnnouncement(announcement)}>Read more</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            );
+          })}
+        </div>
+      ) : <div className="dashboard-announcement-empty"><EmptyState icon="bi-megaphone" title={published.length ? 'No announcements match these filters' : 'No announcements yet'} /></div>}
+      <AnnouncementDetailModal a={open} onClose={() => setOpen(null)} />
+    </section>
+  );
+}
+
 function AgentBlocks({ user }) {
   const { state } = useStore();
   const a = user.agent;
@@ -171,6 +229,7 @@ function AgentBlocks({ user }) {
       {renewal && <div className="alert alert-brand d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-arrow-repeat me-1" /><span className="flex-grow-1">Renewal {renewal.id}: <strong>{renewal.status}</strong></span><Link to="/renewal" className="btn btn-sm btn-outline-primary">View renewal</Link></div>}
       <TierTracker agentId={a.id} />
       <CommissionOverview agentId={a.id} />
+      <DashboardAnnouncementFeed />
     </>
   );
 }
@@ -192,6 +251,10 @@ function TeamLeadDashboard({ user }) {
   const { state } = useStore();
   const team = user.ledTeam;
   const members = state.agents.filter((a) => a.teamId === team.id);
+  const memberIds = new Set(members.map((a) => a.id));
+  const teamSales = (state.commissions || []).filter((c) => memberIds.has(c.agentId));
+  const totalSales = teamSales.reduce((total, sale) => total + sale.saleValue, 0);
+  const totalCommission = teamSales.reduce((total, sale) => total + sale.amount, 0);
   const referrals = state.applications.filter((x) => x.referredBy === user.agent.id && !['Approved', 'Rejected'].includes(x.status));
   const recent = members.filter((a) => a.onboardedAt && Date.now() - new Date(a.teamHistory[a.teamHistory.length - 1]?.from || a.onboardedAt) < 45 * 86400000 && a.id !== user.agent.id);
   return (
@@ -209,7 +272,7 @@ function TeamLeadDashboard({ user }) {
       <div className="row g-3 mb-3">
         <div className="col-lg-7">
           <div className="card h-100">
-            <div className="card-header d-flex justify-content-between"><span>Team member directory</span><Link to="/team/members" className="small fw-normal">View all</Link></div>
+            <div className="card-header d-flex justify-content-between"><span>Team member</span><Link to="/team/members" className="small fw-normal">View all</Link></div>
             <div className="list-group list-group-flush">
               {members.slice(0, 6).map((a) => (
                 <Link key={a.id} to={`/team/members?view=${a.id}`} className="list-group-item list-group-item-action d-flex align-items-center gap-2">
@@ -223,8 +286,12 @@ function TeamLeadDashboard({ user }) {
         </div>
         <div className="col-lg-5">
           <div className="card">
-            <div className="card-header">Team overview</div>
+            <div className="card-header"><i className="bi bi-people me-2 text-brand" aria-hidden="true" />Team overview</div>
             <div className="card-body small">
+              <div className="row g-2 mb-3">
+                <div className="col-6"><div className="border rounded p-2 h-100"><div className="text-muted"><i className="bi bi-house-check me-1" aria-hidden="true" />Team total sales</div><div className="fw-semibold mt-1">{fmtMoney(totalSales)}</div></div></div>
+                <div className="col-6"><div className="border rounded p-2 h-100"><div className="text-muted"><i className="bi bi-cash-coin me-1" aria-hidden="true" />Team commission</div><div className="fw-semibold mt-1">{fmtMoney(totalCommission)}</div></div></div>
+              </div>
               {['Active', 'Suspended', 'Expired', 'Resigned'].map((s) => {
                 const n = members.filter((a) => a.status === s).length;
                 return <div key={s} className="mb-2"><div className="d-flex justify-content-between"><span>{s}</span><span>{n}</span></div><div className="bar-track"><div className="bar-fill" style={{ width: `${members.length ? (n / members.length) * 100 : 0}%`, background: s === 'Active' ? 'var(--vb-green-600)' : s === 'Suspended' ? '#d98a00' : s === 'Expired' ? '#b42318' : '#8a949e' }} /></div></div>;
@@ -367,8 +434,12 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <C user={user} />
       <footer className="dash-footer">
-        <span className="fw-semibold"><i className="bi bi-headset me-2" aria-hidden="true" />Contact support</span>
-        <a href="mailto:info@vbeyond.co.th"><i className="bi bi-envelope me-1" aria-hidden="true" />info@vbeyond.co.th</a>
+        <h2 className="dash-footer-title"><i className="bi bi-headset me-2" aria-hidden="true" />Contact Us</h2>
+        <div className="dash-footer-contacts">
+          <a href="tel:020068008"><i className="bi bi-telephone me-2" aria-hidden="true" />02 006 8008</a>
+          <a href="mailto:info@vbeyond.co.th"><i className="bi bi-envelope me-2" aria-hidden="true" />info@vbeyond.co.th</a>
+          <address><i className="bi bi-geo-alt me-2" aria-hidden="true" /><span>บริษัท กลุ่ม วีบียอนด์ เอกซ์ จำกัด (มหาชน) เลขที่ 1 อาคารเอ็มไพร์ ทาวเวอร์ ชั้น 47 ยูนิต 4701, 4711, 4712 ถนนสาทรใต้ แขวงยานนาวา เขตสาทร กรุงเทพ 10120</span></address>
+        </div>
       </footer>
     </div>
   );

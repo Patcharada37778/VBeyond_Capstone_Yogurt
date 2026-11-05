@@ -120,7 +120,7 @@ export default function SalesUpload() {
       const agentIds = [...new Set(good.map((r) => r.agent.id))];
       notify(d, agentIds.map((id) => `agent:${id}`), { category: 'Commission updates', title: `Your sales for ${monthLabel(month)} are published`, body: 'Check your updated commission statement.', link: '/commission' });
       const leads = [...new Set(good.map((r) => d.teams.find((t) => t.id === r.agent.teamId)?.leadId).filter(Boolean))];
-      notify(d, leads.map((id) => `agent:${id}`), { category: 'Commission updates', title: `Team sales for ${monthLabel(month)} are published`, body: 'See how your team performed.', link: '/team/sales' });
+      notify(d, leads.map((id) => `agent:${id}`), { category: 'Commission updates', title: `Team sales for ${monthLabel(month)} are published`, body: 'See how your team performed.', link: '/team/commission' });
       logAction(d, user, `Published sales for ${monthLabel(month)}`, `${uploadId} · ${file.name}`);
     });
     setConfirm(false);

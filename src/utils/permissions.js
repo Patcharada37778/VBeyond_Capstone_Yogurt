@@ -69,17 +69,11 @@ export const NAV = [
     { path: '/properties/favorites', label: 'Favorites', icon: 'bi-heart', roles: ['agent', 'teamLead'] },
   ] },
   { group: 'My Team', items: [
-    { path: '/team/members', label: 'Team Members', icon: 'bi-people', roles: ['teamLead'] },
-    { path: '/team/hierarchy', label: 'Team Hierarchy', icon: 'bi-diagram-3', roles: ['teamLead'] },
-    { path: '/team/sales', label: 'Team Sales', icon: 'bi-graph-up', roles: ['teamLead'] },
-  ] },
-  { group: 'Common Services', items: [
-    { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', roles: ['prospect', 'agent', 'teamLead'], hideFor: ['prospect'] },
-    { path: '/notifications', label: 'Notifications', icon: 'bi-bell', roles: 'all', badge: 'notifications', hideFor: ['prospect', 'agentManager', 'executive'] },
+    { path: '/team/members', label: 'Team Member', icon: 'bi-people', roles: ['teamLead'] },
+    { path: '/team/commission', label: 'Team Commission', icon: 'bi-cash-stack', roles: ['teamLead'] },
   ] },
   { group: 'Agent Team Management', items: [
     { path: '/applications', label: 'Agent Applications', icon: 'bi-inboxes', module: 'applications' },
-    { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', module: 'announcements' },
     { path: '/agents', label: 'Agent List', icon: 'bi-person-lines-fill', module: 'agents' },
     { path: '/teams', label: 'Team Management', icon: 'bi-diagram-3', module: 'teams' },
     { path: '/renewals', label: 'Membership Renewals', icon: 'bi-arrow-repeat', module: 'renewals' },

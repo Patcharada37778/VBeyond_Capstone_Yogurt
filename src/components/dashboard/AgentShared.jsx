@@ -9,7 +9,7 @@ export function AgentProfileModal({ agent, teams, agents, onClose, showSensitive
   return (
     <Modal open={!!agent} onClose={onClose} title="Agent profile" size="lg"
       footer={<>{fullLink && <Link to={fullLink} className="btn btn-outline-primary">Open full record</Link>}<button className="btn btn-primary" onClick={onClose}>Close</button></>}>
-      {agent && <>
+      {agent && <div className="agent-profile-content">
         <div className="d-flex gap-3 align-items-center mb-3">
           <Avatar name={fullName(agent)} color={agent.avatarColor} photo={agent.photo} size={64} />
           <div>
@@ -33,45 +33,65 @@ export function AgentProfileModal({ agent, teams, agents, onClose, showSensitive
           <div><dt>License no.</dt><dd>{agent.licenseNo}</dd></div>
           <div><dt>Onboarded</dt><dd>{fmtDate(agent.onboardedAt)}</dd></div>
         </dl>
-      </>}
+      </div>}
     </Modal>
   );
 }
 
-export function OrgChart({ teams, agents, onlyTeamId, onSelect }) {
-  const list = onlyTeamId ? teams.filter((t) => t.id === onlyTeamId) : teams;
+function getAgentManager(agent, team, agents) {
+  const manager = agents.find((candidate) => candidate.id === agent.reportsTo && candidate.teamId === team.id);
+  return agent.id === team.leadId ? null : manager?.id || team.leadId;
+}
+
+function AgentReportBranch({ agent, team, agents, onSelect, ancestors = [] }) {
+  const path = [...ancestors, agent.id];
+  const reports = agents.filter((candidate) => candidate.status !== 'Resigned'
+    && !path.includes(candidate.id)
+    && getAgentManager(candidate, team, agents) === agent.id);
   return (
-    <div className="org-tree">
-      {!onlyTeamId && <>
-        <div className="org-node lead" style={{ background: 'var(--vb-teal-700)', color: '#fff', borderColor: 'var(--vb-teal-700)' }}>
-          <i className="bi bi-building fs-5" /><div><div className="fw-semibold">VBEYOND Agent Network</div><small className="opacity-75">Agent Management Office</small></div>
+    <div className="org-report-branch">
+      <button type="button" className={`org-folder-agent ${agent.id === team.leadId ? 'org-folder-lead' : ''}`} onClick={() => onSelect?.(agent)}>
+        {agent.id === team.leadId
+          ? <Avatar name={fullName(agent)} color={agent.avatarColor} photo={agent.photo} size={32} />
+          : <i className="bi bi-person" aria-hidden="true" />}
+        <span className="org-folder-agent-info"><strong>{fullName(agent)}</strong><small>{agent.id === team.leadId ? 'Team Lead' : agent.teamRole || 'Agent'} · {agent.id}{reports.length ? ` · ${reports.length} direct report${reports.length === 1 ? '' : 's'}` : ''}</small></span>
+        <StatusBadge status={agent.status} />
+      </button>
+      {reports.length > 0 && (
+        <div className="org-folder-members">
+          {reports.map((report) => <AgentReportBranch key={report.id} agent={report} team={team} agents={agents} onSelect={onSelect} ancestors={path} />)}
         </div>
-        <div className="org-connector" />
-      </>}
-      <div className="org-children">
-        {list.map((t) => {
-          const lead = agents.find((a) => a.id === t.leadId);
-          const members = agents.filter((a) => a.teamId === t.id && a.id !== t.leadId && a.status !== 'Resigned');
-          return (
-            <div key={t.id} className="border rounded-3 p-3 bg-white">
-              <div className="d-flex justify-content-between align-items-center mb-2"><strong className="font-brand">{t.name}</strong><small className="text-muted">{members.length + (lead ? 1 : 0)} agents</small></div>
-              <button className="org-node lead w-100 text-start mb-2" onClick={() => lead && onSelect?.(lead)}>
-                {lead ? <><Avatar name={fullName(lead)} color={lead.avatarColor} photo={lead.photo} size={32} /><div className="lh-sm"><div className="fw-semibold small">{fullName(lead)}</div><small className="text-muted">Team Lead · {lead.id}</small></div></> : <small className="text-muted">No team lead assigned</small>}
-              </button>
-              <div className="ps-3 border-start d-grid gap-1" style={{ borderColor: '#c9d6d7' }}>
-                {members.map((m) => (
-                  <button key={m.id} className="org-node w-100 text-start py-1" onClick={() => onSelect?.(m)} style={{ minWidth: 0 }}>
-                    <Avatar name={fullName(m)} color={m.avatarColor} photo={m.photo} size={26} />
-                    <span className="small text-truncate flex-grow-1">{fullName(m)}</span>
-                    {m.status !== 'Active' && <StatusBadge status={m.status} />}
-                  </button>
-                ))}
-                {!members.length && <small className="text-muted">No members</small>}
-              </div>
-            </div>
-          );
-        })}
+      )}
+    </div>
+  );
+}
+
+function OrgTeamFolder({ team, agents, onSelect, initiallyOpen = false }) {
+  const teamAgents = agents.filter((agent) => agent.teamId === team.id && agent.status !== 'Resigned');
+  const lead = teamAgents.find((agent) => agent.id === team.leadId);
+  return (
+    <details className="org-folder-team" open={initiallyOpen}>
+      <summary><span>{team.name}</span><small>{teamAgents.length} agents</small></summary>
+      <div className="org-folder-children">
+        {lead
+          ? <AgentReportBranch agent={lead} team={team} agents={teamAgents} onSelect={onSelect} />
+          : <div className="org-folder-empty">No team lead assigned</div>}
       </div>
+    </details>
+  );
+}
+
+export function OrgChart({ teams, agents, onlyTeamId, onSelect }) {
+  const list = onlyTeamId ? teams.filter((team) => team.id === onlyTeamId) : teams;
+  return (
+    <div className="org-folder-tree">
+      {!onlyTeamId && <details className="org-folder-root" open>
+        <summary><i className="bi bi-building" aria-hidden="true" /><span>VBEYOND Agent Network</span><small>{list.length} teams</small></summary>
+        <div className="org-folder-children">
+          {list.map((team) => <OrgTeamFolder key={team.id} team={team} agents={agents} onSelect={onSelect} />)}
+        </div>
+      </details>}
+      {onlyTeamId && list.map((team) => <OrgTeamFolder key={team.id} team={team} agents={agents} onSelect={onSelect} initiallyOpen />)}
     </div>
   );
 }
