@@ -18,6 +18,7 @@ import Renewal from './pages/agent/Renewal';
 import Commission from './pages/agent/Commission';
 
 import TeamMembers from './pages/team-lead/TeamMembers';
+import TeamCommission from './pages/team-lead/TeamCommission';
 
 import Applications from './pages/applications/Applications';
 import ApplicationDetail from './pages/applications/ApplicationDetail';
@@ -61,6 +62,7 @@ export default function App() {
         <Route path="/commission" element={<Commission />} />
 
         <Route path="/team/members" element={<TeamMembers />} />
+        <Route path="/team/commission" element={<TeamCommission />} />
         <Route path="/team/hierarchy" element={<Navigate to="/team/members" replace />} />
 
         <Route path="/applications" element={<Applications />} />
