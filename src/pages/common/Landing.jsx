@@ -16,7 +16,7 @@ export default function Landing() {
       <header className="landing-nav">
         <img src="/vbeyond-logo-color.png" alt="VBEYOND" />
         <nav className="d-flex gap-2">
-          {user ? <Link to="/dashboard" className="btn btn-primary">Go to dashboard</Link> : <>
+          {!user && <>
             <Link to="/login" className="btn btn-light">Sign in</Link>
             <Link to="/join" className="btn btn-primary">Become an agent</Link>
           </>}
@@ -30,12 +30,15 @@ export default function Landing() {
           <p>Become an authorised VBEYOND agent and sell homes and condominiums by VBEYOND Development.</p>
           <div className="d-flex flex-wrap gap-2 mt-4">
             <Link to="/join" className="btn btn-success btn-lg">Apply now</Link>
-            <Link to="/login" className="btn btn-outline-light btn-lg">Agent sign in</Link>
           </div>
         </div>
       </section>
 
       <section className="landing-inner py-5">
+        <div className="landing-about mb-5">
+          <h2 className="h4 mb-2">About VBEYOND</h2>
+          <p className="text-muted mb-0">VBEYOND Development is a real estate developer offering homes and condominiums for people looking to find a place to live or invest. Through the VBEYOND Agent Network, agents can connect customers with available properties and access the tools, guidance, and team support they need throughout the sales process.</p>
+        </div>
         <h2 className="h4 mb-4">Why become a VBEYOND agent</h2>
         <div className="row g-3">
           {BENEFITS.map(([icon, title, text]) => (
