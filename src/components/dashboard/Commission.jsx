@@ -36,26 +36,28 @@ export function CommissionBars({ data, height = 160 }) {
   const [hover, setHover] = useState(null);
   const max = Math.max(...data.map((d) => d.amount), 1);
   return (
-    <div className="comm-chart" role="img" aria-label={`Monthly commission: ${data.map((d) => `${d.full} ${fmtMoney(d.amount)}`).join(', ')}`}>
-      <div className="comm-bars" style={{ height }}>
-        {data.map((d, i) => (
-          <div key={d.label + i} className="comm-col" tabIndex={0} aria-label={`${d.full}: ${fmtMoney(d.amount)}`}
-            onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
-            {hover === i && (
-              <div className="comm-tip" role="tooltip">
-                <div className="fw-semibold">{d.full}</div>
-                <div>{fmtMoney(d.amount)}</div>
-                <div className="text-muted">{d.count} closed deal{d.count === 1 ? '' : 's'}</div>
-              </div>
-            )}
-            <div className={`comm-bar ${hover === i ? 'active' : ''}`} style={{ height: `${(d.amount / max) * 100}%` }} />
-          </div>
-        ))}
+    <div className={`comm-chart-shell ${data.length > 10 ? 'comm-chart-shell-wide' : ''}`}>
+      <div className="comm-chart" role="group" aria-label={`Monthly commission: ${data.map((d) => `${d.full} ${fmtMoney(d.amount)}`).join(', ')}`}>
+        <div className="comm-bars" style={{ height }}>
+          {data.map((d, i) => (
+            <div key={d.label + i} className="comm-col" tabIndex={0} aria-label={`${d.full}: ${fmtMoney(d.amount)}, ${d.count} closed deal${d.count === 1 ? '' : 's'}`}
+              onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
+              {hover === i && (
+                <div className="comm-tip" role="tooltip">
+                  <div className="fw-semibold">{d.full}</div>
+                  <div>{fmtMoney(d.amount)}</div>
+                  <div className="text-muted">{d.count} closed deal{d.count === 1 ? '' : 's'}</div>
+                </div>
+              )}
+              <div className={`comm-bar ${hover === i ? 'active' : ''}`} style={{ height: `${(d.amount / max) * 100}%` }} />
+            </div>
+          ))}
+        </div>
+        <div className="comm-axis">
+          {data.map((d, i) => <span key={d.label + i} className={i === data.length - 1 ? 'fw-semibold text-body' : ''}>{d.label}</span>)}
+        </div>
+        <div className="comm-max small text-muted">{short(max)}</div>
       </div>
-      <div className="comm-axis">
-        {data.map((d, i) => <span key={d.label + i} className={i === data.length - 1 ? 'fw-semibold text-body' : ''}>{d.label}</span>)}
-      </div>
-      <div className="comm-max small text-muted">{short(max)}</div>
     </div>
   );
 }
