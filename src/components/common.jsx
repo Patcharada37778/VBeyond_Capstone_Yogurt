@@ -88,18 +88,18 @@ export function Tabs({ tabs, active, onChange }) {
   );
 }
 
-export function SearchInput({ value, onChange, placeholder = 'Search…', className = '' }) {
+export function SearchInput({ id, value, onChange, placeholder = 'Search…', className = '' }) {
   return (
     <div className={`position-relative ${className}`} style={{ minWidth: 220 }}>
       <i className="bi bi-search position-absolute text-muted" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
-      <input type="search" className="form-control ps-5" value={value} placeholder={placeholder} aria-label={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <input id={id} type="search" className="form-control ps-5" value={value} placeholder={placeholder} aria-label={placeholder} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
 
-export function Select({ value, onChange, options, label, className = '', style }) {
+export function Select({ id, value, onChange, options, label, className = '', style }) {
   return (
-    <select className={`form-select ${className}`} style={{ width: 'auto', ...style }} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+    <select id={id} className={`form-select ${className}`} style={{ width: 'auto', ...style }} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
       {options.map((o) => (typeof o === 'string' ? <option key={o} value={o}>{o}</option> : <option key={o.value} value={o.value}>{o.label}</option>))}
     </select>
   );

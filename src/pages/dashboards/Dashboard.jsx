@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnnouncementBanner, AnnouncementDetailModal } from '../../components/dashboard/AnnouncementBanner';
+import { AnnouncementBanner, AnnouncementDetailModal, AnnouncementVisual } from '../../components/dashboard/AnnouncementBanner';
 import { RENEWAL_REMINDER_DAYS, useStore } from '../../context/StoreContext';
-import { Avatar, StatCard, StatusBadge, TONES } from '../../components/common';
+import { Avatar, EmptyState, SearchInput, Select, StatCard, StatusBadge, TONES } from '../../components/common';
 import InviteButton from '../../components/InviteButton';
 import { ApplicationProgress } from '../agent/MyApplication';
 import { CommissionBars, commissionSummary, monthlyCommission } from '../../components/dashboard/Commission';
@@ -112,6 +112,80 @@ function CommissionOverview({ agentId }) {
   );
 }
 
+function DashboardAnnouncementFeed() {
+  const { state, user, mutate } = useStore();
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('All');
+  const [sort, setSort] = useState('newest');
+  const [open, setOpen] = useState(null);
+  const me = user.keys[0];
+  const published = state.announcements.filter((announcement) => announcement.status === 'Published');
+  const categories = [...new Set(published.map((announcement) => announcement.category))].sort();
+  const announcements = published
+    .filter((announcement) => category === 'All' || announcement.category === category)
+    .filter((announcement) => !query || `${announcement.title} ${announcement.summary || ''} ${announcement.body}`.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => sort === 'oldest'
+      ? new Date(a.date) - new Date(b.date)
+      : sort === 'title'
+        ? a.title.localeCompare(b.title)
+        : new Date(b.date) - new Date(a.date));
+  const showAnnouncement = (announcement) => {
+    setOpen(announcement);
+    if (!announcement.readBy.includes(me)) {
+      mutate((draft) => {
+        const item = draft.announcements.find((entry) => entry.id === announcement.id);
+        if (item && !item.readBy.includes(me)) item.readBy.push(me);
+      });
+    }
+  };
+
+  return (
+    <section className="card dashboard-announcement-feed mb-3" aria-labelledby="dashboard-announcements-heading">
+      <div className="card-header dashboard-announcement-feed-header">
+        <div>
+          <h2 id="dashboard-announcements-heading" className="h6 mb-1"><i className="bi bi-megaphone me-2" aria-hidden="true" />News & announcements</h2>
+          <small className="text-muted">{published.length} published update{published.length === 1 ? '' : 's'}</small>
+        </div>
+        <Link to="/announcements" className="small fw-normal">View all</Link>
+      </div>
+      <div className="card-body dashboard-announcement-filters">
+        <SearchInput value={query} onChange={setQuery} placeholder="Search announcements" className="dashboard-announcement-search" />
+        <Select value={category} onChange={setCategory} label="Filter announcements by topic" options={[{ value: 'All', label: 'All topics' }, ...categories.map((value) => ({ value, label: value }))]} />
+        <Select value={sort} onChange={setSort} label="Sort announcements" options={[{ value: 'newest', label: 'Newest first' }, { value: 'oldest', label: 'Oldest first' }, { value: 'title', label: 'Title A–Z' }]} />
+      </div>
+      {announcements.length ? (
+        <div className="row g-3 dashboard-announcement-grid">
+          {announcements.map((announcement) => {
+            const unread = !announcement.readBy.includes(me);
+            const summary = announcement.summary || announcement.body;
+            const excerpt = summary.length > 130 ? `${summary.slice(0, 127).trimEnd()}...` : summary;
+            return (
+              <div className="col-md-6 col-xl-4" key={announcement.id}>
+                <article className="card dashboard-announcement-card h-100">
+                  <AnnouncementVisual a={announcement} height={150} />
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center gap-2 mb-2">
+                      <span className="status-badge sb-teal">{announcement.category}</span>
+                      {unread && <span className="badge bg-success">New</span>}
+                    </div>
+                    <h3 className="h6 dashboard-announcement-title">{announcement.title}</h3>
+                    <p className="small text-muted dashboard-announcement-excerpt">{excerpt}</p>
+                    <div className="d-flex justify-content-between align-items-center gap-2 mt-auto">
+                      <small className="text-muted"><i className="bi bi-calendar3 me-1" aria-hidden="true" />{fmtDate(announcement.date)}</small>
+                      <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => showAnnouncement(announcement)}>Read more</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            );
+          })}
+        </div>
+      ) : <div className="dashboard-announcement-empty"><EmptyState icon="bi-megaphone" title={published.length ? 'No announcements match these filters' : 'No announcements yet'} /></div>}
+      <AnnouncementDetailModal a={open} onClose={() => setOpen(null)} />
+    </section>
+  );
+}
+
 function AgentBlocks({ user }) {
   const { state } = useStore();
   const a = user.agent;
@@ -125,6 +199,7 @@ function AgentBlocks({ user }) {
       {a.status === 'Active' && left <= RENEWAL_REMINDER_DAYS && !renewal && <div className="alert alert-warning d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-bell me-1" /><span className="flex-grow-1"><strong>Renewal reminder:</strong> your membership expires in {left} days ({fmtDate(a.membershipExpiry)}).</span><Link to="/renewal" className="btn btn-sm btn-warning">Start renewal</Link></div>}
       {renewal && <div className="alert alert-brand d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-arrow-repeat me-1" /><span className="flex-grow-1">Renewal {renewal.id}: <strong>{renewal.status}</strong></span><Link to="/renewal" className="btn btn-sm btn-outline-primary">View renewal</Link></div>}
       <CommissionOverview agentId={a.id} />
+      <DashboardAnnouncementFeed />
     </>
   );
 }
