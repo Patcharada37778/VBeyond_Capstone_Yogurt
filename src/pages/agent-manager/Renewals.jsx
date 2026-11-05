@@ -7,6 +7,12 @@ import DataTable from '../../components/tables/DataTable';
 import { Modal } from '../../components/modals/Modal';
 import { addYears, fmtDate, fmtDateTime, fullName } from '../../utils/format';
 
+const INFO_REASONS = [
+  'Please upload a clearer copy of the document.',
+  'The document appears to be expired. Please upload a valid copy.',
+  'Some required information is missing. Please resubmit the document.',
+];
+
 export default function Renewals() {
   const { state, mutate, user, can } = useStore();
   const toast = useToast();
@@ -16,6 +22,7 @@ export default function Renewals() {
   const [action, setAction] = useState(null); // 'approve' | 'reject' | 'info'
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
+  const [infoReason, setInfoReason] = useState('');
   const canApprove = can('renewals', 'approve');
   const canEdit = can('renewals', 'edit');
 
@@ -43,7 +50,9 @@ export default function Renewals() {
 
   const submitAction = () => {
     if (action === 'reject' && msg.trim().length < 10) return setErr('A rejection reason is required (at least 10 characters).');
-    if (action === 'info' && msg.trim().length < 10) return setErr('Describe the information you need.');
+    const infoMessage = infoReason === 'Other' ? msg.trim() : infoReason;
+    if (action === 'info' && !infoReason) return setErr('Select a reason for the information request.');
+    if (action === 'info' && infoReason === 'Other' && infoMessage.length < 10) return setErr('Describe the information you need (at least 10 characters).');
     if (action === 'approve') {
       update((x, d) => {
         x.status = 'Approved';
@@ -60,10 +69,10 @@ export default function Renewals() {
       update((x) => { x.status = 'Rejected'; x.rejectionReason = msg.trim(); }, 'Renewal rejected', 'Renewal rejected and the agent was notified.',
         { title: 'Your membership renewal was rejected', body: msg.trim() });
     } else if (action === 'info') {
-      update((x) => { x.infoRequest = { message: msg.trim(), by: user.name, at: new Date().toISOString(), response: '' }; x.status = 'Pending Review'; }, 'Additional information requested', 'Request sent to the agent.',
-        { title: `More information needed for renewal ${r.id}`, body: msg.trim() });
+      update((x) => { x.infoRequest = { message: infoMessage, by: user.name, at: new Date().toISOString(), response: '' }; x.status = 'Pending Review'; }, 'Additional information requested', 'Request sent to the agent.',
+        { title: `More information needed for renewal ${r.id}`, body: infoMessage });
     }
-    setAction(null); setMsg(''); setErr('');
+    setAction(null); setMsg(''); setErr(''); setInfoReason('');
   };
 
   const counts = (s) => state.renewals.filter((x) => x.status === s).length;
@@ -92,9 +101,8 @@ export default function Renewals() {
 
       <Modal open={!!r && !action} onClose={() => setParams({})} title={r ? `Renewal ${r.id}` : ''} size="lg"
         footer={r && !['Approved', 'Rejected'].includes(r.status) ? <>
-          {canEdit && <button className="btn btn-light" onClick={() => { setAction('info'); setMsg(''); setErr(''); }}><i className="bi bi-question-diamond me-1" />Request info</button>}
+          {canEdit && <button className="btn btn-light" onClick={() => { setAction('info'); setMsg(''); setErr(''); setInfoReason(''); }}>Request info</button>}
           {canApprove && <button className="btn btn-outline-danger" onClick={() => { setAction('reject'); setMsg(''); setErr(''); }}>Reject</button>}
-          {canEdit && r.status === 'Pending Review' && r.documents.some((d) => d.status !== 'Verified') && <button className="btn btn-primary" onClick={verifyDocs}>Verify all documents</button>}
           {canApprove && <button className="btn btn-success" onClick={() => { setAction('approve'); setMsg(''); }}>Approve renewal</button>}
         </> : <button className="btn btn-primary" onClick={() => setParams({})}>Close</button>}>
         {r && agent && <>
@@ -112,19 +120,26 @@ export default function Renewals() {
           {r.note && <div className="alert alert-light border small"><strong>Agent note:</strong> {r.note}</div>}
           {r.rejectionReason && <div className="alert alert-danger small"><strong>Rejection reason:</strong> {r.rejectionReason}</div>}
           {r.infoRequest && <div className="alert alert-warning small"><strong>Info requested:</strong> {r.infoRequest.message}{r.infoRequest.response ? <div className="mt-1"><strong>Agent response:</strong> {r.infoRequest.response}</div> : <div className="mt-1 fst-italic">Waiting for agent response.</div>}</div>}
-          <h3 className="small-caps">Supporting documents</h3>
+          <div className="renewal-documents-heading">
+            <div><h3 className="h6 mb-1">Supporting documents</h3><small className="text-muted">{r.documents.length} document{r.documents.length === 1 ? '' : 's'} submitted</small></div>
+          </div>
           <div className="d-grid gap-2 mb-3">
             {r.documents.map((d) => (
               <div key={d.id} className="doc-tile">
                 <div className="doc-icon"><i className="bi bi-file-earmark-text" /></div>
-                <div className="flex-grow-1"><div className="small text-muted">{d.type}</div><div className="fw-medium">{d.fileName}</div><small className="text-muted">{fmtDateTime(d.uploadedAt)}</small></div>
-                <StatusBadge status={d.status} />
-                {canEdit && !['Approved', 'Rejected'].includes(r.status) && d.status !== 'Verified' && <button className="btn btn-sm btn-light" onClick={() => verifyDoc(d.id, 'Verified')}>Verify</button>}
-                {canEdit && !['Approved', 'Rejected'].includes(r.status) && d.status !== 'Rejected' && <button className="btn btn-sm btn-light text-danger" onClick={() => verifyDoc(d.id, 'Rejected')}>Reject</button>}
+                <div className="renewal-document-content">
+                  <div className="renewal-document-heading"><div className="renewal-document-topic">{d.type}<StatusBadge status={d.status} className="renewal-document-status" /></div></div>
+                  <div className="fw-medium">{d.fileName}</div><small className="text-muted">{fmtDateTime(d.uploadedAt)}</small>
+                </div>
+                {canEdit && !['Approved', 'Rejected'].includes(r.status) && <div className="renewal-document-actions">
+                  {d.status !== 'Verified' && <button className="btn btn-sm btn-light" onClick={() => verifyDoc(d.id, 'Verified')}>Verify</button>}
+                  {d.status !== 'Rejected' && <button className="btn btn-sm btn-light text-danger" onClick={() => verifyDoc(d.id, 'Rejected')}>Reject</button>}
+                </div>}
               </div>
             ))}
-            {!r.documents.length && <small className="text-muted">No documents submitted.</small>}
+            {!r.documents.length && <div className="renewal-document-empty small text-muted">No documents submitted.</div>}
           </div>
+          {canEdit && r.status === 'Pending Review' && r.documents.some((d) => d.status !== 'Verified') && <div className="d-flex justify-content-end mb-3"><button className="btn btn-primary" onClick={verifyDocs}>Verify all documents</button></div>}
           <h3 className="small-caps">History</h3>
           <ul className="timeline small mb-0">{r.history.map((h, i) => <li key={i} className="done"><div>{h.text}</div><small className="text-muted">{fmtDateTime(h.at)}</small></li>)}</ul>
           <div className="mt-2"><Link to={`/agents/${agent.id}`} className="small">Open agent record</Link></div>
@@ -134,7 +149,20 @@ export default function Renewals() {
       <Modal open={!!action} onClose={() => setAction(null)} title={action === 'approve' ? 'Approve renewal?' : action === 'reject' ? 'Reject renewal' : 'Request additional information'}
         footer={<><button className="btn btn-light" onClick={() => setAction(null)}>Back</button><button className={`btn ${action === 'reject' ? 'btn-danger' : action === 'approve' ? 'btn-success' : 'btn-primary'}`} onClick={submitAction}>{action === 'approve' ? 'Approve & extend membership' : action === 'reject' ? 'Reject renewal' : 'Send request'}</button></>}>
         {action === 'approve' && agent && <ul className="small mb-0"><li>Membership expiry: {fmtDate(agent.membershipExpiry)} → <strong>{fmtDate(newExpiry)}</strong></li><li>Membership status will be Active{agent.status === 'Expired' ? ' (currently Expired)' : ''}.</li><li>The agent will be notified.</li></ul>}
-        {action !== 'approve' && <>
+        {action === 'info' && <>
+          <label className="form-label required" htmlFor="rn-info-reason">Reason for request</label>
+          <select id="rn-info-reason" className={`form-select ${err ? 'is-invalid' : ''}`} value={infoReason} onChange={(event) => { setInfoReason(event.target.value); setMsg(''); setErr(''); }}>
+            <option value="">Select a reason…</option>
+            {INFO_REASONS.map((reason) => <option key={reason} value={reason}>{reason}</option>)}
+            <option value="Other">Other</option>
+          </select>
+          {infoReason === 'Other' && <div className="mt-3">
+            <label className="form-label required" htmlFor="rn-msg">Additional information requested</label>
+            <textarea id="rn-msg" rows={4} className={`form-control ${err ? 'is-invalid' : ''}`} value={msg} onChange={(e) => { setMsg(e.target.value); setErr(''); }} placeholder="Describe what the agent needs to provide" />
+          </div>}
+          {err && <div className="text-danger small mt-1">{err}</div>}
+        </>}
+        {action === 'reject' && <>
           <label className="form-label required" htmlFor="rn-msg">{action === 'reject' ? 'Rejection reason' : 'What information is needed?'}</label>
           <textarea id="rn-msg" rows={4} className={`form-control ${err ? 'is-invalid' : ''}`} value={msg} onChange={(e) => { setMsg(e.target.value); setErr(''); }} />
           {err && <div className="invalid-feedback">{err}</div>}
