@@ -132,7 +132,6 @@ function ProfileMenu() {
             </div>
           </div>
           {(user.role === 'agent' || user.role === 'teamLead') && <Link to="/profile" data-close className="vb-dropdown-item"><i className="bi bi-person" /> My profile</Link>}
-          <Link to="/notifications" data-close className="vb-dropdown-item"><i className="bi bi-bell" /> Notifications</Link>
           <Link to="/forgot-password" data-close className="vb-dropdown-item"><i className="bi bi-key" /> Reset password</Link>
           <div className="vb-dropdown-divider" />
           <div className="px-2 pt-1 pb-1 d-flex align-items-center justify-content-between">

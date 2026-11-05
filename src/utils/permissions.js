@@ -58,7 +58,6 @@ export const NAV = [
     { path: '/help', label: 'FAQ', icon: 'bi-question-circle', roles: ['prospect'], hideFor: ['prospect'] },
   ] },
   { group: 'My Account', items: [
-    { path: '/profile', label: 'My Profile', icon: 'bi-person-badge', roles: ['agent', 'teamLead'] },
     { path: '/renewal', label: 'Membership Renewal', icon: 'bi-arrow-repeat', roles: ['agent', 'teamLead'] },
     { path: '/commission', label: 'My Commission', icon: 'bi-cash-coin', roles: ['agent', 'teamLead'] },
   ] },
