@@ -61,8 +61,7 @@ export const NAV = [
     { path: '/commission', label: 'My Commission', icon: 'bi-cash-coin', roles: ['agent', 'teamLead'] },
   ] },
   { group: 'My Team', items: [
-    { path: '/team/members', label: 'Team Members', icon: 'bi-people', roles: ['teamLead'] },
-    { path: '/team/hierarchy', label: 'Team Hierarchy', icon: 'bi-diagram-3', roles: ['teamLead'] },
+    { path: '/team/members', label: 'Team', icon: 'bi-people', roles: ['teamLead'] },
   ] },
   { group: 'Agent Team Management', items: [
     { path: '/applications', label: 'Agent Applications', icon: 'bi-inboxes', module: 'applications' },
