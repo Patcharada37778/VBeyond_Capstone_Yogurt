@@ -37,7 +37,7 @@ export default function AgentDirectory() {
       <PageHeader title="Agent List" subtitle="View agent information and contact details." crumbs={[{ label: 'Agent Team Management' }, { label: 'Agent List' }]}
         actions={<button className="btn btn-outline-primary" onClick={exportCsv}><i className="bi bi-download me-1" />Export CSV</button>} />
       {!sensitive && <div className="alert alert-light border small"><i className="bi bi-shield-lock me-1" />Contact details are partially hidden for your role.</div>}
-      <div className="card">
+      <div className="card agent-directory-card">
         <div className="card-body d-flex flex-wrap gap-2 border-bottom">
           <SearchInput value={q} onChange={setQ} placeholder="Search name, agent ID, email, phone" className="flex-grow-1" />
           <Select value={team} onChange={setTeam} label="Team" options={[{ value: 'All', label: 'All teams' }, ...state.teams.map((t) => ({ value: t.id, label: t.name })), { value: 'none', label: 'No team (pending onboarding)' }]} />
@@ -45,9 +45,9 @@ export default function AgentDirectory() {
         </div>
         <DataTable rows={rows} pageSize={12} onRowClick={(a) => navigate(`/agents/${a.id}`)} initialSort={{ key: 'id', dir: 'asc' }}
           columns={[
-            { key: 'name', label: 'Agent', sortValue: fullName, render: (a) => <div className="d-flex gap-2 align-items-center"><Avatar name={fullName(a)} color={a.avatarColor} photo={a.photo} size={34} /><div className="lh-sm"><div className="fw-medium">{fullName(a)}</div><small className="text-muted">{a.id}{a.migrated ? ' · migrated' : ''}</small></div></div> },
-            { key: 'email', label: 'Email', render: (a) => (sensitive ? a.email : mask(a.email)) },
-            { key: 'phone', label: 'Phone', render: (a) => (sensitive ? a.phone : mask(a.phone)) },
+            { key: 'name', label: 'Agent', sortValue: fullName, render: (a) => <div className="agent-directory-identity"><Avatar name={fullName(a)} color={a.avatarColor} photo={a.photo} size={30} /><div className="lh-sm"><div className="fw-medium">{fullName(a)}</div><small className="text-muted">{a.id}{a.migrated ? ' · migrated' : ''}</small></div></div> },
+            { key: 'email', label: 'Email', render: (a) => <span className="agent-directory-contact">{sensitive ? a.email : mask(a.email)}</span> },
+            { key: 'phone', label: 'Phone', render: (a) => <span className="agent-directory-contact">{sensitive ? a.phone : mask(a.phone)}</span> },
             { key: 'teamId', label: 'Team', sortValue: (a) => state.teams.find((t) => t.id === a.teamId)?.name || 'zz', render: (a) => state.teams.find((t) => t.id === a.teamId)?.name || <span className="status-badge sb-amber">Pending onboarding</span> },
             { key: 'lead', label: 'Team lead', sortable: false, render: (a) => { const t = state.teams.find((x) => x.id === a.teamId); const l = state.agents.find((x) => x.id === t?.leadId); return l ? (l.id === a.id ? <span className="status-badge sb-purple">Is team lead</span> : fullName(l)) : '—'; } },
             { key: 'registeredAt', label: 'Registered', render: (a) => fmtDate(a.registeredAt) },
