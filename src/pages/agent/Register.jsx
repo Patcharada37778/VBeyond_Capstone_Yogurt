@@ -216,7 +216,7 @@ function RegisterWizard() {
         clarifications: [], agentId: null, decisionNote: '', timeline: [{ at: now, text: 'Application submitted', by: `${form.firstName} ${form.lastName}` }],
       });
       if (inviter) notify(d, `agent:${inviter.id}`, { category: 'Team invitations', title: `${form.firstName} ${form.lastName} registered with your invitation link`, body: `Application ${id}${invitedTeam ? ` for ${invitedTeam.name}` : ''}.`, link: '/dashboard' });
-      notify(d, 'role:agentManager', { category: 'Registration updates', title: `New application: ${form.firstName} ${form.lastName}`, body: `${id} is waiting for review.`, link: `/applications/${id}` });
+      notify(d, 'role:operationsAdmin', { category: 'Registration updates', title: `New application: ${form.firstName} ${form.lastName}`, body: `${id} is waiting for review.`, link: `/applications/${id}` });
       notify(d, `applicant:${user.email}`, { category: 'Registration updates', title: 'Application submitted', body: `Your reference number is ${id}. Status: Pending Review.`, link: '/my-application' });
       logAction(d, { name: `${form.firstName} ${form.lastName}`, role: 'prospect' }, 'Submitted agent application', id);
     });

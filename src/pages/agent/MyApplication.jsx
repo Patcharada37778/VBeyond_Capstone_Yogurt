@@ -105,7 +105,7 @@ export default function MyApplication() {
       a.status = 'Resubmitted';
       a.timeline.push({ at: now, text: `Application resubmitted${explanation.trim() ? ` — "${explanation.trim()}"` : ''}`, by: user.name });
       if (explanation.trim()) a.resubmitNote = explanation.trim();
-      notify(d, a.reviewer ? [`admin:${a.reviewer}`, 'role:agentManager'] : 'role:agentManager', { category: 'Registration updates', title: `Application resubmitted: ${a.personal.firstName} ${a.personal.lastName}`, body: `${a.id} has updated information or documents.`, link: `/applications/${a.id}` });
+      notify(d, a.reviewer ? [`admin:${a.reviewer}`, 'role:operationsAdmin'] : 'role:operationsAdmin', { category: 'Registration updates', title: `Application resubmitted: ${a.personal.firstName} ${a.personal.lastName}`, body: `${a.id} has updated information or documents.`, link: `/applications/${a.id}` });
       notify(d, `applicant:${user.email}`, { category: 'Registration updates', title: 'Your changes were resubmitted', body: `${a.id} is back in the review queue.`, link: '/my-application' });
       logAction(d, user, 'Resubmitted application', a.id);
     });

@@ -172,12 +172,14 @@ const COMMISSION_RULES = {
   ],
   split: { type: 'percentage', value: 10 },
   updatedAt: daysFromNow(-20),
-  updatedBy: 'Suchada Chaiyaporn',
+  updatedBy: 'Suchada Panyakul',
 };
 
 export const ADMINS = [
-  { id: 'ADM-02', name: 'Suchada Chaiyaporn', email: 'suchada.c@vbeyond.co.th', phone: '02-168-1002', role: 'agentManager', department: 'Agent Network Management', status: 'Active', createdAt: daysFromNow(-600), lastLogin: daysFromNow(0, 9, 5), avatarColor: '#8a5a2b' },
+  { id: 'ADM-02', name: 'Suchada Panyakul', email: 'suchada.p@vbeyond.co.th', phone: '02-168-1002', role: 'agentManager', department: 'Agent Network Management', status: 'Active', createdAt: daysFromNow(-600), lastLogin: daysFromNow(0, 9, 5), avatarColor: '#8a5a2b' },
   { id: 'ADM-06', name: 'Kittipong Saengthong', email: 'kittipong.s@vbeyond.co.th', phone: '02-168-1006', role: 'agentManager', department: 'Agent Network Management', status: 'Active', createdAt: daysFromNow(-250), lastLogin: daysFromNow(-2, 14, 0), avatarColor: '#a0522d' },
+  { id: 'ADM-07', name: 'Kanyarak Rattanasri', email: 'kanyarak.r@vbeyond.co.th', phone: '02-168-1007', role: 'financeAdmin', department: 'Finance', status: 'Active', createdAt: daysFromNow(-30), lastLogin: null, avatarColor: '#2f6f9f' },
+  { id: 'ADM-08', name: 'Nattaporn Jingjai', email: 'nattaporn.j@vbeyond.co.th', phone: '02-168-1008', role: 'operationsAdmin', department: 'Operations / Compliance', status: 'Active', createdAt: daysFromNow(-30), lastLogin: null, avatarColor: '#6a4c93' },
 ];
 
 const doc = (id, type, fileName, daysAgo, status = 'Pending', comment = '') => ({
@@ -344,8 +346,8 @@ function makeNotifications() {
   return [
     { id: 'N-2', to: ['allAgents'], category: 'Company announcements', title: 'New announcement: Q4 commission structure update', body: 'Revised commission tiers for condominium sales.', link: '/announcements?open=AN-031', at: daysFromNow(-1, 9), readBy: [] },
     { id: 'N-5', to: ['agent:AG-1002'], category: 'Team assignment', title: 'New team member: Natthapong Srisuk', body: 'Natthapong Srisuk (AG-1006) joined Team Alpha.', link: '/team/members?highlight=AG-1006', at: daysFromNow(-92), readBy: ['agent:AG-1002'] },
-    { id: 'N-6', to: ['role:agentManager'], category: 'Registration updates', title: 'New application: Supansa Meechai', body: 'APP-2026-0141 is waiting for review.', link: '/applications/APP-2026-0141', at: daysFromNow(-1, 9), readBy: [] },
-    { id: 'N-7', to: ['role:agentManager'], category: 'Registration updates', title: 'Application resubmitted: Phakphum Yodsri', body: 'APP-2026-0138 was resubmitted with a new ID document.', link: '/applications/APP-2026-0138', at: daysFromNow(-1, 16), readBy: [] },
+    { id: 'N-6', to: ['role:operationsAdmin'], category: 'Registration updates', title: 'New application: Supansa Meechai', body: 'APP-2026-0141 is waiting for review.', link: '/applications/APP-2026-0141', at: daysFromNow(-1, 9), readBy: [] },
+    { id: 'N-7', to: ['role:operationsAdmin'], category: 'Registration updates', title: 'Application resubmitted: Phakphum Yodsri', body: 'APP-2026-0138 was resubmitted with a new ID document.', link: '/applications/APP-2026-0138', at: daysFromNow(-1, 16), readBy: [] },
     { id: 'N-8', to: ['role:agentManager'], category: 'Registration updates', title: 'Approved agent waiting for onboarding', body: 'Sakda Nimitr (AG-1041) has not been assigned to a team.', link: '/teams?tab=onboarding', at: daysFromNow(-12), readBy: [] },
     { id: 'N-9', to: ['role:agentManager'], category: 'Membership renewal reminders', title: 'Renewal request: Ratana Kongsak', body: 'REN-0091 is ready for review.', link: '/renewals', at: daysFromNow(-2, 16), readBy: [] },
     { id: 'N-13', to: ['applicant:nutnicha.rungroj@gmail.com'], category: 'Registration updates', title: 'Welcome to VBEYOND ARMS', body: 'Start your agent registration — it takes about 10 minutes.', link: '/register', at: daysFromNow(0, 8), readBy: [] },
@@ -354,13 +356,13 @@ function makeNotifications() {
 
 function makeLogs() {
   const rows = [
-    [-0.1, 'Suchada Chaiyaporn', 'Agent Manager', 'Signed in', 'ARMS back office'],
-    [-0.2, 'Suchada Chaiyaporn', 'Agent Manager', 'Viewed application', 'APP-2026-0140'],
+    [-0.1, 'Suchada Panyakul', 'Agent Manager', 'Signed in', 'ARMS back office'],
+    [-0.2, 'Suchada Panyakul', 'Operations / Compliance Admin', 'Viewed application', 'APP-2026-0140'],
     [-1, 'Kittipong Saengthong', 'Agent Manager', 'Verified document', 'APP-2026-0140 / ID card'],
-    [-2, 'Suchada Chaiyaporn', 'Agent Manager', 'Verified renewal documents', 'REN-0091'],
-    [-5, 'Suchada Chaiyaporn', 'Agent Manager', 'Changed agent status', 'Pornthip Wongchai → Suspended'],
-    [-7, 'Suchada Chaiyaporn', 'Agent Manager', 'Published FAQ', 'When should I renew my membership?'],
-    [-9, 'Suchada Chaiyaporn', 'Agent Manager', 'Approved application', 'APP-2026-0136'],
+    [-2, 'Suchada Panyakul', 'Agent Manager', 'Verified renewal documents', 'REN-0091'],
+    [-5, 'Suchada Panyakul', 'Agent Manager', 'Changed agent status', 'Pornthip Wongchai → Suspended'],
+    [-7, 'Nattaporn Jingjai', 'Operations / Compliance Admin', 'Published FAQ', 'When should I renew my membership?'],
+    [-9, 'Nattaporn Jingjai', 'Operations / Compliance Admin', 'Approved application', 'APP-2026-0136'],
   ];
   return rows.map(([d, actor, role, action, target], i) => ({ id: `LOG-${900 - i}`, at: daysFromNow(Math.floor(d), 9 + (i % 8), (i * 7) % 60), actor, role, action, target }));
 }

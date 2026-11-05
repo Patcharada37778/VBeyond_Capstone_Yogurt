@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { createSeed } from '../data/seed';
-import { ROLES, BACKOFFICE_ROLES } from '../utils/permissions';
+import { ADMINS, createSeed } from '../data/seed';
+import { DEFAULT_PERMISSIONS, ROLES, BACKOFFICE_ROLES } from '../utils/permissions';
 import { fullName } from '../utils/format';
 
 const STORAGE_KEY = 'vbeyond-arms-demo-v10';
@@ -12,7 +12,9 @@ export const PERSONAS = [
   { key: 'prospect', label: 'Prospective Agent', name: 'Nutnicha Rungroj', session: { applicantKey: 'nutnicha.rungroj@gmail.com', name: 'Nutnicha Rungroj' }, color: '#3aa845' },
   { key: 'agent', label: 'Active Agent', name: 'Somchai Prasertsuk', session: { agentId: 'AG-1001' } },
   { key: 'teamLead', label: 'Team Lead', name: 'Kanokwan Thongdee', session: { agentId: 'AG-1002' } },
-  { key: 'agentManager', label: 'Back-office Agent Manager', name: 'Suchada Chaiyaporn', session: { adminId: 'ADM-02' } },
+  { key: 'agentManager', label: 'Agent Manager', name: 'Suchada Panyakul', session: { adminId: 'ADM-02' } },
+  { key: 'financeAdmin', label: 'Finance Admin', name: 'Kanyarak Rattanasri', session: { adminId: 'ADM-07' }, color: '#2f6f9f' },
+  { key: 'operationsAdmin', label: 'Operations / Compliance Admin', name: 'Nattaporn Jingjai', session: { adminId: 'ADM-08' }, color: '#6a4c93' },
 ];
 
 function load() {
@@ -30,6 +32,44 @@ function load() {
               : team.leadId;
         }
         if (!('teamRole' in agent)) agent.teamRole = agent.id === 'AG-1003' ? 'Senior Agent' : 'Agent';
+      });
+      state.admins ||= [];
+      ADMINS.forEach((seedAdmin) => {
+        const admin = state.admins.find((item) => item.id === seedAdmin.id);
+        if (admin) {
+          if (seedAdmin.id === 'ADM-02') {
+            admin.name = seedAdmin.name;
+            admin.email = seedAdmin.email;
+          }
+          admin.role = seedAdmin.role;
+        } else {
+          state.admins.push({ ...seedAdmin });
+        }
+      });
+      state.permissions ||= {};
+      BACKOFFICE_ROLES.forEach((role) => {
+        state.permissions[role] = {
+          ...DEFAULT_PERMISSIONS[role],
+          ...state.permissions[role],
+        };
+        Object.keys(DEFAULT_PERMISSIONS[role]).forEach((module) => {
+          state.permissions[role][module] = {
+            ...DEFAULT_PERMISSIONS[role][module],
+            ...state.permissions[role][module],
+          };
+        });
+      });
+      ['applications', 'documents', 'faq', 'commissionRules'].forEach((module) => {
+        state.permissions.agentManager[module] = { view: false, create: false, edit: false, approve: false, delete: false, manage: false };
+      });
+      state.permissions.operationsAdmin.renewals = { view: false, create: false, edit: false, approve: false, delete: false, manage: false };
+      state.notifications.forEach((notification) => {
+        const applicationReview = notification.title?.startsWith('New application:')
+          || notification.title?.startsWith('Application resubmitted:');
+        if (applicationReview && notification.to.includes('role:agentManager')) {
+          notification.to = notification.to.filter((key) => key !== 'role:agentManager');
+          notification.to.push('role:operationsAdmin');
+        }
       });
       return state;
     }

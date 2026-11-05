@@ -5,10 +5,12 @@ export const ROLES = {
   prospect: { label: 'Prospective Agent', portal: 'agent' },
   agent: { label: 'Active Agent', portal: 'agent' },
   teamLead: { label: 'Team Lead', portal: 'agent' },
-  agentManager: { label: 'Back-office Agent Manager', portal: 'backoffice' },
+  agentManager: { label: 'Agent Manager', portal: 'backoffice' },
+  financeAdmin: { label: 'Finance Admin', portal: 'backoffice' },
+  operationsAdmin: { label: 'Operations / Compliance Admin', portal: 'backoffice' },
 };
 
-export const BACKOFFICE_ROLES = ['agentManager'];
+export const BACKOFFICE_ROLES = ['agentManager', 'financeAdmin', 'operationsAdmin'];
 export const ACTIONS = [
   { key: 'view', label: 'View' },
   { key: 'create', label: 'Create' },
@@ -43,7 +45,9 @@ function build(map) {
 }
 
 export const DEFAULT_PERMISSIONS = {
-  agentManager: build({ announcements: 'VCED', applications: 'VCEA', faq: 'VCED', agents: 'VCE', teams: 'VCEA', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA', commissionRules: 'VE', salesUpload: 'VCA' }),
+  agentManager: build({ announcements: 'VCED', agents: 'VCE', teams: 'VCEA', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA', salesUpload: 'VCA' }),
+  financeAdmin: build({ commissionRules: 'VE' }),
+  operationsAdmin: build({ applications: 'VEA', documents: 'VE', faq: 'VCED' }),
 };
 
 // Navigation. `hideFor` = roles that can open the page but don't see it in the sidebar.

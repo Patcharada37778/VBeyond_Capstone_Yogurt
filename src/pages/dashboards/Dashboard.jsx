@@ -311,11 +311,10 @@ function AgentManagerDashboard({ user }) {
   const pendingOnboard = ag.filter((a) => !a.teamId && a.status === 'Active');
   const transfers = state.transferRequests.filter((r) => r.status === 'Pending');
   const renewals = state.renewals.filter((r) => !['Approved', 'Rejected'].includes(r.status));
-  const toReview = state.applications.filter((a) => ['Pending Review', 'Resubmitted'].includes(a.status));
   const max = Math.max(...state.teams.map((t) => ag.filter((a) => a.teamId === t.id).length), 1);
   return (
     <>
-      <Greeting user={user} subtitle={`${toReview.length} application(s) to review · ${pendingOnboard.length} agent(s) waiting for onboarding · ${renewals.length} open renewal request(s)`}><Link to="/teams?tab=onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
+      <Greeting user={user} subtitle={`${pendingOnboard.length} agent(s) waiting for onboarding · ${transfers.length} pending transfer(s) · ${renewals.length} open renewal request(s)`}><Link to="/teams?tab=onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
       <div className="row g-3 mb-3">
         <div className="col-6 col-xl"><StatCard icon="bi-people" label="Total agents" value={ag.length} to="/agents" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-check-circle" label="Active" value={by('Active')} tone={TONES.green} to="/agent-status" /></div>
@@ -335,12 +334,6 @@ function AgentManagerDashboard({ user }) {
           </div></div>
         </div>
         <div className="col-lg-7 d-grid gap-3">
-          <div className="card"><div className="card-header d-flex justify-content-between"><span>Applications to review</span><Link to="/applications" className="small fw-normal">Open review queue</Link></div>
-            <div className="list-group list-group-flush">
-              {toReview.slice(0, 5).map((a) => <Link key={a.id} to={`/applications/${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2"><span className="lh-sm"><span className="d-block fw-medium">{a.personal.firstName} {a.personal.lastName}</span><small className="text-muted">{a.id} · {timeAgo(a.submittedAt)}</small></span><StatusBadge status={a.status} /></Link>)}
-              {!toReview.length && <div className="list-group-item small text-muted">No applications waiting for review.</div>}
-            </div>
-          </div>
           <div className="card"><div className="card-header d-flex justify-content-between"><span>Pending onboarding</span><Link to="/teams?tab=onboarding" className="small fw-normal">Open onboarding</Link></div>
             <div className="list-group list-group-flush">
               {pendingOnboard.map((a) => <Link key={a.id} to={`/teams?tab=onboarding&agent=${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span>{fullName(a)} <small className="text-muted">{a.id}</small></span><span className="btn btn-sm btn-outline-primary">Onboard</span></Link>)}
@@ -361,9 +354,89 @@ function AgentManagerDashboard({ user }) {
   );
 }
 
+function OperationsAdminDashboard({ user }) {
+  const { state } = useStore();
+  const pending = state.applications.filter((a) => a.status === 'Pending Review');
+  const resubmitted = state.applications.filter((a) => a.status === 'Resubmitted');
+  const queue = [...resubmitted, ...pending].sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  const pendingDocuments = queue.reduce((count, application) =>
+    count + application.documents.filter((document) => document.status === 'Pending').length, 0);
+  return (
+    <>
+      <Greeting user={user} subtitle={`${queue.length} application(s) need review · ${pendingDocuments} document(s) awaiting verification`}>
+        <Link to="/applications" className="btn btn-light">Review applications</Link>
+      </Greeting>
+      <div className="row g-3 mb-3">
+        <div className="col-6 col-xl-4"><StatCard icon="bi-inboxes" label="Applications to review" value={queue.length} to="/applications" /></div>
+        <div className="col-6 col-xl-4"><StatCard icon="bi-file-earmark-check" label="Documents pending" value={pendingDocuments} tone={TONES.amber} to="/applications" /></div>
+        <div className="col-6 col-xl-4"><StatCard icon="bi-journal-text" label="Registration FAQs" value={state.faqs.length} tone={TONES.green} to="/faq" /></div>
+      </div>
+      <div className="card">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <span>Applications to review</span>
+          <Link to="/faq" className="small fw-normal">Manage registration FAQs</Link>
+        </div>
+        <div className="list-group list-group-flush">
+          {queue.slice(0, 8).map((application) => (
+            <Link key={application.id} to={`/applications/${application.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2">
+              <span className="lh-sm">
+                <span className="d-block fw-medium">{application.personal.firstName} {application.personal.lastName}</span>
+                <small className="text-muted">{application.id} · {timeAgo(application.submittedAt)}</small>
+              </span>
+              <StatusBadge status={application.status} />
+            </Link>
+          ))}
+          {!queue.length && <div className="list-group-item small text-muted">No applications are waiting for review.</div>}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function FinanceAdminDashboard({ user }) {
+  const { state } = useStore();
+  const { baseRate, tierPeriodMonths, tiers, split } = state.commissionRules;
+  return (
+    <>
+      <Greeting user={user} subtitle="Manage base commission rates, tier rules, and deal split calculations.">
+        <Link to="/commission-rules" className="btn btn-light">Edit commission rules</Link>
+      </Greeting>
+      <div className="row g-3 mb-3">
+        <div className="col-6 col-xl-4"><StatCard icon="bi-percent" label="Base commission rate" value={`${baseRate}%`} /></div>
+        <div className="col-6 col-xl-4"><StatCard icon="bi-bar-chart-steps" label="Commission tiers" value={tiers.length} tone={TONES.green} /></div>
+        <div className="col-6 col-xl-4"><StatCard icon="bi-arrow-left-right" label="Deal split" value={split.type === 'percentage' ? `${split.value}%` : fmtMoney(split.value)} tone={TONES.amber} /></div>
+      </div>
+      <div className="card">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <span>Commission configuration</span>
+          <Link to="/commission-rules" className="small fw-normal">Open commission rules</Link>
+        </div>
+        <div className="card-body">
+          <p className="text-muted mb-3">Tier performance period: {tierPeriodMonths} month(s).</p>
+          <div className="list-group list-group-flush">
+            {tiers.map((tier) => (
+              <div key={tier.id} className="list-group-item d-flex justify-content-between align-items-center px-0">
+                <span className="fw-medium">{tier.name}</span>
+                <span className="small text-muted">{fmtMoney(tier.minSales)} minimum sales · {tier.bonus}% bonus</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useStore();
-  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard };
+  const map = {
+    prospect: ProspectDashboard,
+    agent: AgentDashboard,
+    teamLead: TeamLeadDashboard,
+    agentManager: AgentManagerDashboard,
+    financeAdmin: FinanceAdminDashboard,
+    operationsAdmin: OperationsAdminDashboard,
+  };
   const C = map[user.role];
   return (
     <div className="dashboard-page">
