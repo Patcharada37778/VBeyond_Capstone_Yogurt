@@ -91,7 +91,7 @@ export default function ApplicationDetail() {
       <PageHeader title={name} subtitle={`${app.id} · submitted ${fmtDateTime(app.submittedAt)}`}
         crumbs={[{ label: 'Agent Team Management' }, { label: 'Applications', to: '/applications' }, { label: app.id }]}
         actions={open && <>
-          {canEdit && <button className="btn btn-outline-primary" onClick={() => openModal('clarify')}><i className="bi bi-question-diamond me-1" />Request clarification</button>}
+          {canEdit && <button className="btn btn-outline-primary" onClick={() => openModal('clarify')}>Request clarification</button>}
           {canApprove && <button className="btn btn-outline-danger" onClick={() => openModal('reject')}><i className="bi bi-x-circle me-1" />Reject</button>}
           {canApprove && <button className="btn btn-success" onClick={() => openModal('approve')}><i className="bi bi-check-circle me-1" />Approve</button>}
         </>} />
