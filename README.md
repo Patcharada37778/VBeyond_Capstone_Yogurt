@@ -6,7 +6,7 @@ membership renewal, property directory, sales and commission, status changes and
 
 - React 19 + React Router + Bootstrap 5 + Bootstrap Icons (Vite)
 - No backend, database, real auth, or external APIs
-- All data is mock data stored in `localStorage` (key `vbeyond-arms-demo-v9`), so changes survive a refresh
+- All data is mock data stored in `localStorage` (key `vbeyond-arms-demo-v10`), so changes survive a refresh
 
 ## Run it
 
@@ -40,7 +40,7 @@ Other entry points on the login page:
 
 ## Suggested demo journey
 
-1. Prospective Agent → *Agent Registration* → submit the 4-step wizard
+1. New visitor → *Create account* (name, email, password) → dashboard → *Start registration* → submit the 4-step wizard (or use the Prospective Agent demo persona)
 2. Agent Manager → *Agent Applications* → open it → *Request clarification*
 3. Prospective Agent → *My Application* → respond, replace the document, resubmit
 4. Agent Manager → verify documents → *Approve* (agent ID is generated)

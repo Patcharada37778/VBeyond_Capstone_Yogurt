@@ -6,7 +6,7 @@ const BENEFITS = [
   ['bi-graph-up-arrow', 'Tiered commission', 'Earn more as your sales grow, and follow your commission and tier progress in one dashboard.'],
   ['bi-people', 'Join a team', 'Work with an experienced team lead and get company news, training and support.'],
 ];
-const STEPS = ['Register online', 'Upload your documents', 'Get approved', 'Join a team and start selling'];
+const STEPS = ['Create an account', 'Apply online and upload documents', 'Get approved', 'Join a team and start selling'];
 
 /** Public page for visitors who are not signed in. */
 export default function Landing() {
@@ -18,7 +18,7 @@ export default function Landing() {
         <nav className="d-flex gap-2">
           {user ? <Link to="/dashboard" className="btn btn-primary">Go to dashboard</Link> : <>
             <Link to="/login" className="btn btn-light">Sign in</Link>
-            <Link to="/join" className="btn btn-primary">Become an agent</Link>
+            <Link to="/join" className="btn btn-primary">Create account</Link>
           </>}
         </nav>
       </header>
@@ -29,7 +29,7 @@ export default function Landing() {
           <h1>Grow your real estate career with VBEYOND</h1>
           <p>Become an authorised VBEYOND agent and sell homes and condominiums by VBEYOND Development.</p>
           <div className="d-flex flex-wrap gap-2 mt-4">
-            <Link to="/join" className="btn btn-success btn-lg">Apply now</Link>
+            <Link to="/join" className="btn btn-success btn-lg">Get started</Link>
             <Link to="/login" className="btn btn-outline-light btn-lg">Agent sign in</Link>
           </div>
         </div>

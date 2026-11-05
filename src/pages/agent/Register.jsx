@@ -24,52 +24,64 @@ function RegistrationInput({ icon, ...inputProps }) {
   );
 }
 
-// Public invitation link copied by an agent: /join?team=T-ALP&ref=AG-1001
+// Step 1 for new applicants: create an account (also opened from invitation links: /join?team=T-ALP&ref=AG-1001).
+// The agent application is submitted later from the dashboard.
 function JoinPage() {
-  const { state, signIn } = useStore();
+  const { state, mutate, signIn } = useStore();
+  const toast = useToast();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const team = state.teams.find((t) => t.id === params.get('team'));
   const inviter = state.agents.find((a) => a.id === params.get('ref'));
-  const [form, setForm] = useState({ name: '', email: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [errors, setErrors] = useState({});
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
-  const start = (e) => {
+  const submit = (e) => {
     e.preventDefault();
     const er = {};
     const email = form.email.trim().toLowerCase();
-    if (form.name.trim().split(' ').filter(Boolean).length < 2) er.name = 'Enter your first and last name.';
+    const name = form.name.trim().replace(/\s+/g, ' ');
+    if (name.split(' ').length < 2) er.name = 'Enter your first and last name.';
     if (!isEmail(email)) er.email = 'Enter a valid email address.';
-    else if (state.agents.some((a) => a.email.toLowerCase() === email)) er.email = 'This email already belongs to a VBEYOND agent. Please sign in instead.';
+    else if (state.agents.some((a) => a.email.toLowerCase() === email) || state.admins.some((a) => a.email.toLowerCase() === email)) er.email = 'This email already belongs to a VBEYOND account. Please sign in instead.';
+    else if (state.accounts[email]?.role === 'prospect' || state.applications.some((a) => a.userKey === email)) er.email = 'An account with this email already exists. Please sign in.';
+    if (form.password.length < 8 || !/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) er.password = 'Use at least 8 characters with letters and numbers.';
+    if (form.confirm !== form.password) er.confirm = 'Passwords do not match.';
     setErrors(er);
     if (Object.keys(er).length) return;
-    signIn({ applicantKey: email, name: form.name.trim(), inviteTeam: team?.id || null, inviteRef: inviter?.id || null });
-    navigate('/register', { replace: true });
+    const invite = { inviteTeam: team?.id || null, inviteRef: inviter?.id || null };
+    mutate((d) => { d.accounts[email] = { role: 'prospect', name, ...invite, createdAt: new Date().toISOString(), passwordSetAt: new Date().toISOString() }; });
+    signIn({ applicantKey: email, name, ...invite });
+    toast('Your account is ready. You can apply to become an agent whenever you like.', 'success', 'Account created');
+    navigate('/dashboard', { replace: true });
   };
 
+  const field = (k, label, icon, type, placeholder, autoComplete) => (
+    <div>
+      <label className="form-label required" htmlFor={`jn-${k}`}>{label}</label>
+      <RegistrationInput icon={icon} id={`jn-${k}`} type={type} autoComplete={autoComplete} className={`form-control form-control-lg ${errors[k] ? 'is-invalid' : ''}`} value={form[k]} onChange={set(k)} placeholder={placeholder} />
+      {errors[k] && <div className="invalid-feedback d-block">{errors[k]}</div>}
+    </div>
+  );
+
   return (
-    <AuthShell title="Join VBEYOND as an agent" subtitle={team ? 'Register online — your team is already reserved for you.' : 'Register online in a few minutes.'}>
+    <AuthShell title="Join VBEYOND as an agent" subtitle="Create your account first, then apply to become an agent when you're ready.">
       {team ? (
         <div className="alert alert-brand d-flex gap-3 align-items-center">
           <i className="bi bi-envelope-paper-heart fs-3" aria-hidden="true" />
           <div><strong>{inviter ? `${inviter.firstName} ${inviter.lastName}` : 'A VBEYOND agent'} invited you to join {team.name}</strong>
             <div className="small">{team.region}</div></div>
         </div>
-      ) : params.has('team') && <div className="alert alert-warning small">This invitation link is not valid. You can still register as an agent.</div>}
-      <h2 className="mb-1">Start your registration</h2>
-      <p className="text-muted">Enter your name and email to continue to the registration form.</p>
-      <form onSubmit={start} noValidate className="d-grid gap-3">
-        <div>
-          <label className="form-label required" htmlFor="jn-n">Full name</label>
-          <RegistrationInput icon="bi-person" id="jn-n" className={`form-control form-control-lg ${errors.name ? 'is-invalid' : ''}`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="First and last name" />
-          {errors.name && <div className="invalid-feedback d-block">{errors.name}</div>}
-        </div>
-        <div>
-          <label className="form-label required" htmlFor="jn-e">Email</label>
-          <RegistrationInput icon="bi-envelope" id="jn-e" className={`form-control form-control-lg ${errors.email ? 'is-invalid' : ''}`} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@example.com" />
-          {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
-        </div>
-        <button className="btn btn-primary btn-lg">Continue to registration</button>
+      ) : params.has('team') && <div className="alert alert-warning small">This invitation link is not valid. You can still create an account.</div>}
+      <h2 className="mb-1">Create an account</h2>
+      <p className="text-muted">For new individual applicants. Existing VBEYOND agents should sign in instead.</p>
+      <form onSubmit={submit} noValidate className="d-grid gap-3">
+        {field('name', 'Full name', 'bi-person', 'text', 'First and last name', 'name')}
+        {field('email', 'Email', 'bi-envelope', 'email', 'name@example.com', 'email')}
+        {field('password', 'Password', 'bi-lock', 'password', 'At least 8 characters', 'new-password')}
+        {field('confirm', 'Confirm password', 'bi-lock', 'password', 'Re-enter your password', 'new-password')}
+        <button className="btn btn-primary btn-lg">Create account</button>
         <Link to="/login" className="small text-center">Already have an account? Sign in</Link>
       </form>
     </AuthShell>
