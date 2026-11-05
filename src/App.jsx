@@ -4,7 +4,6 @@ import { useStore } from './context/StoreContext';
 
 import Login from './pages/common/Login';
 import ForgotPassword from './pages/common/ForgotPassword';
-import FirstLogin from './pages/common/FirstLogin';
 import MigratedLogin from './pages/common/MigratedLogin';
 import Dashboard from './pages/dashboards/Dashboard';
 import Announcements from './pages/common/Announcements';
@@ -52,7 +51,6 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/first-login" element={<FirstLogin />} />
       <Route path="/migrated-login" element={<MigratedLogin />} />
       <Route path="/join" element={<Register publicMode />} />
       <Route path="/properties/:id/brochure" element={<PropertyBrochure />} />

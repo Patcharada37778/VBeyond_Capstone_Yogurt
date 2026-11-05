@@ -25,7 +25,7 @@ export default function Login() {
     const admin = state.admins.find((a) => a.email.toLowerCase() === em);
     const applicant = state.applications.find((a) => a.userKey === em);
     const account = state.accounts[em]?.role === 'prospect' ? state.accounts[em] : null;
-    if (agent && !agent.activated) { setError(agent.migrated ? 'This account was migrated from the legacy system. Use "First sign-in for migrated agents" below.' : 'Your account is approved but not activated yet. Use "Approved applicant? Activate account".'); return; }
+    if (agent?.migrated && !agent.activated) { setError('This account was migrated from the legacy system. Use "First sign-in for migrated agents" below.'); return; }
     if (agent && ['Resigned'].includes(agent.status)) { setError('This agent account is no longer active. Contact your Agent Manager.'); return; }
     if (agent) { toast(`Welcome back, ${agent.firstName}`); return go({ agentId: agent.id }); }
     if (admin) { if (admin.status !== 'Active') { setError('This back-office account is deactivated.'); return; } return go({ adminId: admin.id }); }
@@ -55,7 +55,6 @@ export default function Login() {
       <div className="d-grid gap-2 mt-3">
         <Link to="/join" className="btn btn-outline-primary"><i className="bi bi-person-plus me-2" />Create an account</Link>
         <div className="d-flex gap-2">
-          <Link to="/first-login" className="btn btn-light flex-fill small">Approved applicant? Activate account</Link>
           <Link to="/migrated-login" className="btn btn-light flex-fill small">First sign-in for migrated agents</Link>
         </div>
       </div>

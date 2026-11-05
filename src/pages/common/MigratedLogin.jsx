@@ -4,8 +4,19 @@ import AuthShell, { BackToLogin } from '../../components/layout/AuthShell';
 import { logAction, notify, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
 import { PasswordFields, passwordErrors } from './ForgotPassword';
-import { Steps } from './FirstLogin';
 import { fmtDate, fullName, isPhone } from '../../utils/format';
+
+function Steps({ steps, step }) {
+  return (
+    <div className="stepper my-3">
+      {steps.map((s, i) => (
+        <div key={s} className={`step ${step === i + 1 ? 'active' : step > i + 1 ? 'done' : ''}`} style={{ minWidth: 90, padding: '0.5rem 0.6rem', fontSize: '0.78rem' }}>
+          <span className="num">{step > i + 1 ? <i className="bi bi-check" /> : i + 1}</span>{s}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function MigratedLogin() {
   const { state, mutate, signIn } = useStore();
@@ -139,7 +150,7 @@ export default function MigratedLogin() {
           <div className="display-5 text-green mb-2"><i className="bi bi-cloud-check" /></div>
           <h3 className="h4">Your account has been migrated successfully</h3>
           <p className="text-muted">Welcome to the new ARMS portal, {agent.firstName}. Your team ({team?.name}), membership and history were carried over from the legacy system.</p>
-          <button className="btn btn-primary btn-lg w-100" onClick={() => { signIn({ agentId: agent.id }); navigate('/dashboard'); }}>Go to my dashboard</button>
+          <button className="btn btn-primary btn-lg w-100" onClick={() => { signIn({ agentId: agent.id }); navigate('/dashboard'); }}>Go to Home</button>
         </div>
       )}
     </AuthShell>

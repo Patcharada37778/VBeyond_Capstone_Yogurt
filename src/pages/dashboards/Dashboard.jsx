@@ -47,15 +47,12 @@ function AgentAnnouncements() {
 
 /* ----------------------------- Prospect ----------------------------- */
 function ProspectDashboard({ user }) {
-  const { state } = useStore();
   const app = user.application;
-  const agent = state.agents.find((a) => a.id === app?.agentId);
   const openClar = app?.clarifications.find((c) => !c.response);
   return (
     <>
       <Greeting user={user} subtitle={app ? `Application ${app.id} · ${app.status}` : 'Start your journey as a VBEYOND agent.'}>
         {!app && <Link to="/register" className="btn btn-light btn-lg">Start registration</Link>}
-        {app?.status === 'Approved' && !agent?.activated && <Link to={`/first-login?app=${app.id}`} className="btn btn-light btn-lg">Proceed to first login</Link>}
       </Greeting>
       {openClar && <div className="alert alert-warning d-flex flex-wrap gap-3 align-items-center"><i className="bi bi-question-diamond fs-4" /><div className="flex-grow-1"><strong>Action needed:</strong> {openClar.message}</div><Link to="/my-application" className="btn btn-warning">Respond now</Link></div>}
       <div className="d-grid gap-3">
@@ -67,7 +64,7 @@ function ProspectDashboard({ user }) {
             <div className="card-body">
               {app ? <>
                 <div className="mb-3">Reference <strong>{app.id}</strong> · submitted {fmtDate(app.submittedAt)}</div>
-                <ApplicationProgress app={app} agent={agent} />
+                <ApplicationProgress app={app} />
               </> : <>
                 <p className="text-muted">You haven't applied yet. Here's how it works:</p>
                 <div className="row g-2 text-center small">
