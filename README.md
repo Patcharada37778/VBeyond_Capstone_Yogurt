@@ -6,7 +6,7 @@ membership renewal, property directory, sales and commission, status changes and
 
 - React 19 + React Router + Bootstrap 5 + Bootstrap Icons (Vite)
 - No backend, database, real auth, or external APIs
-- All data is mock data stored in `localStorage` (key `vbeyond-arms-demo-v8`), so changes survive a refresh
+- All data is mock data stored in `localStorage` (key `vbeyond-arms-demo-v9`), so changes survive a refresh
 
 ## Run it
 
@@ -28,7 +28,6 @@ Use the quick sign-in buttons on the login page, or the **Demo role switcher** i
 | Active Agent | Somchai Prasertsuk (AG-1001) |
 | Team Lead | Kanokwan Thongdee (AG-1002, Team Alpha) |
 | Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications (with fixed document slots), agent list, onboarding, renewals, teams, announcements, FAQ, commission rules and monthly sales upload |
-| Executive | Wichai Anantachai — executive sales dashboard |
 
 Visitors who are not signed in see the landing page at `/`.
 
@@ -56,7 +55,6 @@ Other entry points on the login page:
 13. Agent Manager → *Commission Rules* → edit the base rate, tiers and team lead split
 14. Agent Manager → *Monthly Sales Upload* → download the template → upload it (Excel or CSV) → check the preview → publish
 15. Active Agent → dashboard shows the commission tier and progress to the next tier
-16. Executive → dashboard → change the period to compare revenue, units sold and team sales
 
 ## Project structure
 

@@ -177,7 +177,6 @@ const COMMISSION_RULES = {
 
 export const ADMINS = [
   { id: 'ADM-02', name: 'Suchada Chaiyaporn', email: 'suchada.c@vbeyond.co.th', phone: '02-168-1002', role: 'agentManager', department: 'Agent Network Management', status: 'Active', createdAt: daysFromNow(-600), lastLogin: daysFromNow(0, 9, 5), avatarColor: '#8a5a2b' },
-  { id: 'ADM-08', name: 'Wichai Anantachai', email: 'wichai.a@vbeyond.co.th', phone: '02-168-1008', role: 'executive', department: 'Executive Management', status: 'Active', createdAt: daysFromNow(-900), lastLogin: daysFromNow(-1, 8, 40), avatarColor: '#2f6f9f' },
   { id: 'ADM-06', name: 'Kittipong Saengthong', email: 'kittipong.s@vbeyond.co.th', phone: '02-168-1006', role: 'agentManager', department: 'Agent Network Management', status: 'Active', createdAt: daysFromNow(-250), lastLogin: daysFromNow(-2, 14, 0), avatarColor: '#a0522d' },
 ];
 

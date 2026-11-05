@@ -3,7 +3,7 @@ import { createSeed } from '../data/seed';
 import { ROLES, BACKOFFICE_ROLES } from '../utils/permissions';
 import { fullName } from '../utils/format';
 
-const STORAGE_KEY = 'vbeyond-arms-demo-v8';
+const STORAGE_KEY = 'vbeyond-arms-demo-v9';
 export const RENEWAL_REMINDER_DAYS = 30;
 const StoreContext = createContext(null);
 
@@ -13,7 +13,6 @@ export const PERSONAS = [
   { key: 'agent', label: 'Active Agent', name: 'Somchai Prasertsuk', session: { agentId: 'AG-1001' } },
   { key: 'teamLead', label: 'Team Lead', name: 'Kanokwan Thongdee', session: { agentId: 'AG-1002' } },
   { key: 'agentManager', label: 'Back-office Agent Manager', name: 'Suchada Chaiyaporn', session: { adminId: 'ADM-02' } },
-  { key: 'executive', label: 'Executive', name: 'Wichai Anantachai', session: { adminId: 'ADM-08' } },
 ];
 
 function load() {

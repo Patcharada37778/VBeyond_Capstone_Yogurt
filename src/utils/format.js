@@ -1,7 +1,6 @@
 export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
 export const fmtDateTime = (iso) => (iso ? new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—');
 export const fmtMoney = (n) => `฿${Number(n || 0).toLocaleString('en-US')}`;
-export const fmtMoneyShort = (n) => (Math.abs(n) >= 1e6 ? `฿${(n / 1e6).toLocaleString('en-US', { maximumFractionDigits: 1 })}M` : fmtMoney(n));
 export const daysUntil = (iso) => Math.ceil((new Date(iso) - new Date()) / 86400000);
 export const toInputDate = (iso) => (iso ? new Date(iso).toISOString().slice(0, 10) : '');
 export const today = () => new Date().toISOString();

@@ -6,10 +6,9 @@ export const ROLES = {
   agent: { label: 'Active Agent', portal: 'agent' },
   teamLead: { label: 'Team Lead', portal: 'agent' },
   agentManager: { label: 'Back-office Agent Manager', portal: 'backoffice' },
-  executive: { label: 'Executive', portal: 'backoffice' },
 };
 
-export const BACKOFFICE_ROLES = ['agentManager', 'executive'];
+export const BACKOFFICE_ROLES = ['agentManager'];
 export const ACTIONS = [
   { key: 'view', label: 'View' },
   { key: 'create', label: 'Create' },
@@ -45,7 +44,6 @@ function build(map) {
 
 export const DEFAULT_PERMISSIONS = {
   agentManager: build({ announcements: 'VCED', applications: 'VCEA', faq: 'VCED', agents: 'VCE', teams: 'VCEA', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA', commissionRules: 'VE', salesUpload: 'VCA' }),
-  executive: build({}),
 };
 
 // Navigation. `hideFor` = roles that can open the page but don't see it in the sidebar.

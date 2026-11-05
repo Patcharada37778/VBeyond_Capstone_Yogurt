@@ -9,7 +9,7 @@ import { CommissionBars, commissionSummary, monthlyCommission } from '../../comp
 import Help from '../agent/Help';
 import { ROLES } from '../../utils/permissions';
 import { periodSales, tierFor } from '../../utils/commission';
-import { daysUntil, fmtDate, fmtMoney, fmtMoneyShort, fullName, timeAgo } from '../../utils/format';
+import { daysUntil, fmtDate, fmtMoney, fullName, timeAgo } from '../../utils/format';
 
 function Greeting({ user, subtitle, children }) {
   const h = new Date().getHours();
@@ -364,71 +364,9 @@ function AgentManagerDashboard({ user }) {
   );
 }
 
-/* ----------------------------- Executive ----------------------------- */
-const PERIODS = [
-  { value: '3', label: 'Last 3 months' },
-  { value: '6', label: 'Last 6 months' },
-  { value: 'ytd', label: 'This year' },
-  { value: '12', label: 'Last 12 months' },
-];
-
-function ExecutiveDashboard({ user }) {
-  const { state } = useStore();
-  const [period, setPeriod] = useState('6');
-  const now = new Date();
-  const months = period === 'ytd' ? now.getMonth() + 1 : Number(period);
-  const start = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
-  const sales = state.commissions.filter((c) => new Date(c.closedAt) >= start);
-  const revenue = sales.reduce((t, c) => t + c.saleValue, 0);
-  const commission = sales.reduce((t, c) => t + (c.gross ?? c.amount), 0);
-  const agentTeam = (id) => state.agents.find((a) => a.id === id)?.teamId;
-  const teams = state.teams.map((t) => {
-    const list = sales.filter((c) => agentTeam(c.agentId) === t.id);
-    return { id: t.id, name: t.name, units: list.length, revenue: list.reduce((s, c) => s + c.saleValue, 0), agents: state.agents.filter((a) => a.teamId === t.id && a.status === 'Active').length };
-  }).sort((a, b) => b.revenue - a.revenue);
-  const top = Math.max(...teams.map((t) => t.revenue), 1);
-  const label = PERIODS.find((p) => p.value === period).label.toLowerCase();
-
-  return (
-    <>
-      <Greeting user={user} subtitle="Company sales performance across all teams.">
-        <Select value={period} onChange={setPeriod} label="Period" options={PERIODS} />
-      </Greeting>
-      <div className="row g-3 mb-3">
-        <div className="col-6 col-xl-3"><StatCard icon="bi-cash-stack" label={`Revenue · ${label}`} value={fmtMoneyShort(revenue)} /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-house-check" label="Units sold" value={sales.length} tone={TONES.blue} /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-cash-coin" label="Commission" value={fmtMoneyShort(commission)} tone={TONES.green} /></div>
-        <div className="col-6 col-xl-3"><StatCard icon="bi-people" label="Active agents" value={state.agents.filter((a) => a.status === 'Active').length} tone={TONES.gray} /></div>
-      </div>
-      <div className="row g-3">
-        <div className="col-lg-7">
-          <div className="card h-100">
-            <div className="card-header">Revenue by month</div>
-            <div className="card-body"><CommissionBars data={monthlyCommission(state.commissions, months, (c) => c.saleValue)} height={220} title="Monthly revenue" /></div>
-          </div>
-        </div>
-        <div className="col-lg-5">
-          <div className="card h-100">
-            <div className="card-header">Team sales · {label}</div>
-            <div className="card-body">
-              {teams.map((t) => (
-                <div key={t.id} className="mb-3">
-                  <div className="d-flex justify-content-between small mb-1"><span className="fw-medium">{t.name}</span><span>{fmtMoneyShort(t.revenue)}</span></div>
-                  <div className="bar-track" style={{ height: 10 }}><div className="bar-fill" style={{ width: `${(t.revenue / top) * 100}%` }} /></div>
-                  <small className="text-muted">{t.units} unit{t.units === 1 ? '' : 's'} · {t.agents} active agents · {revenue ? Math.round((t.revenue / revenue) * 100) : 0}% of revenue</small>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
 export default function Dashboard() {
   const { user } = useStore();
-  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard, executive: ExecutiveDashboard };
+  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard };
   const C = map[user.role];
   return (
     <div className="dashboard-page">
