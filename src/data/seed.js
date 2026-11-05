@@ -387,7 +387,8 @@ export function createSeed() {
     notifications: makeNotifications(),
     logs: makeLogs(),
     permissions: JSON.parse(JSON.stringify(DEFAULT_PERMISSIONS)),
-    accounts: {}, // simulated passwords set through recovery / first login
+    // Sign-in accounts (passwords are not stored in this prototype). Prospects create one before applying.
+    accounts: { 'nutnicha.rungroj@gmail.com': { role: 'prospect', name: 'Nutnicha Rungroj', createdAt: daysFromNow(-1), passwordSetAt: daysFromNow(-1) } },
     counters: { app: 142, agent: 1042, ticket: 1089, inv: 413, ren: 92, msg: 302, inq: 219, notif: 100, log: 1000, faq: 10, ann: 33, adm: 10, tr: 22, upload: 1 },
   };
 }

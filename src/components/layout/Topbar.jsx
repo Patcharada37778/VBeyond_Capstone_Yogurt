@@ -172,7 +172,6 @@ export default function Topbar({ onToggleSidebar }) {
       <button className="icon-btn" onClick={onToggleSidebar} aria-label="Toggle sidebar"><i className="bi bi-list" aria-hidden="true" /></button>
       <GlobalSearch />
       <div className="ms-auto d-flex align-items-center gap-2">
-        <span className="demo-pill" title="This is a frontend prototype using mock data"><i className="bi bi-lightning-charge-fill me-1" aria-hidden="true" />DEMO MODE</span>
         <NotificationMenu />
         <ProfileMenu />
       </div>

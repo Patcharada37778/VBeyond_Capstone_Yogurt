@@ -24,12 +24,14 @@ export default function Login() {
     const agent = state.agents.find((a) => a.email.toLowerCase() === em || a.legacyId?.toLowerCase() === em);
     const admin = state.admins.find((a) => a.email.toLowerCase() === em);
     const applicant = state.applications.find((a) => a.userKey === em);
+    const account = state.accounts[em]?.role === 'prospect' ? state.accounts[em] : null;
     if (agent && !agent.activated) { setError(agent.migrated ? 'This account was migrated from the legacy system. Use "First sign-in for migrated agents" below.' : 'Your account is approved but not activated yet. Use "Approved applicant? Activate account".'); return; }
     if (agent && ['Resigned'].includes(agent.status)) { setError('This agent account is no longer active. Contact your Agent Manager.'); return; }
     if (agent) { toast(`Welcome back, ${agent.firstName}`); return go({ agentId: agent.id }); }
     if (admin) { if (admin.status !== 'Active') { setError('This back-office account is deactivated.'); return; } return go({ adminId: admin.id }); }
     if (applicant) return go({ applicantKey: applicant.userKey, name: fullName(applicant.personal) });
-    setError('No account found for this email. New to VBEYOND? Register as an agent below.');
+    if (account) return go({ applicantKey: em, name: account.name, inviteTeam: account.inviteTeam || null, inviteRef: account.inviteRef || null });
+    setError('No account found for this email. New to VBEYOND? Create an account below.');
   };
 
   return (
@@ -51,7 +53,7 @@ export default function Login() {
       </form>
 
       <div className="d-grid gap-2 mt-3">
-        <button className="btn btn-outline-primary" onClick={() => go(PERSONAS[0].session)}><i className="bi bi-person-plus me-2" />Register to become an agent</button>
+        <Link to="/join" className="btn btn-outline-primary"><i className="bi bi-person-plus me-2" />Create an account</Link>
         <div className="d-flex gap-2">
           <Link to="/first-login" className="btn btn-light flex-fill small">Approved applicant? Activate account</Link>
           <Link to="/migrated-login" className="btn btn-light flex-fill small">First sign-in for migrated agents</Link>

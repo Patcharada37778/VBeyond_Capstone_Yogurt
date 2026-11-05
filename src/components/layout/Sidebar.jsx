@@ -10,7 +10,6 @@ export default function Sidebar() {
     <aside className="sidebar" aria-label="Main navigation">
       <div className="brand">
         <img src="/vbeyond-logo-white.png" alt="VBEYOND" className="hide-collapsed" />
-        <span className="brand-sub hide-collapsed">ARMS</span>
         <span className="show-collapsed font-brand fw-semibold text-white">VB</span>
       </div>
       <nav>
@@ -26,9 +25,6 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="sidebar-footer hide-collapsed">
-        VBEYOND Development · ARMS prototype
-      </div>
     </aside>
   );
 }
