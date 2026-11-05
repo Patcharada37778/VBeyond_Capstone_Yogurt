@@ -45,12 +45,12 @@ export default function ApplicationDetail() {
         id: agentId, firstName: a.personal.firstName, lastName: a.personal.lastName, email: a.personal.email.toLowerCase(), phone: a.personal.phone, lineId: '',
         teamId: null, status: 'Active', registeredAt: now, membershipStart: now, membershipExpiry: addYears(now, 1),
         address: a.personal.address, nationality: a.personal.nationality, dob: a.personal.dob, experience: a.professional.experience, occupation: a.professional.occupation,
-        qualifications: a.professional.qualifications || '—', licenseNo: `REB-${66000 + d.counters.agent}`, avatarColor: '#007d46', photo: null, activated: false, migrated: false, sourceDemo: true,
+        qualifications: a.professional.qualifications || '—', licenseNo: `REB-${66000 + d.counters.agent}`, avatarColor: '#007d46', photo: null, activated: true, migrated: false, sourceDemo: true,
         onboardedAt: null, teamHistory: [], preferredTeamId: a.preferredTeamId, sourceAppId: a.id,
         activity: [{ at: now, text: `Agent account created after registration approval (${a.id}) by ${user.name}` }],
       });
       if (a.referredBy) notify(d, `agent:${a.referredBy}`, { category: 'Team invitations', title: `${a.personal.firstName} ${a.personal.lastName}'s registration was approved`, body: 'The Agent Manager will onboard them to the team.', link: '/dashboard' });
-      notify(d, `applicant:${a.userKey}`, { category: 'Registration approval', title: 'Your registration has been approved!', body: `Your agent ID is ${agentId}. Proceed to first login to activate your account.`, link: '/my-application' });
+      notify(d, [`applicant:${a.userKey}`, `agent:${agentId}`], { category: 'Registration approval', title: 'Your registration has been approved!', body: `Welcome to VBEYOND! Your account is now an agent account. Your agent ID is ${agentId}.`, link: '/dashboard' });
       notify(d, 'role:agentManager', { category: 'Registration updates', title: `Approved agent ready for onboarding: ${a.personal.firstName} ${a.personal.lastName}`, body: `${agentId}${a.preferredTeamId ? ` · invited to ${d.teams.find((t) => t.id === a.preferredTeamId)?.name}` : ''}`, link: `/teams?tab=onboarding&agent=${agentId}` });
       logAction(d, user, 'Approved application', `${id} → ${agentId}`);
     });
@@ -153,7 +153,7 @@ export default function ApplicationDetail() {
         <ul className="small">
           <li>Change the application status to <strong>Approved</strong></li>
           <li>Generate agent ID <strong>AG-{state.counters.agent}</strong> with a 1-year membership</li>
-          <li>Notify the applicant so they can complete first login</li>
+          <li>Turn the applicant's account into an agent account and notify them</li>
           <li>Add the agent to the Agent Manager's onboarding queue{team ? ` (invited to ${team.name})` : ''}</li>
         </ul>
         {unverified.length > 0 && <div className="alert alert-warning small"><i className="bi bi-exclamation-triangle me-1" />{unverified.length} document(s) are not marked Verified: {unverified.map((d) => d.type).join(', ')}.</div>}

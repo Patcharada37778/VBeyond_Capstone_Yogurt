@@ -7,15 +7,15 @@ import { ConfirmModal, Modal } from '../../components/modals/Modal';
 import { fileSize, fmtDate, fmtDateTime } from '../../utils/format';
 import { DOC_SLOTS } from './Register';
 
-const FLOW = ['Submitted', 'Under review', 'Decision', 'Account activation'];
+const FLOW = ['Submitted', 'Under review', 'Decision'];
 
-export function ApplicationProgress({ app, agent }) {
-  const idx = app.status === 'Approved' ? (agent?.activated ? 3 : 2) : app.status === 'Rejected' ? 2 : 1;
+export function ApplicationProgress({ app }) {
+  const idx = ['Approved', 'Rejected'].includes(app.status) ? 2 : 1;
   const statusText = {
     'Pending Review': app.reviewer ? 'Under review' : 'Submitted · awaiting review',
     'Clarification Required': 'Action needed from you',
     Resubmitted: 'Resubmitted · awaiting review',
-    Approved: agent?.activated ? 'Account active' : 'Approved · activation needed',
+    Approved: 'Approved · you are now an agent',
     Rejected: 'Application rejected',
   }[app.status] || app.status;
   const stateClass = app.status === 'Rejected' ? 'rejected' : app.status === 'Clarification Required' ? 'attention' : 'in-progress';
@@ -28,7 +28,7 @@ export function ApplicationProgress({ app, agent }) {
       </div>
       <ol className="application-progress-list">
         {FLOW.map((label, i) => {
-          const activated = app.status === 'Approved' && agent?.activated;
+          const activated = app.status === 'Approved';
           const completed = i < idx || (activated && i === idx);
           const current = i === idx;
           const currentClass = current ? (activated ? 'completed-state' : stateClass) : '';
@@ -72,7 +72,6 @@ export default function MyApplication() {
     );
   }
 
-  const agent = state.agents.find((a) => a.id === app.agentId);
   const openClar = app.clarifications.find((c) => !c.response);
   const canEdit = ['Pending Review', 'Clarification Required', 'Resubmitted'].includes(app.status);
   const hasChanges = Object.keys(changes).length || Object.keys(added).length;
@@ -127,10 +126,7 @@ export default function MyApplication() {
           <div className="position-relative" style={{ zIndex: 1 }}>
             <div className="small-caps" style={{ color: 'var(--vb-green-200)' }}>Registration approved</div>
             <h2 className="h4 text-white mt-1">Congratulations, {app.personal.firstName}! Your agent ID is {app.agentId}.</h2>
-            {agent?.activated ? <p className="text-white-75 mb-0">Your account is active. Sign in with your agent account to continue.</p> : <>
-              <p className="text-white-75">Activate your account and set your password to access the Agent Portal.</p>
-              <Link to={`/first-login?app=${app.id}`} className="btn btn-light">Proceed to first login <i className="bi bi-arrow-right ms-1" /></Link>
-            </>}
+            <p className="text-white-75 mb-0">Your account is now an agent account.</p>
           </div>
         </div>
       )}
@@ -140,7 +136,7 @@ export default function MyApplication() {
       )}
 
       <div className="card application-progress-card mb-3"><div className="card-body">
-        <ApplicationProgress app={app} agent={agent} />
+        <ApplicationProgress app={app} />
         {app.preferredTeamId && <div className="small text-muted mt-3"><i className="bi bi-people me-1" />Invited to {state.teams.find((t) => t.id === app.preferredTeamId)?.name}</div>}
       </div></div>
 

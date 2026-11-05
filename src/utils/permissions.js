@@ -50,7 +50,7 @@ export const DEFAULT_PERMISSIONS = {
 // `roles` = agent-side roles with fixed access; `module` = back-office RBAC module.
 export const NAV = [
   { group: 'Overview', items: [
-    { path: '/dashboard', label: 'Dashboard', icon: 'bi-grid-1x2', roles: 'all' },
+    { path: '/dashboard', label: 'Home', icon: 'bi-house', roles: 'all' },
   ] },
   { group: 'My Application', items: [
     { path: '/my-application', label: 'My Application', icon: 'bi-file-earmark-person', roles: ['prospect'] },

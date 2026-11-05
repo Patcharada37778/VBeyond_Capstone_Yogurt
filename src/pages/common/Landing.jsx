@@ -16,7 +16,7 @@ export default function Landing() {
       <header className="landing-nav">
         <img src="/vbeyond-logo-color.png" alt="VBEYOND" />
         <nav className="d-flex gap-2">
-          {!user && <>
+          {user ? <Link to="/dashboard" className="btn btn-primary">Go to Home</Link> : <>
             <Link to="/login" className="btn btn-light">Sign in</Link>
             <Link to="/join" className="btn btn-primary">Create account</Link>
           </>}

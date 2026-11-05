@@ -44,6 +44,8 @@ export function deriveUser(state) {
   if (!s) return null;
   if (s.applicantKey) {
     const app = state.applications.find((a) => a.userKey === s.applicantKey);
+    // Once approved, the applicant's own account becomes an agent account automatically.
+    if (app?.agentId && state.agents.some((a) => a.id === app.agentId)) return deriveUser({ ...state, session: { agentId: app.agentId } });
     const name = app ? `${app.personal.firstName} ${app.personal.lastName}` : s.name;
     return { role: 'prospect', name, email: s.applicantKey, avatarColor: '#3aa845', keys: [`applicant:${s.applicantKey}`, `email:${s.applicantKey}`, "allApplicants"], application: app || null, id: s.applicantKey };
   }

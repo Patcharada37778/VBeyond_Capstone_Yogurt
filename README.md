@@ -1,7 +1,7 @@
 # VBEYOND ARMS — Agent Relationship Management System (prototype)
 
 A clickable, frontend-only prototype of the VBEYOND Agent Relationship Management System.
-It covers the full agent lifecycle: registration, compliance review, first login, team onboarding,
+It covers the full agent lifecycle: account sign-up, registration, compliance review, team onboarding,
 membership renewal, property directory, sales and commission, status changes and team transfers. There is no chat: support is by email (info@vbeyond.co.th, shown in the dashboard footer).
 
 - React 19 + React Router + Bootstrap 5 + Bootstrap Icons (Vite)
@@ -33,7 +33,6 @@ Visitors who are not signed in see the landing page at `/`.
 
 Other entry points on the login page:
 - **First sign-in for migrated agents** — try `LG-20417` or `yupin.c@vbeyond-agent.co.th`
-- **Approved applicant? Activate account** — first login after an application is approved
 - **Forgot password** — simulated email with an on-screen verification code
 
 **Reset demo data** (profile menu) restores the original mock data.
@@ -44,7 +43,7 @@ Other entry points on the login page:
 2. Agent Manager → *Agent Applications* → open it → *Request clarification*
 3. Prospective Agent → *My Application* → respond, replace the document, resubmit
 4. Agent Manager → verify documents → *Approve* (agent ID is generated)
-5. Prospective Agent → *Proceed to first login* → set a password → agent dashboard
+5. Prospective Agent → the account becomes an agent account automatically (Home page)
 6. Agent Manager → *Team Management* → *Unassigned / Onboarding* tab → assign to Team Alpha
 7. Team Lead → notification "New team member"; any agent → *Invite someone* copies an invitation link (team pre-assigned) → open it to register
 8. Active Agent → dashboard shows announcement banners, renewal reminder (30 days before expiry) and overall commission → *My Commission* for the statement
