@@ -43,7 +43,7 @@ Other entry points on the login page:
 3. Prospective Agent → *My Application* → respond, replace the document, resubmit
 4. Agent Manager → verify documents → *Approve* (agent ID is generated)
 5. Prospective Agent → *Proceed to first login* → set a password → agent dashboard
-6. Agent Manager → *Onboarding* → assign to Team Alpha
+6. Agent Manager → *Team Management* → *Unassigned / Onboarding* tab → assign to Team Alpha
 7. Team Lead → notification "New team member"; any agent → *Invite someone* copies an invitation link (team pre-assigned) → open it to register
 8. Active Agent → dashboard shows announcement banners, renewal reminder (30 days before expiry) and overall commission → *My Commission* for the statement
 9. Active Agent → *Membership Renewal* → upload the PDPA certificate → submit (renewal is free)

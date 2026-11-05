@@ -2,18 +2,18 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
-import { Avatar, EmptyState, PageHeader, SearchInput } from '../../components/common';
+import { Avatar, EmptyState, SearchInput } from '../../components/common';
 import { ConfirmModal } from '../../components/modals/Modal';
 import { onboardAgent } from '../../services/agentLifecycle';
 import { fmtDate, fullName } from '../../utils/format';
 
-export default function Onboarding() {
+/** "Unassigned / Onboarding" tab of Team Management: assign approved agents to a team. */
+export default function OnboardingPanel() {
   const { state, mutate, user, can } = useStore();
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const [q, setQ] = useState('');
   const pending = state.agents.filter((a) => !a.teamId && a.status === 'Active');
-  const recent = state.agents.filter((a) => a.teamId && a.onboardedAt && (Date.now() - new Date(a.onboardedAt)) < 30 * 86400000 && a.teamHistory.length === 1).sort((a, b) => new Date(b.onboardedAt) - new Date(a.onboardedAt));
   const selected = pending.find((a) => a.id === params.get('agent')) || null;
   const app = state.applications.find((x) => x.agentId === selected?.id);
   const invitedTeamId = selected?.preferredTeamId || app?.preferredTeamId || '';
@@ -45,12 +45,11 @@ export default function Onboarding() {
     mutate((d) => onboardAgent(d, user, selected.id, { teamId: form.teamId, onboardDate: form.date, notes: form.notes.trim(), reportsTo: form.reportsTo }));
     toast(`${fullName(selected)} onboarded to ${team.name}. The agent and team lead were notified.`, 'success', 'Onboarding complete');
     setConfirm(false);
-    setParams({});
+    setParams({ tab: 'onboarding' });
   };
 
   return (
     <>
-      <PageHeader title="Onboarding Agents to Teams" subtitle="Assign newly approved agents to a team and team lead." crumbs={[{ label: 'Agent Team Management' }, { label: 'Onboarding' }]} />
       <div className="row g-3">
         <div className="col-lg-4">
           <div className="card">
@@ -60,7 +59,7 @@ export default function Onboarding() {
               {list.map((a) => {
                 const pref = state.teams.find((t) => t.id === (a.preferredTeamId || state.applications.find((x) => x.agentId === a.id)?.preferredTeamId));
                 return (
-                  <button key={a.id} className={`list-group-item list-group-item-action d-flex gap-2 align-items-center ${selected?.id === a.id ? 'active' : ''}`} onClick={() => setParams({ agent: a.id })}>
+                  <button key={a.id} className={`list-group-item list-group-item-action d-flex gap-2 align-items-center ${selected?.id === a.id ? 'active' : ''}`} onClick={() => setParams({ tab: 'onboarding', agent: a.id })}>
                     <Avatar name={fullName(a)} color={a.avatarColor} size={34} />
                     <div className="lh-sm flex-grow-1" style={{ minWidth: 0 }}>
                       <div className="fw-medium text-truncate">{fullName(a)}</div>
@@ -117,19 +116,12 @@ export default function Onboarding() {
                 </div>
               </div>
               <div className="card-footer bg-white d-flex justify-content-end gap-2">
-                <button className="btn btn-light" onClick={() => setParams({})}>Cancel</button>
+                <button className="btn btn-light" onClick={() => setParams({ tab: 'onboarding' })}>Cancel</button>
                 <button className="btn btn-primary" onClick={review} disabled={!canOnboard}><i className="bi bi-person-check me-1" />Confirm onboarding</button>
               </div>
             </div>
           ) : <div className="card"><EmptyState icon="bi-person-plus" title="Select an approved agent">Choose an agent from the list to assign a team.</EmptyState></div>}
 
-          <div className="card mt-3">
-            <div className="card-header">Recently onboarded (30 days)</div>
-            <div className="list-group list-group-flush">
-              {recent.map((a) => <Link key={a.id} to={`/agents/${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between"><span>{fullName(a)} <small className="text-muted">{a.id}</small></span><small className="text-muted">{state.teams.find((t) => t.id === a.teamId)?.name} · {fmtDate(a.onboardedAt)}</small></Link>)}
-              {!recent.length && <div className="list-group-item small text-muted">No agents onboarded in the last 30 days.</div>}
-            </div>
-          </div>
         </div>
       </div>
       <ConfirmModal open={confirm} onClose={() => setConfirm(false)} onConfirm={doOnboard} title="Confirm onboarding" confirmLabel="Onboard agent">

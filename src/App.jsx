@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import { useStore } from './context/StoreContext';
 
@@ -26,12 +26,18 @@ import ApplicationDetail from './pages/applications/ApplicationDetail';
 import AgentDirectory from './pages/agent-manager/AgentDirectory';
 import AgentDetail from './pages/agent-manager/AgentDetail';
 import Teams from './pages/agent-manager/Teams';
-import Onboarding from './pages/agent-manager/Onboarding';
 import Renewals from './pages/agent-manager/Renewals';
 import AgentStatus from './pages/agent-manager/AgentStatus';
 
 import FaqManage from './pages/support/FaqManage';
 
+
+// Old onboarding links now open the onboarding tab in Team Management.
+function OnboardingRedirect() {
+  const [params] = useSearchParams();
+  const agent = params.get('agent');
+  return <Navigate to={`/teams?tab=onboarding${agent ? `&agent=${agent}` : ''}`} replace />;
+}
 
 export default function App() {
   const { user } = useStore();
@@ -63,7 +69,7 @@ export default function App() {
         <Route path="/agents" element={<AgentDirectory />} />
         <Route path="/agents/:id" element={<AgentDetail />} />
         <Route path="/teams" element={<Teams />} />
-        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding" element={<OnboardingRedirect />} />
         <Route path="/renewals" element={<Renewals />} />
         <Route path="/agent-status" element={<AgentStatus />} />
         <Route path="/faq" element={<FaqManage />} />

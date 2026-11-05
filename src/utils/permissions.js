@@ -73,7 +73,6 @@ export const NAV = [
     { path: '/announcements', label: 'Announcements', icon: 'bi-megaphone', module: 'announcements' },
     { path: '/agents', label: 'Agent List', icon: 'bi-person-lines-fill', module: 'agents' },
     { path: '/teams', label: 'Team Management', icon: 'bi-diagram-3', module: 'teams' },
-    { path: '/onboarding', label: 'Onboarding', icon: 'bi-person-plus', module: 'onboarding' },
     { path: '/renewals', label: 'Membership Renewals', icon: 'bi-arrow-repeat', module: 'renewals' },
     { path: '/agent-status', label: 'Agent Status Management', icon: 'bi-toggles', module: 'agentStatus' },
     { path: '/faq', label: 'FAQ', icon: 'bi-journal-text', module: 'faq' },
