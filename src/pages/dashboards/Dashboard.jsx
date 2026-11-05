@@ -100,8 +100,6 @@ function CommissionOverview({ agentId }) {
             <div className="row g-2 small">
               <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Earned in {new Date().getFullYear()}</div><div className="fw-semibold">{fmtMoney(s.ytd)}</div></div></div>
               <div className="col-6"><div className="border rounded p-2"><div className="text-muted">This month</div><div className="fw-semibold">{fmtMoney(s.thisMonth)}</div></div></div>
-              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Paid out</div><div className="fw-semibold text-green">{fmtMoney(s.paid)}</div></div></div>
-              <div className="col-6"><div className="border rounded p-2"><div className="text-muted">Upcoming</div><div className="fw-semibold">{fmtMoney(s.upcoming)}</div></div></div>
             </div>
           </div>
           <div className="col-lg-7">
