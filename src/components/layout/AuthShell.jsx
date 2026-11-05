@@ -23,7 +23,6 @@ export default function AuthShell({ children, title = 'Agent Relationship Manage
         <div className="auth-card">
           <div className="d-lg-none mb-4"><img src="/vbeyond-logo-color.png" alt="VBEYOND" style={{ height: 44 }} /></div>
           {children}
-          <div className="mt-4 text-center"><span className="demo-pill">DEMO MODE · no real accounts or emails</span></div>
         </div>
       </main>
     </div>
