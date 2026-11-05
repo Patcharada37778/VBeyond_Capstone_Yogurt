@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { logAction, useStore } from '../../context/StoreContext';
+import { Link } from 'react-router-dom';
+import { logAction, RENEWAL_REMINDER_DAYS, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
 import { Avatar, PageHeader, StatusBadge, Tabs } from '../../components/common';
 import { daysUntil, fmtDate, fmtDateTime, fullName, isEmail, isPhone } from '../../utils/format';
@@ -30,7 +31,7 @@ export default function Profile() {
   const [tab, setTab] = useState('personal');
   const fileRef = useRef(null);
 
-  const start = () => { setForm({ email: agent.email, phone: agent.phone, lineId: agent.lineId || '', address: agent.address, photo: agent.photo }); setErrors({}); setEdit(true); };
+  const start = () => { setForm({ email: agent.email, phone: agent.phone, lineId: agent.lineId || '', address: agent.address, photo: agent.photo }); setErrors({}); setTab('personal'); setEdit(true); };
   const save = () => {
     const e = {};
     if (!isEmail(form.email)) e.email = 'Enter a valid email.';
@@ -61,80 +62,104 @@ export default function Profile() {
   const v = edit ? form : agent;
 
   return (
-    <>
-      <PageHeader title="My Profile" subtitle="View and update your personal and contact information." crumbs={[{ label: 'My Account' }, { label: 'Profile' }]}
-        actions={edit ? <>
-          <button className="btn btn-light" onClick={() => setEdit(false)}>Cancel</button>
-          <button className="btn btn-primary" onClick={save}><i className="bi bi-check-lg me-1" />Save Changes</button>
-        </> : <button className="btn btn-primary" onClick={start}><i className="bi bi-pencil me-1" />Edit Profile</button>} />
+    <div className="profile-page">
+      <PageHeader title="My Profile" crumbs={[{ label: 'My Account' }, { label: 'Profile' }]}
+        actions={!edit && <button className="btn btn-primary" onClick={start}><i className="bi bi-pencil me-1" />Edit Profile</button>} />
 
-      <div className="row g-3">
-        <div className="col-lg-4">
-          <div className="card mb-3"><div className="card-body text-center">
-            <div className="position-relative d-inline-block">
-              <Avatar name={fullName(agent)} color={agent.avatarColor} photo={v.photo} size={104} />
-              {edit && <button className="btn btn-sm btn-primary rounded-circle position-absolute bottom-0 end-0" style={{ width: 34, height: 34 }} onClick={() => fileRef.current?.click()} aria-label="Change profile image"><i className="bi bi-camera" /></button>}
-              <input ref={fileRef} type="file" accept="image/*" className="d-none" onChange={pickPhoto} />
-            </div>
-            {edit && v.photo && <div><button className="btn btn-link btn-sm text-danger" onClick={() => setForm({ ...form, photo: null })}>Remove photo</button></div>}
-            <h2 className="h5 mt-3 mb-0">{fullName(agent)}</h2>
+      <div className="card profile-summary-card mb-3"><div className="card-body">
+        <div className="profile-summary">
+          <div className="position-relative profile-avatar-wrap">
+            <Avatar name={fullName(agent)} color={agent.avatarColor} photo={v.photo} size={88} />
+            {edit && <button type="button" className="btn btn-sm btn-primary rounded-circle position-absolute bottom-0 end-0 profile-photo-button" onClick={() => fileRef.current?.click()} aria-label="Change profile photo" title="Change profile photo"><i className="bi bi-camera" /></button>}
+            <input ref={fileRef} type="file" accept="image/*" className="d-none" onChange={pickPhoto} />
+          </div>
+          <div className="profile-summary-details">
+            <h2 className="h5 mb-1">{fullName(agent)}</h2>
             <div className="text-muted small">{agent.id}{agent.migrated ? ` · migrated from ${agent.legacyId}` : ''}</div>
-            <div className="mt-2 d-flex justify-content-center gap-2"><StatusBadge status={agent.status} />{user.ledTeam && <span className="status-badge sb-purple">Team Lead</span>}</div>
-          </div></div>
-          <div className="card">
-            <div className="card-header">Membership</div>
-            <div className="card-body">
-              <dl className="d-grid gap-2 mb-0">
-                <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Status</dt><dd className="mb-0"><StatusBadge status={agent.status} /></dd></div>
-                <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Start date</dt><dd className="mb-0">{fmtDate(agent.membershipStart)}</dd></div>
-                <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Expiry date</dt><dd className="mb-0">{fmtDate(agent.membershipExpiry)}</dd></div>
-                <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Days remaining</dt><dd className={`mb-0 fw-semibold ${left < 60 ? 'text-danger' : ''}`}>{left > 0 ? left : 'Expired'}</dd></div>
-                <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Team</dt><dd className="mb-0">{team?.name || 'Pending onboarding'}</dd></div>
-                <div className="d-flex justify-content-between"><dt className="fw-normal text-muted">Team lead</dt><dd className="mb-0">{lead ? fullName(lead) : '—'}</dd></div>
-              </dl>
+            <div className="mt-2 d-flex flex-wrap gap-2"><StatusBadge status={agent.status} />{user.ledTeam && <span className="status-badge sb-purple">Team Lead</span>}</div>
+            {edit && <div className="profile-photo-actions">
+              <small className="text-muted">Choose an image up to 1.5 MB.</small>
+              {v.photo && <button type="button" className="btn btn-link btn-sm text-danger p-0" onClick={() => setForm({ ...form, photo: null })}>Remove photo</button>}
+            </div>}
+          </div>
+        </div>
+      </div></div>
+
+      <div className="row g-3 profile-content-row">
+        <div className="col-lg-8 d-flex">
+          <div className="card profile-info-card w-100">
+            <div className="card-header profile-details-header">
+              <div>
+                <h2 className="h6 mb-0">{!edit && <i className="bi bi-person me-2" aria-hidden="true" />}{edit ? 'Edit personal & contact details' : 'Profile information'}</h2>
+                {edit && <p className="small text-muted mb-0 mt-1">Update your contact details and save your changes.</p>}
+              </div>
+              {edit && <div className="d-flex flex-wrap gap-2">
+                <button type="button" className="btn btn-light btn-sm" onClick={() => setEdit(false)}>Cancel</button>
+                <button type="button" className="btn btn-primary btn-sm" onClick={save}><i className="bi bi-check-lg me-1" />Save</button>
+              </div>}
+            </div>
+            {!edit && <div className="card-body pb-0"><Tabs active={tab} onChange={setTab} tabs={[{ key: 'personal', label: 'Personal & contact' }, { key: 'professional', label: 'Professional' }, { key: 'history', label: 'Team history' }, { key: 'activity', label: 'Activity' }]} /></div>}
+            <div className={`card-body ${edit ? '' : 'pt-0'}`}>
+              {edit ? (
+                <div className="row g-3 profile-form">
+                  <div className="col-md-6"><label className="form-label required" htmlFor="p-em">Email</label><input id="p-em" type="email" autoComplete="email" className={`form-control ${errors.email ? 'is-invalid' : ''}`} aria-invalid={!!errors.email} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />{errors.email && <div className="invalid-feedback">{errors.email}</div>}</div>
+                  <div className="col-md-6"><label className="form-label required" htmlFor="p-ph">Mobile phone</label><input id="p-ph" type="tel" autoComplete="tel" className={`form-control ${errors.phone ? 'is-invalid' : ''}`} aria-invalid={!!errors.phone} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />{errors.phone && <div className="invalid-feedback">{errors.phone}</div>}</div>
+                  <div className="col-md-6"><label className="form-label" htmlFor="p-li">LINE ID</label><input id="p-li" autoComplete="off" className="form-control" value={form.lineId} onChange={(e) => setForm({ ...form, lineId: e.target.value })} /></div>
+                  <div className="col-12"><label className="form-label required" htmlFor="p-ad">Address</label><textarea id="p-ad" rows={3} autoComplete="street-address" className={`form-control ${errors.address ? 'is-invalid' : ''}`} aria-invalid={!!errors.address} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />{errors.address && <div className="invalid-feedback">{errors.address}</div>}</div>
+                  <div className="col-12 small text-muted"><i className="bi bi-lock me-1" aria-hidden="true" />Name, date of birth and nationality can only be changed by an Agent Manager.</div>
+                </div>
+              ) : (
+                <>
+                  {tab === 'personal' && (
+                    <dl className="dl-grid">
+                      <div><dt>First name</dt><dd>{agent.firstName}</dd></div>
+                      <div><dt>Last name</dt><dd>{agent.lastName}</dd></div>
+                      <div><dt>Email</dt><dd>{agent.email}</dd></div>
+                      <div><dt>Mobile phone</dt><dd>{agent.phone}</dd></div>
+                      <div><dt>LINE ID</dt><dd>{agent.lineId || '—'}</dd></div>
+                      <div><dt>Date of birth</dt><dd>{fmtDate(agent.dob)}</dd></div>
+                      <div><dt>Nationality</dt><dd>{agent.nationality}</dd></div>
+                      <div className="profile-full-row"><dt>Address</dt><dd>{agent.address}</dd></div>
+                    </dl>
+                  )}
+                  {tab === 'professional' && (
+                    <dl className="dl-grid">
+                      <div><dt>Occupation</dt><dd>{agent.occupation}</dd></div>
+                      <div><dt>License number</dt><dd>{agent.licenseNo}</dd></div>
+                      <div><dt>Registered</dt><dd>{fmtDate(agent.registeredAt)}</dd></div>
+                      <div><dt>Onboarded</dt><dd>{fmtDate(agent.onboardedAt)}</dd></div>
+                      <div className="profile-full-row"><dt>Experience</dt><dd>{agent.experience}</dd></div>
+                      <div className="profile-full-row"><dt>Qualifications</dt><dd>{agent.qualifications}</dd></div>
+                    </dl>
+                  )}
+                  {tab === 'history' && <TeamHistory agent={agent} teams={state.teams} />}
+                  {tab === 'activity' && <ul className="timeline small mb-0">{agent.activity.map((a, i) => <li key={i} className="done"><div>{a.text}</div><small className="text-muted">{fmtDateTime(a.at)}</small></li>)}</ul>}
+                </>
+              )}
             </div>
           </div>
         </div>
-        <div className="col-lg-8">
-          <div className="card">
-            <div className="card-body pb-0"><Tabs active={tab} onChange={setTab} tabs={[{ key: 'personal', label: 'Personal & contact' }, { key: 'professional', label: 'Professional' }, { key: 'history', label: 'Team history' }, { key: 'activity', label: 'Activity' }]} /></div>
-            <div className="card-body pt-0">
-              {tab === 'personal' && (edit ? (
-                <div className="row g-3">
-                  <div className="col-md-6"><label className="form-label required" htmlFor="p-em">Email</label><input id="p-em" className={`form-control ${errors.email ? 'is-invalid' : ''}`} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />{errors.email && <div className="invalid-feedback">{errors.email}</div>}</div>
-                  <div className="col-md-6"><label className="form-label required" htmlFor="p-ph">Mobile phone</label><input id="p-ph" className={`form-control ${errors.phone ? 'is-invalid' : ''}`} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />{errors.phone && <div className="invalid-feedback">{errors.phone}</div>}</div>
-                  <div className="col-md-6"><label className="form-label" htmlFor="p-li">LINE ID</label><input id="p-li" className="form-control" value={form.lineId} onChange={(e) => setForm({ ...form, lineId: e.target.value })} /></div>
-                  <div className="col-12"><label className="form-label required" htmlFor="p-ad">Address</label><textarea id="p-ad" rows={2} className={`form-control ${errors.address ? 'is-invalid' : ''}`} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />{errors.address && <div className="invalid-feedback">{errors.address}</div>}</div>
-                  <div className="col-12 small text-muted"><i className="bi bi-lock me-1" />Name, date of birth and nationality can only be changed by an Agent Manager.</div>
+        <div className="col-lg-4 d-flex">
+          <div className="card profile-membership-card w-100">
+            <div className="card-header"><i className="bi bi-card-checklist me-2 text-brand" aria-hidden="true" />Membership & team</div>
+            <div className="card-body profile-membership-body">
+              <dl className="profile-membership-list mb-0">
+                <div><dt>Status</dt><dd><StatusBadge status={agent.status} /></dd></div>
+                <div><dt>Start date</dt><dd>{fmtDate(agent.membershipStart)}</dd></div>
+                <div><dt>Expiry date</dt><dd>{fmtDate(agent.membershipExpiry)}</dd></div>
+                <div className="profile-days-remaining">
+                  <dt>Days remaining</dt>
+                  <dd className={left < 60 ? 'text-danger fw-semibold' : 'fw-medium'}>{left > 0 ? left : 'Expired'}</dd>
+                  {left <= RENEWAL_REMINDER_DAYS && <p className="profile-renewal-reminder">{left > 0 ? 'Your membership will expire soon. Submit a renewal request before the expiry date to avoid interruption.' : 'Your membership has expired. Submit a renewal request to restore your membership.'}</p>}
                 </div>
-              ) : (
-                <dl className="dl-grid">
-                  <div><dt>First name</dt><dd>{agent.firstName}</dd></div>
-                  <div><dt>Last name</dt><dd>{agent.lastName}</dd></div>
-                  <div><dt>Email</dt><dd>{agent.email}</dd></div>
-                  <div><dt>Mobile phone</dt><dd>{agent.phone}</dd></div>
-                  <div><dt>LINE ID</dt><dd>{agent.lineId || '—'}</dd></div>
-                  <div><dt>Date of birth</dt><dd>{fmtDate(agent.dob)}</dd></div>
-                  <div><dt>Nationality</dt><dd>{agent.nationality}</dd></div>
-                  <div style={{ gridColumn: '1 / -1' }}><dt>Address</dt><dd>{agent.address}</dd></div>
-                </dl>
-              ))}
-              {tab === 'professional' && (
-                <dl className="dl-grid">
-                  <div><dt>Occupation</dt><dd>{agent.occupation}</dd></div>
-                  <div><dt>License number</dt><dd>{agent.licenseNo}</dd></div>
-                  <div><dt>Registered</dt><dd>{fmtDate(agent.registeredAt)}</dd></div>
-                  <div><dt>Onboarded</dt><dd>{fmtDate(agent.onboardedAt)}</dd></div>
-                  <div style={{ gridColumn: '1 / -1' }}><dt>Experience</dt><dd>{agent.experience}</dd></div>
-                  <div style={{ gridColumn: '1 / -1' }}><dt>Qualifications</dt><dd>{agent.qualifications}</dd></div>
-                </dl>
-              )}
-              {tab === 'history' && <TeamHistory agent={agent} teams={state.teams} />}
-              {tab === 'activity' && <ul className="timeline small mb-0">{agent.activity.map((a, i) => <li key={i} className="done"><div>{a.text}</div><small className="text-muted">{fmtDateTime(a.at)}</small></li>)}</ul>}
+                <div><dt>Team</dt><dd>{team?.name || 'Pending onboarding'}</dd></div>
+                <div><dt>Team lead</dt><dd>{lead ? fullName(lead) : '—'}</dd></div>
+              </dl>
+              <Link to="/renewal" className="btn profile-renewal-button"><i className="bi bi-arrow-repeat me-2" aria-hidden="true" />Membership Renewal</Link>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

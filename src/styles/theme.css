@@ -115,6 +115,39 @@ h1, h2, h3, h4, h5, .font-brand {
 .my-application-page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
 .my-application-page .card-header { padding: 1rem 1.5rem; }
 .my-application-page .card-body { padding: 1.5rem; }
+.profile-page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+.profile-page .card { background-color: #f7f8f7; }
+.profile-page .card-header { background-color: #f7f8f7; padding: 1rem 1.5rem; }
+.profile-page .card-body { padding: 1.5rem; }
+.profile-page .card-body.pb-0 { padding-bottom: 0; }
+.profile-page .card-body.pt-0 { padding-top: 0; }
+.profile-summary { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.profile-avatar-wrap { flex: 0 0 auto; }
+.profile-photo-button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; }
+.profile-summary-details { min-width: 0; }
+.profile-photo-actions { display: grid; justify-items: start; gap: 0.35rem; margin-top: 0.75rem; }
+.profile-membership-list { display: grid; gap: 0; }
+.profile-membership-list > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 0.75rem; align-items: baseline; padding: 0.65rem 0; border-bottom: 1px solid var(--vb-border); }
+.profile-membership-list > div:first-child { padding-top: 0; }
+.profile-membership-list > div:last-child { padding-bottom: 0; border-bottom: 0; }
+.profile-membership-list dt { margin: 0; color: var(--vb-muted); font-size: 0.8rem; font-weight: 400; }
+.profile-membership-list dd { margin: 0; text-align: right; font-size: 0.85rem; font-weight: 500; overflow-wrap: anywhere; }
+.profile-membership-list .profile-days-remaining { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+.profile-renewal-reminder { grid-column: 1 / -1; margin: -0.15rem 0 0; color: #a64b4b; font-size: 0.72rem; font-weight: 400; line-height: 1.4; }
+.profile-details-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.profile-content-row { align-items: stretch; }
+.profile-info-card, .profile-membership-card { height: 100%; }
+.profile-membership-body { display: flex; flex-direction: column; }
+.profile-renewal-button { margin-top: 1.25rem; width: 100%; color: var(--vb-green-700); background: var(--vb-green-50); border: 1px solid #c8e5ce; font-weight: 500; }
+.profile-renewal-button:hover, .profile-renewal-button:focus-visible { color: var(--vb-green-700); background: #dff0e2; border-color: #a9d5b2; }
+.profile-info-card .dl-grid { gap: 0.55rem 0.85rem; }
+.profile-info-card .dl-grid dd { line-height: 1.35; }
+.profile-page .nav-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; flex-wrap: initial; overflow: visible; }
+.profile-page .nav-tabs .nav-item { min-width: 0; }
+.profile-page .nav-tabs .nav-link { width: 100%; height: 100%; padding-right: 0.4rem; padding-left: 0.4rem; white-space: normal; overflow-wrap: anywhere; }
+.profile-full-row { grid-column: 1 / -1; }
+.profile-form .form-control { min-height: 42px; }
+.profile-form textarea.form-control { min-height: 88px; }
 .dashboard-page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
 .dashboard-page .card { background-color: #f7f8f7; }
 .dashboard-page .card-header { background-color: #f7f8f7; padding: 1rem 1.5rem; }
@@ -327,6 +360,16 @@ tr.row-highlight td { background: var(--vb-green-50) !important; }
   .dashboard-page .card-header { padding: 0.85rem 1rem; }
   .dashboard-page .card-body { padding: 1rem; }
   .dashboard-page .card > .list-group-flush > .list-group-item { padding-right: 1rem; padding-left: 1rem; }
+  .profile-page .card-header { padding: 0.85rem 1rem; }
+  .profile-page .card-body { padding: 1rem; }
+  .profile-page .card-body.pb-0 { padding-bottom: 0; }
+  .profile-page .card-body.pt-0 { padding-top: 0; }
+  .profile-summary { align-items: flex-start; }
+  .profile-membership-list > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.5rem; }
+  .profile-membership-list dd { text-align: right; }
+  .profile-details-header > div:last-child { width: 100%; }
+  .profile-details-header > div:last-child .btn { flex: 1; }
+  .profile-page .nav-tabs .nav-link { padding: 0.55rem 0.2rem; font-size: 0.72rem; }
   .registration-card .card-body { padding: 1.1rem; }
   .registration-card .card-footer { padding: 0 1.1rem 1.1rem; }
 }
