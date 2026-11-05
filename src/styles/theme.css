@@ -178,6 +178,9 @@ h1, h2, h3, h4, h5, .font-brand {
 .team-commission-summary-icon { display: grid; flex: 0 0 40px; width: 40px; height: 40px; place-items: center; border-radius: 10px; background: var(--vb-teal-50); color: var(--vb-teal-700); font-size: 1.15rem; }
 .team-commission-summary-content { display: grid; min-width: 0; gap: 0.15rem; }
 .team-commission-summary-content > strong { color: var(--vb-ink); font-size: 1.35rem; line-height: 1.3; }
+.team-commission-performance-value { display: grid; justify-items: end; gap: 0.12rem; }
+.team-commission-performance-value > strong { color: var(--vb-ink); font-weight: 600; }
+.team-commission-performance-value > small { font-size: 0.7rem; font-weight: 600; }
 .team-commission-period-card .card-body { padding: 1rem 1.25rem; }
 .team-commission-period-controls { display: grid; grid-template-columns: minmax(150px, 0.7fr) minmax(120px, 0.5fr) minmax(220px, 1fr); align-items: end; gap: 1rem; }
 .team-commission-period-controls > div { min-width: 0; }

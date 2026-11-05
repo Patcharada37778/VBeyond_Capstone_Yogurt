@@ -52,6 +52,23 @@ function monthChange(current, previous) {
   return `${difference > 0 ? '+' : ''}${difference.toFixed(1)}% vs previous month`;
 }
 
+function getPercentChange(current, previous) {
+  if (previous === 0) return current === 0 ? '0.0%' : 'New';
+  const difference = ((current - previous) / previous) * 100;
+  return `${difference > 0 ? '+' : ''}${difference.toFixed(1)}%`;
+}
+
+function PerformanceValue({ value, previousValue }) {
+  const change = getPercentChange(value, previousValue);
+  const changeClass = value > previousValue ? 'text-success' : value < previousValue ? 'text-danger' : 'text-muted';
+  return (
+    <div className="team-commission-performance-value">
+      <strong>{fmtMoney(value)}</strong>
+      <small className={changeClass}>{change}</small>
+    </div>
+  );
+}
+
 function SummaryCard({ icon, label, current, previous }) {
   return (
     <div className="card h-100 team-commission-summary-card">
@@ -93,11 +110,21 @@ export default function TeamCommission() {
   const year = Number(selectedYear);
   const month = Number(selectedMonth);
   const filteredRecords = periodRecords(teamSales, year, month);
+  const previousPeriod = new Date(year, month - 1, 1);
+  const previousPeriodRecords = periodRecords(teamSales, previousPeriod.getFullYear(), previousPeriod.getMonth());
   const selectedTotals = sumSales(filteredRecords);
   const rows = members.map((agent) => {
     const sales = filteredRecords.filter((record) => record.agentId === agent.id);
     const totals = sumSales(sales);
-    return { ...agent, salesValue: totals.sales, commissionAmount: totals.commission, deals: totals.deals };
+    const previousSales = sumSales(previousPeriodRecords.filter((record) => record.agentId === agent.id));
+    return {
+      ...agent,
+      salesValue: totals.sales,
+      commissionAmount: totals.commission,
+      previousSalesValue: previousSales.sales,
+      previousCommissionAmount: previousSales.commission,
+      deals: totals.deals,
+    };
   });
   const selectedAgent = members.find((agent) => agent.id === selectedAgentId);
   const selectedAgentSales = selectedAgent
@@ -153,14 +180,14 @@ export default function TeamCommission() {
 
       <section className="card team-members-card">
         <div className="card-header team-section-header">
-          <div><h2 className="h6 mb-1">Individual team performance</h2><small className="text-muted">Sales and commission by member for {selectedPeriodLabel}</small></div>
+          <div><h2 className="h6 mb-1">Individual team performance</h2><small className="text-muted">Sales and commission by member for {selectedPeriodLabel}, compared with {MONTHS[previousPeriod.getMonth()].label} {previousPeriod.getFullYear()}</small></div>
           <small className="text-muted">{selectedTotals.deals} sale{selectedTotals.deals === 1 ? '' : 's'} · {members.length} members</small>
         </div>
         <DataTable rows={rows} initialSort={{ key: 'salesValue', dir: 'desc' }} onRowClick={(agent) => setSelectedAgentId(agent.id)} empty={`No team sales were recorded in ${selectedPeriodLabel}.`}
           columns={[
             { key: 'name', label: 'Team member', sortValue: fullName, render: (agent) => <button type="button" className="team-commission-agent-link" onClick={() => setSelectedAgentId(agent.id)}><Avatar name={fullName(agent)} color={agent.avatarColor} photo={agent.photo} size={36} /><span className="lh-sm text-start"><span className="fw-medium d-block">{fullName(agent)}</span><small className="text-muted">{agent.id}</small></span></button> },
-            { key: 'salesValue', label: 'Sales', render: (agent) => fmtMoney(agent.salesValue), className: 'text-end text-nowrap' },
-            { key: 'commissionAmount', label: 'Commission', render: (agent) => <strong>{fmtMoney(agent.commissionAmount)}</strong>, className: 'text-end text-nowrap' },
+            { key: 'salesValue', label: 'Sales', render: (agent) => <PerformanceValue value={agent.salesValue} previousValue={agent.previousSalesValue} />, className: 'text-end text-nowrap' },
+            { key: 'commissionAmount', label: 'Commission', render: (agent) => <PerformanceValue value={agent.commissionAmount} previousValue={agent.previousCommissionAmount} />, className: 'text-end text-nowrap' },
             { key: 'deals', label: 'Closed sales', render: (agent) => agent.deals, className: 'text-end' },
           ]} />
       </section>
