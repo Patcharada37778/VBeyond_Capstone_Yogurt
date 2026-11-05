@@ -43,30 +43,31 @@ function getAgentManager(agent, team, agents) {
   return agent.id === team.leadId ? null : manager?.id || team.leadId;
 }
 
-function AgentReportBranch({ agent, team, agents, onSelect, ancestors = [] }) {
+function AgentReportBranch({ agent, team, agents, onSelect, canViewStatus, currentAgentId, ancestors = [] }) {
   const path = [...ancestors, agent.id];
+  const isHighlighted = currentAgentId ? agent.id === currentAgentId : agent.id === team.leadId;
   const reports = agents.filter((candidate) => candidate.status !== 'Resigned'
     && !path.includes(candidate.id)
     && getAgentManager(candidate, team, agents) === agent.id);
   return (
     <div className="org-report-branch">
-      <button type="button" className={`org-folder-agent ${agent.id === team.leadId ? 'org-folder-lead' : ''}`} onClick={() => onSelect?.(agent)}>
-        {agent.id === team.leadId
+      <button type="button" className={`org-folder-agent ${isHighlighted ? 'org-folder-current' : ''}`} onClick={() => onSelect?.(agent)}>
+        {isHighlighted
           ? <Avatar name={fullName(agent)} color={agent.avatarColor} photo={agent.photo} size={32} />
           : <i className="bi bi-person" aria-hidden="true" />}
         <span className="org-folder-agent-info"><strong>{fullName(agent)}</strong><small>{agent.id === team.leadId ? 'Team Lead' : agent.teamRole || 'Agent'} · {agent.id}{reports.length ? ` · ${reports.length} direct report${reports.length === 1 ? '' : 's'}` : ''}</small></span>
-        <StatusBadge status={agent.status} />
+        {canViewStatus(agent) && <StatusBadge status={agent.status} />}
       </button>
       {reports.length > 0 && (
         <div className="org-folder-members">
-          {reports.map((report) => <AgentReportBranch key={report.id} agent={report} team={team} agents={agents} onSelect={onSelect} ancestors={path} />)}
+          {reports.map((report) => <AgentReportBranch key={report.id} agent={report} team={team} agents={agents} onSelect={onSelect} canViewStatus={canViewStatus} currentAgentId={currentAgentId} ancestors={path} />)}
         </div>
       )}
     </div>
   );
 }
 
-function OrgTeamFolder({ team, agents, onSelect, initiallyOpen = false }) {
+function OrgTeamFolder({ team, agents, onSelect, canViewStatus, currentAgentId, initiallyOpen = false }) {
   const teamAgents = agents.filter((agent) => agent.teamId === team.id && agent.status !== 'Resigned');
   const lead = teamAgents.find((agent) => agent.id === team.leadId);
   return (
@@ -74,27 +75,27 @@ function OrgTeamFolder({ team, agents, onSelect, initiallyOpen = false }) {
       <summary><span>{team.name}</span><small>{teamAgents.length} agents</small></summary>
       <div className="org-folder-children">
         {lead
-          ? <AgentReportBranch agent={lead} team={team} agents={teamAgents} onSelect={onSelect} />
+          ? <AgentReportBranch agent={lead} team={team} agents={teamAgents} onSelect={onSelect} canViewStatus={canViewStatus} currentAgentId={currentAgentId} />
           : teamAgents.length
             ? teamAgents.filter((agent) => getAgentManager(agent, team, teamAgents) === null)
-              .map((agent) => <AgentReportBranch key={agent.id} agent={agent} team={team} agents={teamAgents} onSelect={onSelect} />)
+              .map((agent) => <AgentReportBranch key={agent.id} agent={agent} team={team} agents={teamAgents} onSelect={onSelect} canViewStatus={canViewStatus} currentAgentId={currentAgentId} />)
             : <div className="org-folder-empty">No team lead or members assigned</div>}
       </div>
     </details>
   );
 }
 
-export function OrgChart({ teams, agents, onlyTeamId, onSelect }) {
+export function OrgChart({ teams, agents, onlyTeamId, onSelect, canViewStatus = () => true, currentAgentId }) {
   const list = onlyTeamId ? teams.filter((team) => team.id === onlyTeamId) : teams;
   return (
     <div className="org-folder-tree">
       {!onlyTeamId && <details className="org-folder-root" open>
         <summary><i className="bi bi-building" aria-hidden="true" /><span>VBEYOND Agent Network</span><small>{list.length} teams</small></summary>
         <div className="org-folder-children">
-          {list.map((team) => <OrgTeamFolder key={team.id} team={team} agents={agents} onSelect={onSelect} />)}
+          {list.map((team) => <OrgTeamFolder key={team.id} team={team} agents={agents} onSelect={onSelect} canViewStatus={canViewStatus} currentAgentId={currentAgentId} />)}
         </div>
       </details>}
-      {onlyTeamId && list.map((team) => <OrgTeamFolder key={team.id} team={team} agents={agents} onSelect={onSelect} initiallyOpen />)}
+      {onlyTeamId && list.map((team) => <OrgTeamFolder key={team.id} team={team} agents={agents} onSelect={onSelect} canViewStatus={canViewStatus} currentAgentId={currentAgentId} initiallyOpen />)}
     </div>
   );
 }
