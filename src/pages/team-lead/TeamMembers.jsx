@@ -35,7 +35,7 @@ export default function TeamMembers() {
   const highlight = params.get('highlight');
   const selected = state.agents.find((a) => a.id === params.get('view'));
 
-  if (!team) return <div className="team-page"><PageHeader title="Team" crumbs={[{ label: 'My Team' }]} /><div className="card"><EmptyState icon="bi-people" title="You don't currently lead a team" /></div></div>;
+  if (!team) return <div className="team-page"><PageHeader title="Team Member" crumbs={[{ label: 'My Team' }]} /><div className="card"><EmptyState icon="bi-people" title="You don't currently lead a team" /></div></div>;
 
   const members = state.agents.filter((a) => a.teamId === team.id);
   const rows = members.filter((a) => (status === 'All' || a.status === status) && (!q || `${fullName(a)} ${a.id} ${a.email} ${a.phone}`.toLowerCase().includes(q.toLowerCase())));
@@ -43,7 +43,7 @@ export default function TeamMembers() {
 
   return (
     <div className="team-page">
-      <PageHeader title="Team" subtitle={`${team.name} · ${team.region} · ${team.focus}`} crumbs={[{ label: 'My Team' }, { label: 'Team' }]}
+      <PageHeader title="Team Member" subtitle={`${team.name} · ${team.region} · ${team.focus}`} crumbs={[{ label: 'My Team' }, { label: 'Team Member' }]}
         actions={<InviteButton className="btn btn-primary" />} />
 
       <section className="card team-hierarchy-card mb-3" aria-labelledby="team-hierarchy-heading">
