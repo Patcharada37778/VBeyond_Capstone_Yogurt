@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnnouncementBanner, AnnouncementDetailModal } from '../../components/dashboard/AnnouncementBanner';
 import { RENEWAL_REMINDER_DAYS, useStore } from '../../context/StoreContext';
-import { Avatar, StatCard, StatusBadge, TONES } from '../../components/common';
+import { Avatar, Select, StatCard, StatusBadge, TONES } from '../../components/common';
 import InviteButton from '../../components/InviteButton';
 import { ApplicationProgress } from '../agent/MyApplication';
 import { CommissionBars, commissionSummary, monthlyCommission } from '../../components/dashboard/Commission';
 import Help from '../agent/Help';
 import { ROLES } from '../../utils/permissions';
-import { daysUntil, fmtDate, fmtMoney, fullName, timeAgo } from '../../utils/format';
+import { periodSales, tierFor } from '../../utils/commission';
+import { daysUntil, fmtDate, fmtMoney, fmtMoneyShort, fullName, timeAgo } from '../../utils/format';
 
 function Greeting({ user, subtitle, children }) {
   const h = new Date().getHours();
@@ -39,6 +40,20 @@ function AgentAnnouncements() {
   return (
     <>
       <AnnouncementBanner items={items} onOpen={show} />
+      <div className="card mb-3">
+        <div className="card-header d-flex justify-content-between"><span>News</span><Link to="/announcements" className="small fw-normal">View all</Link></div>
+        <div className="list-group list-group-flush">
+          {items.slice(0, 4).map((a) => (
+            <button key={a.id} className="list-group-item list-group-item-action d-flex gap-3 align-items-start text-start" onClick={() => show(a)}>
+              <span className="lh-sm flex-grow-1" style={{ minWidth: 0 }}>
+                <span className="d-block fw-medium text-truncate">{!a.readBy.includes(me) && <span className="news-dot" aria-label="Unread" />}{a.title}</span>
+                <small className="text-muted d-block text-truncate">{a.summary}</small>
+              </span>
+              <small className="text-muted text-nowrap">{a.category} · {fmtDate(a.date)}</small>
+            </button>
+          ))}
+        </div>
+      </div>
       <AnnouncementDetailModal a={open} onClose={() => setOpen(null)} />
     </>
   );
@@ -114,6 +129,34 @@ function CommissionOverview({ agentId }) {
   );
 }
 
+function TierTracker({ agentId }) {
+  const { state } = useStore();
+  const rules = state.commissionRules;
+  const sales = periodSales(state.commissions, agentId, rules);
+  const t = tierFor(sales, rules);
+  const tiers = [...rules.tiers].sort((a, b) => a.minSales - b.minSales);
+  return (
+    <div className="card mb-3">
+      <div className="card-header">Commission tier</div>
+      <div className="card-body">
+        <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
+          <div>
+            <div className="font-brand fs-4 lh-1">{t.tier.name} <span className="fs-6 text-muted">· {t.rate.toFixed(1)}% commission</span></div>
+            <small className="text-muted">Sales in the last {rules.tierPeriodMonths} month{rules.tierPeriodMonths > 1 ? 's' : ''}: <strong className="text-body">{fmtMoney(sales)}</strong></small>
+          </div>
+          <small className="text-muted">{t.next ? <><strong className="text-body">{fmtMoney(t.remaining)}</strong> more to reach {t.next.name} ({(rules.baseRate + t.next.bonus).toFixed(1)}%)</> : 'You are in the highest tier.'}</small>
+        </div>
+        <div className="bar-track" style={{ height: 10 }} role="progressbar" aria-label={`Progress to ${t.next?.name || 'top tier'}`} aria-valuenow={Math.round(t.progress)} aria-valuemin={0} aria-valuemax={100}>
+          <div className="bar-fill" style={{ width: `${t.progress}%` }} />
+        </div>
+        <div className="d-flex justify-content-between small text-muted mt-2">
+          {tiers.map((x) => <span key={x.id} className={x.id === t.tier.id ? 'fw-semibold text-body' : ''}>{x.name} · {fmtMoney(x.minSales)}+</span>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AgentBlocks({ user }) {
   const { state } = useStore();
   const a = user.agent;
@@ -126,6 +169,7 @@ function AgentBlocks({ user }) {
       {!a.teamId && a.status === 'Active' && <div className="alert alert-brand"><i className="bi bi-hourglass-split me-2" /><strong>Welcome aboard!</strong> An Agent Manager will assign you to a team shortly — you'll get a notification.</div>}
       {a.status === 'Active' && left <= RENEWAL_REMINDER_DAYS && !renewal && <div className="alert alert-warning d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-bell me-1" /><span className="flex-grow-1"><strong>Renewal reminder:</strong> your membership expires in {left} days ({fmtDate(a.membershipExpiry)}).</span><Link to="/renewal" className="btn btn-sm btn-warning">Start renewal</Link></div>}
       {renewal && <div className="alert alert-brand d-flex flex-wrap gap-2 align-items-center"><i className="bi bi-arrow-repeat me-1" /><span className="flex-grow-1">Renewal {renewal.id}: <strong>{renewal.status}</strong></span><Link to="/renewal" className="btn btn-sm btn-outline-primary">View renewal</Link></div>}
+      <TierTracker agentId={a.id} />
       <CommissionOverview agentId={a.id} />
     </>
   );
@@ -253,9 +297,71 @@ function AgentManagerDashboard({ user }) {
   );
 }
 
+/* ----------------------------- Executive ----------------------------- */
+const PERIODS = [
+  { value: '3', label: 'Last 3 months' },
+  { value: '6', label: 'Last 6 months' },
+  { value: 'ytd', label: 'This year' },
+  { value: '12', label: 'Last 12 months' },
+];
+
+function ExecutiveDashboard({ user }) {
+  const { state } = useStore();
+  const [period, setPeriod] = useState('6');
+  const now = new Date();
+  const months = period === 'ytd' ? now.getMonth() + 1 : Number(period);
+  const start = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
+  const sales = state.commissions.filter((c) => new Date(c.closedAt) >= start);
+  const revenue = sales.reduce((t, c) => t + c.saleValue, 0);
+  const commission = sales.reduce((t, c) => t + (c.gross ?? c.amount), 0);
+  const agentTeam = (id) => state.agents.find((a) => a.id === id)?.teamId;
+  const teams = state.teams.map((t) => {
+    const list = sales.filter((c) => agentTeam(c.agentId) === t.id);
+    return { id: t.id, name: t.name, units: list.length, revenue: list.reduce((s, c) => s + c.saleValue, 0), agents: state.agents.filter((a) => a.teamId === t.id && a.status === 'Active').length };
+  }).sort((a, b) => b.revenue - a.revenue);
+  const top = Math.max(...teams.map((t) => t.revenue), 1);
+  const label = PERIODS.find((p) => p.value === period).label.toLowerCase();
+
+  return (
+    <>
+      <Greeting user={user} subtitle="Company sales performance across all teams.">
+        <Select value={period} onChange={setPeriod} label="Period" options={PERIODS} />
+      </Greeting>
+      <div className="row g-3 mb-3">
+        <div className="col-6 col-xl-3"><StatCard icon="bi-cash-stack" label={`Revenue · ${label}`} value={fmtMoneyShort(revenue)} /></div>
+        <div className="col-6 col-xl-3"><StatCard icon="bi-house-check" label="Units sold" value={sales.length} tone={TONES.blue} /></div>
+        <div className="col-6 col-xl-3"><StatCard icon="bi-cash-coin" label="Commission" value={fmtMoneyShort(commission)} tone={TONES.green} /></div>
+        <div className="col-6 col-xl-3"><StatCard icon="bi-people" label="Active agents" value={state.agents.filter((a) => a.status === 'Active').length} tone={TONES.gray} /></div>
+      </div>
+      <div className="row g-3">
+        <div className="col-lg-7">
+          <div className="card h-100">
+            <div className="card-header">Revenue by month</div>
+            <div className="card-body"><CommissionBars data={monthlyCommission(state.commissions, months, (c) => c.saleValue)} height={220} title="Monthly revenue" /></div>
+          </div>
+        </div>
+        <div className="col-lg-5">
+          <div className="card h-100">
+            <div className="card-header">Team sales · {label}</div>
+            <div className="card-body">
+              {teams.map((t) => (
+                <div key={t.id} className="mb-3">
+                  <div className="d-flex justify-content-between small mb-1"><span className="fw-medium">{t.name}</span><span>{fmtMoneyShort(t.revenue)}</span></div>
+                  <div className="bar-track" style={{ height: 10 }}><div className="bar-fill" style={{ width: `${(t.revenue / top) * 100}%` }} /></div>
+                  <small className="text-muted">{t.units} unit{t.units === 1 ? '' : 's'} · {t.agents} active agents · {revenue ? Math.round((t.revenue / revenue) * 100) : 0}% of revenue</small>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useStore();
-  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard };
+  const map = { prospect: ProspectDashboard, agent: AgentDashboard, teamLead: TeamLeadDashboard, agentManager: AgentManagerDashboard, executive: ExecutiveDashboard };
   const C = map[user.role];
   return (
     <div className="dashboard-page">

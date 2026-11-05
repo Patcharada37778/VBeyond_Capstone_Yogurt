@@ -138,8 +138,42 @@ function makeCommissions(agents) {
   return list;
 }
 
+
+// Read-only property catalogue (synced from the V-Beyond property system in production).
+// Some listings have no images or missing fields so the placeholders can be shown.
+const PROPERTIES = [
+  ['P-101', 'Riverside Residence — Phase 2', '1 Bedroom River View', 'Condominium', 'Bangkok', 'Bang Phlat', 4_250_000, 1, 1, 35, 'Available', ['/properties/condo-teal.svg', '/properties/interior.svg'], 'Riverside units on high floors with an open view of the Chao Phraya. Walking distance to MRT Bang Phlat.'],
+  ['P-102', 'Riverside Residence — Phase 2', '2 Bedroom Corner Suite', 'Condominium', 'Bangkok', 'Bang Phlat', 7_890_000, 2, 2, 62, 'Available', ['/properties/condo-teal.svg', '/properties/interior.svg'], 'Corner layout with two balconies, a separate kitchen and a river-facing living room.'],
+  ['P-103', 'Sukhumvit 77 Skyline', 'Studio City View', 'Condominium', 'Bangkok', 'Suan Luang', 2_690_000, 0, 1, 26, 'Available', ['/properties/tower-green.svg'], 'Compact studio for first-time buyers and investors, 400 m from BTS On Nut.'],
+  ['P-104', 'Sukhumvit 77 Skyline', '1 Bedroom Plus', 'Condominium', 'Bangkok', 'Suan Luang', 3_950_000, 1, 1, 38, 'Reserved', ['/properties/tower-green.svg', '/properties/interior.svg'], 'One bedroom with a flexible study corner. Rooftop pool and co-working lounge.'],
+  ['P-105', 'Lat Phrao Garden Condo', '1 Bedroom Garden View', 'Condominium', 'Bangkok', 'Chatuchak', 3_350_000, 1, 1, 32, 'Available', [], 'Low-density building surrounded by a landscaped garden, near MRT Lat Phrao.'],
+  ['P-106', 'Bangna Park Townhome', '3 Bedroom Townhome', 'Townhome', 'Samut Prakan', 'Bang Phli', 4_890_000, 3, 3, 145, 'Available', ['/properties/townhome.svg'], 'Three-storey townhome with two parking spaces, close to Mega Bangna and the international schools.'],
+  ['P-107', 'Bangna Park Townhome', '4 Bedroom Corner Townhome', 'Townhome', 'Samut Prakan', 'Bang Phli', 6_450_000, 4, 4, 182, 'Available', ['/properties/townhome.svg'], 'Corner unit with a private side garden and a ground-floor bedroom for elderly family members.'],
+  ['P-108', 'Pattaya Bay Suites', '1 Bedroom Sea View', 'Condominium', 'Chonburi', 'Bang Lamung', 3_790_000, 1, 1, 40, 'Available', ['/properties/condo-teal.svg'], 'Resort-style suite with sea views, managed rental programme available for investors.'],
+  ['P-109', 'Pattaya Bay Suites', '2 Bedroom Penthouse', 'Condominium', 'Chonburi', 'Bang Lamung', 12_900_000, 2, 3, 118, 'Sold Out', [], 'Top-floor penthouse with a private terrace and plunge pool.'],
+  ['P-110', 'Ratchada Central Loft', 'Duplex Loft', 'Condominium', 'Bangkok', 'Din Daeng', 5_450_000, 1, 2, null, 'Available', [], 'Double-height loft near MRT Thailand Cultural Centre. Unit size to be confirmed by the developer.'],
+];
+const makeProperties = () => PROPERTIES.map(([id, project, name, type, province, district, price, bedrooms, bathrooms, size, status, images, description], i) => ({
+  id, project, name, type, province, district, price, bedrooms, bathrooms, size, status, images, description, listedAt: daysFromNow(-(5 + i * 9)),
+}));
+
+// Commission rules (BO-SC-01). Rate = base rate + tier bonus; the team lead split comes out of the agent's commission.
+const COMMISSION_RULES = {
+  baseRate: 2.0,
+  tierPeriodMonths: 3,
+  tiers: [
+    { id: 'TR-1', name: 'Tier 1', minSales: 0, bonus: 0 },
+    { id: 'TR-2', name: 'Tier 2', minSales: 15_000_000, bonus: 0.5 },
+    { id: 'TR-3', name: 'Tier 3', minSales: 40_000_000, bonus: 1.0 },
+  ],
+  split: { type: 'percentage', value: 10 },
+  updatedAt: daysFromNow(-20),
+  updatedBy: 'Suchada Chaiyaporn',
+};
+
 export const ADMINS = [
   { id: 'ADM-02', name: 'Suchada Chaiyaporn', email: 'suchada.c@vbeyond.co.th', phone: '02-168-1002', role: 'agentManager', department: 'Agent Network Management', status: 'Active', createdAt: daysFromNow(-600), lastLogin: daysFromNow(0, 9, 5), avatarColor: '#8a5a2b' },
+  { id: 'ADM-08', name: 'Wichai Anantachai', email: 'wichai.a@vbeyond.co.th', phone: '02-168-1008', role: 'executive', department: 'Executive Management', status: 'Active', createdAt: daysFromNow(-900), lastLogin: daysFromNow(-1, 8, 40), avatarColor: '#2f6f9f' },
   { id: 'ADM-06', name: 'Kittipong Saengthong', email: 'kittipong.s@vbeyond.co.th', phone: '02-168-1006', role: 'agentManager', department: 'Agent Network Management', status: 'Active', createdAt: daysFromNow(-250), lastLogin: daysFromNow(-2, 14, 0), avatarColor: '#a0522d' },
 ];
 
@@ -338,6 +372,10 @@ export function createSeed() {
     deals: makeDeals(agents.filter((a) => !a.migrated)),
     commissions: makeCommissions(agents),
     admins: ADMINS.map((a) => ({ ...a })),
+    properties: makeProperties(),
+    favorites: { 'AG-1001': ['P-102', 'P-106'] },
+    commissionRules: structuredClone(COMMISSION_RULES),
+    salesUploads: [],
     applications: makeApplications(),
     announcements: ANNOUNCEMENTS,
     faqs: FAQS,
@@ -347,6 +385,6 @@ export function createSeed() {
     logs: makeLogs(),
     permissions: JSON.parse(JSON.stringify(DEFAULT_PERMISSIONS)),
     accounts: {}, // simulated passwords set through recovery / first login
-    counters: { app: 142, agent: 1042, ticket: 1089, inv: 413, ren: 92, msg: 302, inq: 219, notif: 100, log: 1000, faq: 10, ann: 33, adm: 10, tr: 22 },
+    counters: { app: 142, agent: 1042, ticket: 1089, inv: 413, ren: 92, msg: 302, inq: 219, notif: 100, log: 1000, faq: 10, ann: 33, adm: 10, tr: 22, upload: 1 },
   };
 }

@@ -30,6 +30,13 @@ import Renewals from './pages/agent-manager/Renewals';
 import AgentStatus from './pages/agent-manager/AgentStatus';
 
 import FaqManage from './pages/support/FaqManage';
+import Landing from './pages/common/Landing';
+import PropertyDirectory from './pages/properties/PropertyDirectory';
+import PropertyDetail from './pages/properties/PropertyDetail';
+import PropertyBrochure from './pages/properties/PropertyBrochure';
+import TeamSales from './pages/team-lead/TeamSales';
+import CommissionRules from './pages/sales/CommissionRules';
+import SalesUpload from './pages/sales/SalesUpload';
 
 
 // Old onboarding links now open the onboarding tab in Team Management.
@@ -43,11 +50,13 @@ export default function App() {
   const { user } = useStore();
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/first-login" element={<FirstLogin />} />
       <Route path="/migrated-login" element={<MigratedLogin />} />
       <Route path="/join" element={<Register publicMode />} />
+      <Route path="/properties/:id/brochure" element={<PropertyBrochure />} />
 
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
@@ -63,6 +72,10 @@ export default function App() {
 
         <Route path="/team/members" element={<TeamMembers />} />
         <Route path="/team/hierarchy" element={<TeamHierarchy />} />
+        <Route path="/team/sales" element={<TeamSales />} />
+        <Route path="/properties" element={<PropertyDirectory />} />
+        <Route path="/properties/favorites" element={<PropertyDirectory favoritesOnly />} />
+        <Route path="/properties/:id" element={<PropertyDetail />} />
 
         <Route path="/applications" element={<Applications />} />
         <Route path="/applications/:id" element={<ApplicationDetail />} />
@@ -73,10 +86,12 @@ export default function App() {
         <Route path="/renewals" element={<Renewals />} />
         <Route path="/agent-status" element={<AgentStatus />} />
         <Route path="/faq" element={<FaqManage />} />
+        <Route path="/commission-rules" element={<CommissionRules />} />
+        <Route path="/sales-upload" element={<SalesUpload />} />
 
       </Route>
 
-      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
+      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/'} replace />} />
     </Routes>
   );
 }

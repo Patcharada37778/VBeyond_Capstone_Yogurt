@@ -3,7 +3,7 @@ import { useToast } from '../context/ToastContext';
 
 export const inviteLink = (teamId, agentId) => `${window.location.origin}/join?team=${encodeURIComponent(teamId)}&ref=${encodeURIComponent(agentId)}`;
 
-async function copyText(text) {
+export async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
     return true;
