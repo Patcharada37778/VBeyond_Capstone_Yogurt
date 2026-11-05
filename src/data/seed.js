@@ -60,6 +60,10 @@ function makeAgents() {
       phone: `08${(1 + (i % 9))}-${String(234 + i * 37).padStart(3, '0')}-${String(1000 + i * 271).slice(-4)}`,
       lineId: `${first.toLowerCase()}.${id.slice(-2)}`,
       teamId,
+      teamRole: id === 'AG-1003' ? 'Senior Agent' : 'Agent',
+      reportsTo: teamId
+        ? ['AG-1004', 'AG-1005', 'AG-1006'].includes(id) ? 'AG-1003' : TEAMS.find((team) => team.id === teamId)?.leadId || null
+        : null,
       status,
       registeredAt: daysFromNow(-regAgo),
       membershipStart: daysFromNow(expIn - 365),

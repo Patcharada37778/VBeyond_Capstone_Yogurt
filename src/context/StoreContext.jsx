@@ -18,7 +18,21 @@ export const PERSONAS = [
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const state = JSON.parse(raw);
+      state.agents.forEach((agent) => {
+        if (!('reportsTo' in agent)) {
+          const team = state.teams.find((item) => item.id === agent.teamId);
+          agent.reportsTo = !team || team.leadId === agent.id
+            ? null
+            : ['AG-1004', 'AG-1005', 'AG-1006'].includes(agent.id) && agent.teamId === 'T-ALP'
+              ? 'AG-1003'
+              : team.leadId;
+        }
+        if (!('teamRole' in agent)) agent.teamRole = agent.id === 'AG-1003' ? 'Senior Agent' : 'Agent';
+      });
+      return state;
+    }
   } catch { /* storage unavailable — fall back to fresh seed */ }
   return createSeed();
 }
