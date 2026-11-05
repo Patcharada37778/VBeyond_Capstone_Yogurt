@@ -221,6 +221,10 @@ function TeamLeadDashboard({ user }) {
   const { state } = useStore();
   const team = user.ledTeam;
   const members = state.agents.filter((a) => a.teamId === team.id);
+  const memberIds = new Set(members.map((a) => a.id));
+  const teamSales = (state.commissions || []).filter((c) => memberIds.has(c.agentId));
+  const totalSales = teamSales.reduce((total, sale) => total + sale.saleValue, 0);
+  const totalCommission = teamSales.reduce((total, sale) => total + sale.amount, 0);
   const referrals = state.applications.filter((x) => x.referredBy === user.agent.id && !['Approved', 'Rejected'].includes(x.status));
   const recent = members.filter((a) => a.onboardedAt && Date.now() - new Date(a.teamHistory[a.teamHistory.length - 1]?.from || a.onboardedAt) < 45 * 86400000 && a.id !== user.agent.id);
   return (
@@ -238,7 +242,7 @@ function TeamLeadDashboard({ user }) {
       <div className="row g-3 mb-3">
         <div className="col-lg-7">
           <div className="card h-100">
-            <div className="card-header d-flex justify-content-between"><span>Team member directory</span><Link to="/team/members" className="small fw-normal">View all</Link></div>
+            <div className="card-header d-flex justify-content-between"><span>Team member</span><Link to="/team/members" className="small fw-normal">View all</Link></div>
             <div className="list-group list-group-flush">
               {members.slice(0, 6).map((a) => (
                 <Link key={a.id} to={`/team/members?view=${a.id}`} className="list-group-item list-group-item-action d-flex align-items-center gap-2">
@@ -252,8 +256,12 @@ function TeamLeadDashboard({ user }) {
         </div>
         <div className="col-lg-5">
           <div className="card">
-            <div className="card-header">Team overview</div>
+            <div className="card-header"><i className="bi bi-people me-2 text-brand" aria-hidden="true" />Team overview</div>
             <div className="card-body small">
+              <div className="row g-2 mb-3">
+                <div className="col-6"><div className="border rounded p-2 h-100"><div className="text-muted"><i className="bi bi-house-check me-1" aria-hidden="true" />Team total sales</div><div className="fw-semibold mt-1">{fmtMoney(totalSales)}</div></div></div>
+                <div className="col-6"><div className="border rounded p-2 h-100"><div className="text-muted"><i className="bi bi-cash-coin me-1" aria-hidden="true" />Team commission</div><div className="fw-semibold mt-1">{fmtMoney(totalCommission)}</div></div></div>
+              </div>
               {['Active', 'Suspended', 'Expired', 'Resigned'].map((s) => {
                 const n = members.filter((a) => a.status === s).length;
                 return <div key={s} className="mb-2"><div className="d-flex justify-content-between"><span>{s}</span><span>{n}</span></div><div className="bar-track"><div className="bar-fill" style={{ width: `${members.length ? (n / members.length) * 100 : 0}%`, background: s === 'Active' ? 'var(--vb-green-600)' : s === 'Suspended' ? '#d98a00' : s === 'Expired' ? '#b42318' : '#8a949e' }} /></div></div>;
