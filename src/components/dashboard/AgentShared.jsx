@@ -75,7 +75,10 @@ function OrgTeamFolder({ team, agents, onSelect, initiallyOpen = false }) {
       <div className="org-folder-children">
         {lead
           ? <AgentReportBranch agent={lead} team={team} agents={teamAgents} onSelect={onSelect} />
-          : <div className="org-folder-empty">No team lead assigned</div>}
+          : teamAgents.length
+            ? teamAgents.filter((agent) => getAgentManager(agent, team, teamAgents) === null)
+              .map((agent) => <AgentReportBranch key={agent.id} agent={agent} team={team} agents={teamAgents} onSelect={onSelect} />)
+            : <div className="org-folder-empty">No team lead or members assigned</div>}
       </div>
     </details>
   );

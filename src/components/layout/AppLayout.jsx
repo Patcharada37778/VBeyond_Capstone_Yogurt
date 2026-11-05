@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { useStore } from '../../context/StoreContext';
-import { NAV, canAccessItem } from '../../utils/permissions';
+import { BACKOFFICE_ROLES, NAV, canAccessItem } from '../../utils/permissions';
 import { EmptyState } from '../common';
 
 function canAccessPath(pathname, role, permissions) {
@@ -37,7 +37,7 @@ export default function AppLayout() {
       <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />
       <div className="main-area">
         <Topbar onToggleSidebar={() => (window.innerWidth < 992 ? setMobileOpen((o) => !o) : setCollapsed((c) => !c))} />
-        <main className="content" id="main">
+        <main className={`content ${BACKOFFICE_ROLES.includes(user.role) ? 'backoffice-content' : ''}`} id="main">
           {user.blocked ? (
             <div className="card"><div className="card-body">
               <EmptyState icon="bi-person-lock" title="This back-office account is deactivated">

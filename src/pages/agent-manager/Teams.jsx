@@ -14,15 +14,15 @@ function TeamCard({ team, agents, onChangeLead, canEdit }) {
   const lead = agents.find((a) => a.id === team.leadId);
   const active = members.filter((a) => a.status === 'Active').length;
   return (
-    <div className="card h-100">
+    <div className="card h-100 team-structure-card">
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-start">
           <div><h3 className="h6 mb-0 font-brand">{team.name}</h3><small className="text-muted">{team.region}</small></div>
           <span className="badge text-bg-light border">{members.length} agents</span>
         </div>
-        <div className="small text-muted mt-1">{team.focus}</div>
-        <div className="d-flex align-items-center gap-2 mt-3 p-2 rounded bg-brand-soft">
-          {lead ? <><Avatar name={fullName(lead)} color={lead.avatarColor} photo={lead.photo} size={34} /><div className="lh-sm flex-grow-1"><div className="fw-semibold small">{fullName(lead)}</div><small className="text-muted">Team lead · {lead.id}</small></div></>
+        <div className="team-structure-description text-muted mt-1">{team.focus}</div>
+        <div className="team-lead-card d-flex align-items-center gap-2 mt-3 p-2 rounded bg-brand-soft">
+          {lead ? <><Avatar name={fullName(lead)} color={lead.avatarColor} photo={lead.photo} size={34} /><div className="lh-sm flex-grow-1"><small className="team-lead-label">Team lead</small><div className="fw-semibold small">{fullName(lead)}</div><small className="text-muted">{lead.id}</small></div></>
             : <div className="small text-danger flex-grow-1"><i className="bi bi-exclamation-triangle me-1" />No team lead assigned</div>}
           {canEdit && <button className="btn btn-sm btn-light" onClick={() => onChangeLead(team)}>Change</button>}
         </div>
@@ -40,6 +40,7 @@ export default function Teams() {
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const canEdit = can('teams', 'edit');
+  const canCreate = can('teams', 'create');
   const canApprove = can('teams', 'approve');
   const tab = params.get('tab') || (params.get('transfer') ? 'transfer' : 'structure');
   const setTab = (t) => setParams({ tab: t });
@@ -60,11 +61,93 @@ export default function Teams() {
   const [leadConfirm, setLeadConfirm] = useState(false);
 
   const [decline, setDecline] = useState(null);
+  const blankNewTeam = { name: '', region: '', focus: '', leadId: '', members: [] };
+  const [newTeam, setNewTeam] = useState(blankNewTeam);
+  const [newTeamErrors, setNewTeamErrors] = useState({});
+  const [newTeamOpen, setNewTeamOpen] = useState(false);
 
   const agentT = state.agents.find((a) => a.id === tAgent);
   const fromTeam = state.teams.find((t) => t.id === agentT?.teamId);
   const toTeam = state.teams.find((t) => t.id === tTeam);
   const candidates = state.agents.filter((a) => a.teamId && a.status !== 'Resigned' && (!tq || `${fullName(a)} ${a.id}`.toLowerCase().includes(tq.toLowerCase()))).slice(0, 8);
+  const activeAgents = state.agents.filter((agent) => agent.status === 'Active');
+
+  const openNewTeam = () => {
+    setNewTeam({ ...blankNewTeam, members: [] });
+    setNewTeamErrors({});
+    setNewTeamOpen(true);
+  };
+  const updateNewTeamLead = (leadId) => {
+    setNewTeam((current) => ({
+      ...current,
+      leadId,
+      members: current.members.map((member) => ({
+        ...member,
+        reportsTo: member.reportsTo && member.reportsTo !== current.leadId ? member.reportsTo : leadId,
+      })),
+    }));
+  };
+  const updateNewTeamMember = (index, changes) => {
+    setNewTeam((current) => ({
+      ...current,
+      members: current.members.map((member, row) => row === index ? { ...member, ...changes } : member),
+    }));
+  };
+  const addNewTeamMember = () => setNewTeam((current) => ({ ...current, members: [...current.members, { agentId: '', reportsTo: current.leadId }] }));
+  const removeNewTeamMember = (index) => setNewTeam((current) => ({ ...current, members: current.members.filter((_, row) => row !== index) }));
+
+  const createTeam = () => {
+    const errors = {};
+    const assignedIds = newTeam.members.map((member) => member.agentId).filter(Boolean);
+    if (!newTeam.name.trim()) errors.name = 'Enter a team name.';
+    else if (state.teams.some((team) => team.name.trim().toLowerCase() === newTeam.name.trim().toLowerCase())) errors.name = 'A team with this name already exists.';
+    if (newTeam.leadId && assignedIds.includes(newTeam.leadId)) errors.lead = 'The team lead cannot also be added as a member.';
+    if (new Set(assignedIds).size !== assignedIds.length) errors.members = 'An agent can only be selected once.';
+    newTeam.members.forEach((member, index) => {
+      if (!member.agentId) return;
+      const availableManagers = [
+        ...(newTeam.leadId ? [newTeam.leadId] : []),
+        ...newTeam.members.slice(0, index).map((priorMember) => priorMember.agentId).filter(Boolean),
+      ];
+      if (member.reportsTo && !availableManagers.includes(member.reportsTo)) errors[`reportsTo-${index}`] = 'Choose the team lead or a member listed above.';
+      if (newTeam.leadId && !member.reportsTo) errors[`reportsTo-${index}`] = 'Choose who this member reports to.';
+    });
+    setNewTeamErrors(errors);
+    if (Object.keys(errors).length) return;
+
+    const membersToAssign = newTeam.members.filter((member) => member.agentId);
+    let createdTeamId;
+    mutate((d) => {
+      const existingIds = new Set(d.teams.map((team) => team.id));
+      let suffix = d.teams.length + 1;
+      do { createdTeamId = `T-${String(suffix).padStart(3, '0')}`; suffix += 1; } while (existingIds.has(createdTeamId));
+      const team = {
+        id: createdTeamId,
+        name: newTeam.name.trim(),
+        leadId: null,
+        region: newTeam.region.trim() || 'Region not specified',
+        focus: newTeam.focus.trim() || 'Focus not specified',
+        createdAt: new Date().toISOString(),
+      };
+      d.teams.push(team);
+
+      const assignmentIds = [...new Set([newTeam.leadId, ...membersToAssign.map((member) => member.agentId)].filter(Boolean))];
+      assignmentIds.forEach((agentId) => transferAgent(d, user, agentId, createdTeamId, `Assigned to new team ${team.name}`));
+      if (newTeam.leadId) {
+        const lead = d.agents.find((agent) => agent.id === newTeam.leadId);
+        if (lead) lead.reportsTo = null;
+        changeTeamLead(d, user, createdTeamId, newTeam.leadId);
+      }
+      membersToAssign.forEach((member) => {
+        const agent = d.agents.find((item) => item.id === member.agentId);
+        if (agent) agent.reportsTo = member.reportsTo || null;
+      });
+      logAction(d, user, 'Created team', `${team.name} (${team.id})`);
+    });
+    toast(`${newTeam.name.trim()} created.`, 'success', 'Team created');
+    setNewTeamOpen(false);
+    setNewTeam({ ...blankNewTeam, members: [] });
+  };
 
   const startTransfer = () => {
     const e = {};
@@ -101,10 +184,13 @@ export default function Teams() {
   return (
     <>
       <PageHeader title="Team Structure Management" subtitle="Manage teams, onboarding, team leads, transfers and hierarchy." crumbs={[{ label: 'Agent Team Management' }, { label: 'Team Management' }]}
-        actions={canEdit && <button className="btn btn-primary" onClick={() => setTab('transfer')}><i className="bi bi-arrow-left-right me-1" />Transfer an agent</button>} />
+        actions={<>
+          {canCreate && <button className="btn btn-outline-primary" onClick={openNewTeam}><i className="bi bi-plus-lg me-1" />Add a new team</button>}
+          {canEdit && <button className="btn btn-primary" onClick={() => setTab('transfer')}><i className="bi bi-arrow-left-right me-1" />Transfer an agent</button>}
+        </>} />
       <Tabs active={tab} onChange={setTab} tabs={[{ key: 'structure', label: 'Teams' }, ...(can('onboarding', 'view') ? [{ key: 'onboarding', label: 'Unassigned / Onboarding', count: unassigned.length }] : []), { key: 'hierarchy', label: 'Hierarchy' }, ...(canEdit ? [{ key: 'transfer', label: 'Transfer agent' }] : []), { key: 'requests', label: 'Transfer requests', count: pendingReq.length }, { key: 'history', label: 'History' }]} />
 
-      {tab === 'structure' && <div className="row g-3">{state.teams.map((t) => <div className="col-md-6 col-xl-3" key={t.id}><TeamCard team={t} agents={state.agents} canEdit={canEdit} onChangeLead={(team) => { setLeadTeam(team); setNewLead(''); }} /></div>)}</div>}
+      {tab === 'structure' && <div className="row g-3">{state.teams.map((t) => <div className="col-md-6 col-xl-4" key={t.id}><TeamCard team={t} agents={state.agents} canEdit={canEdit} onChangeLead={(team) => { setLeadTeam(team); setNewLead(''); }} /></div>)}</div>}
 
       {tab === 'onboarding' && can('onboarding', 'view') && <OnboardingPanel />}
 
@@ -186,6 +272,77 @@ export default function Teams() {
       )}
 
       <AgentProfileModal agent={selected} teams={state.teams} agents={state.agents} onClose={() => setSelected(null)} fullLink={selected ? `/agents/${selected.id}` : null} />
+
+      <Modal open={newTeamOpen} onClose={() => setNewTeamOpen(false)} title="Create a new team" size="lg"
+        footer={<><button type="button" className="btn btn-light" onClick={() => setNewTeamOpen(false)}>Cancel</button><button type="button" className="btn btn-primary" onClick={createTeam}>Create team</button></>}>
+        <div className="new-team-form">
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label required" htmlFor="new-team-name">Team name</label>
+              <input id="new-team-name" className={`form-control ${newTeamErrors.name ? 'is-invalid' : ''}`} value={newTeam.name} onChange={(event) => setNewTeam({ ...newTeam, name: event.target.value })} placeholder="e.g. Team Echo" />
+              {newTeamErrors.name && <div className="invalid-feedback">{newTeamErrors.name}</div>}
+            </div>
+            <div className="col-md-6">
+              <label className="form-label" htmlFor="new-team-region">Region</label>
+              <input id="new-team-region" className="form-control" value={newTeam.region} onChange={(event) => setNewTeam({ ...newTeam, region: event.target.value })} placeholder="Sales region" />
+            </div>
+            <div className="col-12">
+              <label className="form-label" htmlFor="new-team-focus">Team focus</label>
+              <input id="new-team-focus" className="form-control" value={newTeam.focus} onChange={(event) => setNewTeam({ ...newTeam, focus: event.target.value })} placeholder="Property types or sales focus" />
+            </div>
+            <div className="col-12">
+              <label className="form-label" htmlFor="new-team-lead">Team lead <span className="text-muted fw-normal">(optional)</span></label>
+              <select id="new-team-lead" className={`form-select ${newTeamErrors.lead ? 'is-invalid' : ''}`} value={newTeam.leadId} onChange={(event) => updateNewTeamLead(event.target.value)}>
+                <option value="">Leave unassigned</option>
+                {activeAgents.filter((agent) => !newTeam.members.some((member) => member.agentId === agent.id)).map((agent) => (
+                  <option key={agent.id} value={agent.id}>{fullName(agent)} · {agent.id}{agent.teamId ? ` — ${state.teams.find((item) => item.id === agent.teamId)?.name || 'Assigned'}` : ' — Unassigned'}</option>
+                ))}
+              </select>
+              {newTeamErrors.lead && <div className="invalid-feedback d-block">{newTeamErrors.lead}</div>}
+              <small className="form-text text-muted">Selecting an agent from another team will transfer them to this team.</small>
+            </div>
+          </div>
+
+          <div className="new-team-members-heading">
+            <div><h3 className="h6 mb-1">Team members <span className="text-muted fw-normal">(optional)</span></h3><small className="text-muted">Members can report to the team lead or a member listed above.</small></div>
+            <button type="button" className="btn btn-sm btn-outline-primary" onClick={addNewTeamMember}><i className="bi bi-plus-lg me-1" />Add member</button>
+          </div>
+          {newTeamErrors.members && <div className="text-danger small">{newTeamErrors.members}</div>}
+          {newTeam.members.length ? <div className="new-team-member-rows">
+            {newTeam.members.map((member, index) => {
+              const priorMemberIds = newTeam.members.slice(0, index).map((prior) => prior.agentId).filter(Boolean);
+              const reportingOptions = [
+                ...(newTeam.leadId ? [newTeam.leadId] : []),
+                ...priorMemberIds,
+              ];
+              return <div className="new-team-member-row" key={`new-member-${index}`}>
+                <div>
+                  <label className="form-label" htmlFor={`new-team-member-${index}`}>Member {index + 1}</label>
+                  <select id={`new-team-member-${index}`} className={`form-select ${newTeamErrors[`member-${index}`] ? 'is-invalid' : ''}`} value={member.agentId} onChange={(event) => updateNewTeamMember(index, { agentId: event.target.value, reportsTo: event.target.value ? (member.reportsTo || newTeam.leadId) : '' })}>
+                    <option value="">Leave this position open</option>
+                    {activeAgents.filter((agent) => agent.id === member.agentId || (agent.id !== newTeam.leadId && !newTeam.members.some((other, otherIndex) => otherIndex !== index && other.agentId === agent.id))).map((agent) => (
+                      <option key={agent.id} value={agent.id}>{fullName(agent)} · {agent.id}{agent.teamId ? ` — ${state.teams.find((item) => item.id === agent.teamId)?.name || 'Assigned'}` : ' — Unassigned'}</option>
+                    ))}
+                  </select>
+                  {newTeamErrors[`member-${index}`] && <div className="invalid-feedback">{newTeamErrors[`member-${index}`]}</div>}
+                </div>
+                <div>
+                  <label className="form-label" htmlFor={`new-team-report-${index}`}>Reports to</label>
+                  <select id={`new-team-report-${index}`} className={`form-select ${newTeamErrors[`reportsTo-${index}`] ? 'is-invalid' : ''}`} value={member.reportsTo} disabled={!member.agentId} onChange={(event) => updateNewTeamMember(index, { reportsTo: event.target.value })}>
+                    <option value="">{newTeam.leadId ? 'Select a manager' : 'Top-level member'}</option>
+                    {reportingOptions.map((agentId) => {
+                      const agent = state.agents.find((item) => item.id === agentId);
+                      return agent && <option key={agent.id} value={agent.id}>{fullName(agent)}{agent.id === newTeam.leadId ? ' · Team lead' : ''}</option>;
+                    })}
+                  </select>
+                  {newTeamErrors[`reportsTo-${index}`] && <div className="invalid-feedback">{newTeamErrors[`reportsTo-${index}`]}</div>}
+                </div>
+                <button type="button" className="btn btn-light text-danger new-team-remove-member" aria-label={`Remove member row ${index + 1}`} onClick={() => removeNewTeamMember(index)}><i className="bi bi-trash" aria-hidden="true" /></button>
+              </div>;
+            })}
+          </div> : <div className="new-team-empty small text-muted">No team members assigned. You can add or onboard agents later.</div>}
+        </div>
+      </Modal>
 
       <ConfirmModal open={tConfirm} onClose={() => setTConfirm(false)} onConfirm={doTransfer} title="Confirm transfer" confirmLabel="Transfer agent">
         {agentT && toTeam && <>
