@@ -48,7 +48,7 @@ export default function App() {
   const { user } = useStore();
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/migrated-login" element={<MigratedLogin />} />

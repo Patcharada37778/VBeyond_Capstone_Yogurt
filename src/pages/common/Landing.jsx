@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useStore } from '../../context/StoreContext';
 
 const BENEFITS = [
   ['bi-buildings', 'Sell VBEYOND projects', 'Browse every available unit, save favorites and share co-branded property sheets with your customers.'],
@@ -10,16 +9,13 @@ const STEPS = ['Create an account', 'Apply online and upload documents', 'Get ap
 
 /** Public page for visitors who are not signed in. */
 export default function Landing() {
-  const { user } = useStore();
   return (
     <div className="landing">
       <header className="landing-nav">
         <img src="/vbeyond-logo-color.png" alt="VBEYOND" />
         <nav className="d-flex gap-2">
-          {user ? <Link to="/dashboard" className="btn btn-primary">Go to Home</Link> : <>
-            <Link to="/login" className="btn btn-light">Sign in</Link>
-            <Link to="/join" className="btn btn-primary">Create account</Link>
-          </>}
+          <Link to="/login" className="btn btn-light">Sign in</Link>
+          <Link to="/join" className="btn btn-primary">Create account</Link>
         </nav>
       </header>
 
