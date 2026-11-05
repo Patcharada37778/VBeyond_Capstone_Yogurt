@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { logAction, notify, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
-import { EmptyState, FilePicker, PageHeader, StatusBadge, DocPreview } from '../../components/common';
+import { EmptyState, PageHeader, StatusBadge, DocPreview } from '../../components/common';
 import { ConfirmModal, Modal } from '../../components/modals/Modal';
 import { fileSize, fmtDate, fmtDateTime } from '../../utils/format';
 import { DOC_SLOTS } from './Register';
@@ -10,14 +10,38 @@ import { DOC_SLOTS } from './Register';
 const FLOW = ['Submitted', 'Under review', 'Decision', 'Account activation'];
 
 export function ApplicationProgress({ app, agent }) {
-  const idx = app.status === 'Approved' ? (agent?.activated ? 4 : 3) : app.status === 'Rejected' ? 3 : app.status === 'Pending Review' && !app.reviewer ? 1 : 2;
+  const idx = app.status === 'Approved' ? (agent?.activated ? 3 : 2) : app.status === 'Rejected' ? 2 : 1;
+  const statusText = {
+    'Pending Review': app.reviewer ? 'Under review' : 'Submitted · awaiting review',
+    'Clarification Required': 'Action needed from you',
+    Resubmitted: 'Resubmitted · awaiting review',
+    Approved: agent?.activated ? 'Account active' : 'Approved · activation needed',
+    Rejected: 'Application rejected',
+  }[app.status] || app.status;
+  const stateClass = app.status === 'Rejected' ? 'rejected' : app.status === 'Clarification Required' ? 'attention' : 'in-progress';
+
   return (
-    <div className="stepper">
-      {FLOW.map((s, i) => (
-        <div key={s} className={`step ${idx > i ? 'done' : idx === i ? 'active' : ''}`}>
-          <span className="num">{idx > i ? <i className="bi bi-check" /> : i + 1}</span>{s}
-        </div>
-      ))}
+    <div className="application-progress" aria-label="Application status progress">
+      <div className="application-progress-heading">
+        <span className="text-muted small">Current status</span>
+        <span className={`application-progress-status ${stateClass}`}>{statusText}</span>
+      </div>
+      <ol className="application-progress-list">
+        {FLOW.map((label, i) => {
+          const activated = app.status === 'Approved' && agent?.activated;
+          const completed = i < idx || (activated && i === idx);
+          const current = i === idx;
+          const currentClass = current ? (activated ? 'completed-state' : stateClass) : '';
+          return (
+            <li className={`application-progress-step ${completed ? 'completed' : ''} ${current ? `current ${currentClass}` : ''}`} key={label} aria-current={current ? 'step' : undefined}>
+              <span className="application-progress-marker" aria-hidden="true">
+                {completed ? <i className="bi bi-check-lg" /> : app.status === 'Rejected' && current ? <i className="bi bi-x-lg" /> : null}
+              </span>
+              <span className="application-progress-label">{label}</span>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
@@ -91,9 +115,8 @@ export default function MyApplication() {
   };
 
   return (
-    <>
-      <PageHeader title="My Application" subtitle={`Reference ${app.id} · submitted ${fmtDate(app.submittedAt)}`} crumbs={[{ label: 'My Application' }]}
-        actions={canEdit && !editing && <button className="btn btn-outline-primary" onClick={() => setEditing(true)}><i className="bi bi-pencil-square me-1" />Edit submitted documents</button>} />
+    <div className="my-application-page">
+      <PageHeader title="My Application" subtitle={`Reference ${app.id}`} crumbs={[{ label: 'My Application' }]} />
 
       {params.get('submitted') && app.status === 'Pending Review' && (
         <div className="alert alert-success d-flex gap-3 align-items-center"><i className="bi bi-check-circle-fill fs-3" />
@@ -116,12 +139,9 @@ export default function MyApplication() {
           <div className="mt-2"><Link to="/help" className="btn btn-sm btn-outline-danger">Ask a question</Link></div></div>
       )}
 
-      <div className="card mb-3"><div className="card-body">
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-          <div><span className="text-muted small me-2">Current status</span><StatusBadge status={app.status} /></div>
-          {app.preferredTeamId && <span className="small text-muted"><i className="bi bi-people me-1" />Invited to {state.teams.find((t) => t.id === app.preferredTeamId)?.name}</span>}
-        </div>
+      <div className="card application-progress-card mb-3"><div className="card-body">
         <ApplicationProgress app={app} agent={agent} />
+        {app.preferredTeamId && <div className="small text-muted mt-3"><i className="bi bi-people me-1" />Invited to {state.teams.find((t) => t.id === app.preferredTeamId)?.name}</div>}
       </div></div>
 
       {openClar && (
@@ -142,41 +162,82 @@ export default function MyApplication() {
 
       <div className="row g-3">
         <div className="col-lg-7">
-          <div className={`card ${editing ? 'border-primary' : ''}`}>
+          <div className={`card application-details-card ${editing ? 'border-primary' : ''}`}>
             <div className="card-header d-flex justify-content-between align-items-center">
-              <span>{editing ? 'Edit submitted documents' : 'Submitted documents'}</span>
-              {editing && <button className="btn btn-sm btn-light" onClick={() => { setEditing(false); setChanges({}); setAdded({}); setErrors({}); }}>Cancel editing</button>}
+              <span>Submitted documents</span>
+              {editing
+                ? <button className="btn btn-sm btn-light" onClick={() => { setEditing(false); setChanges({}); setAdded({}); setErrors({}); }}>Cancel</button>
+                : canEdit && <button className="btn btn-sm btn-outline-primary" onClick={() => setEditing(true)}><i className="bi bi-pencil-square me-1" aria-hidden="true" />Edit</button>}
             </div>
             <div className="card-body d-grid gap-2">
               {app.documents.map((d) => {
                 const ch = changes[d.id];
+                const slot = DOC_SLOTS.find((item) => item.type === d.type);
                 return (
-                  <div key={d.id} className={`doc-tile ${ch?.removed ? 'opacity-50' : ''}`}>
-                    <div className="doc-icon"><i className="bi bi-file-earmark-text" /></div>
-                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                      <div className="small text-muted">{d.type}</div>
-                      <div className="fw-medium text-truncate">{ch?.file ? <><s className="text-muted me-1">{d.fileName}</s>{ch.file.fileName}</> : d.fileName}</div>
-                      <small className="text-muted">{fileSize(d.size || 200000)} · uploaded {fmtDateTime(d.uploadedAt)}</small>
-                      {d.comment && <div className="small text-danger mt-1"><i className="bi bi-chat-left-text me-1" />{d.comment}</div>}
+                  <div key={d.id} className={`application-document ${ch?.removed ? 'opacity-50' : ''}`}>
+                    <div className="application-document-heading">
+                      <div className="doc-picker-heading">
+                        <span className={`form-label mb-0 ${slot?.required ? 'required' : ''}`}>{d.type}</span>
+                      </div>
+                      {editing && (
+                        <div className="application-document-actions">
+                          {!ch?.removed && <label className="btn btn-sm btn-light application-document-action" title={`Add replacement for ${d.type}`}>
+                            <i className="bi bi-plus-lg" aria-hidden="true" />
+                            <input type="file" className="d-none" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) setChanges({ ...changes, [d.id]: { file: { fileName: f.name, size: f.size } } });
+                              e.target.value = '';
+                            }} />
+                          </label>}
+                        </div>
+                      )}
                     </div>
-                    <div className="d-flex flex-column align-items-end gap-1">
-                      {ch?.removed ? <span className="status-badge sb-gray">Will be removed</span> : ch?.file ? <span className="status-badge sb-blue">Replacement ready</span> : <StatusBadge status={d.status} />}
-                      <div className="d-flex gap-1">
-                        <button className="btn btn-sm btn-light" onClick={() => setPreview(d)} aria-label={`Preview ${d.fileName}`}><i className="bi bi-eye" /></button>
-                        {editing && !ch?.removed && (
-                          <label className="btn btn-sm btn-outline-primary mb-0">Replace
-                            <input type="file" className="d-none" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => { const f = e.target.files?.[0]; if (f) setChanges({ ...changes, [d.id]: { file: { fileName: f.name, size: f.size } } }); }} />
-                          </label>
-                        )}
-                        {editing && (ch ? <button className="btn btn-sm btn-light" onClick={() => { const c = { ...changes }; delete c[d.id]; setChanges(c); }}>Undo</button>
-                          : <button className="btn btn-sm btn-light text-danger" onClick={() => setChanges({ ...changes, [d.id]: { removed: true } })}>Remove</button>)}
+                    <div className="doc-tile">
+                      <div className="doc-icon"><i className="bi bi-file-earmark-text" /></div>
+                      <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                        <div className="fw-medium text-truncate">
+                          {ch?.file && <s className="text-muted me-1">{d.fileName}</s>}
+                          <button
+                            type="button"
+                            className="doc-name-link"
+                            onClick={() => setPreview(ch?.file ? { ...d, ...ch.file } : d)}
+                            disabled={ch?.removed}
+                          >
+                            {ch?.file ? ch.file.fileName : d.fileName}
+                          </button>
+                        </div>
+                        <small className="document-file-details">{fileSize(d.size || 200000)} · uploaded {fmtDateTime(d.uploadedAt)}</small>
+                        {d.comment && <div className="small text-danger mt-1"><i className="bi bi-chat-left-text me-1" />{d.comment}</div>}
+                      </div>
+                      <div className="application-document-card-actions">
+                        {ch?.removed ? <span className="status-badge sb-gray">Will be removed</span> : ch?.file ? <span className="status-badge sb-blue">Replacement ready</span> : <StatusBadge status={d.status} />}
+                        {editing && (ch
+                          ? <button className="btn btn-sm btn-light application-document-action" aria-label="Undo document change" title="Undo document change" onClick={() => { const c = { ...changes }; delete c[d.id]; setChanges(c); }}><i className="bi bi-arrow-counterclockwise" /></button>
+                          : <button className="btn btn-sm btn-danger application-document-remove" aria-label={`Remove ${d.type}`} title={`Remove ${d.type}`} onClick={() => setChanges({ ...changes, [d.id]: { removed: true } })}><i className="bi bi-x-lg" /></button>)}
                       </div>
                     </div>
                   </div>
                 );
               })}
               {editing && missingSlots.map((s) => (
-                <div key={s.key}><FilePicker id={`add-${s.key}`} label={`Add: ${s.type}`} current={added[s.key]} onSelect={(f) => { const a = { ...added }; if (f) a[s.key] = f; else delete a[s.key]; setAdded(a); }} /></div>
+                <div key={s.key} className="application-document">
+                  <div className="application-document-heading">
+                    <label className={`form-label mb-0 ${s.required ? 'required' : ''}`} htmlFor={`add-${s.key}`}>{s.type}</label>
+                    <label className="btn btn-sm btn-light application-document-action" title={`Add ${s.type}`} aria-label={`Add ${s.type}`}>
+                      <i className="bi bi-plus-lg" aria-hidden="true" />
+                      <input id={`add-${s.key}`} type="file" className="d-none" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) setAdded({ ...added, [s.key]: { fileName: f.name, size: f.size } });
+                        e.target.value = '';
+                      }} />
+                    </label>
+                  </div>
+                  <div className="doc-tile">
+                    <div className="doc-icon"><i className={`bi ${added[s.key] ? 'bi-file-earmark-check' : 'bi-file-earmark-arrow-up'}`} /></div>
+                    <div className="flex-grow-1 text-truncate">{added[s.key] ? <><div className="fw-medium text-truncate">{added[s.key].fileName}</div><small className="document-file-details">{fileSize(added[s.key].size)} · ready</small></> : <small className="text-muted">PDF, JPG or PNG</small>}</div>
+                    {added[s.key] && <button type="button" className="btn btn-sm btn-light text-danger application-document-action" aria-label={`Remove ${s.type}`} title={`Remove ${s.type}`} onClick={() => { const nextAdded = { ...added }; delete nextAdded[s.key]; setAdded(nextAdded); }}><i className="bi bi-x-lg" /></button>}
+                  </div>
+                </div>
               ))}
               {editing && <>
                 <div>
@@ -184,16 +245,16 @@ export default function MyApplication() {
                   <textarea id="expl" rows={2} className="form-control" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="e.g. Uploaded a clearer scan of my ID card" />
                 </div>
                 {errors.general && <div className="alert alert-warning py-2 small mb-0">{errors.general}</div>}
-                <div className="d-flex justify-content-end"><button className="btn btn-primary" onClick={() => setConfirm(true)}><i className="bi bi-send me-1" />Resubmit changes</button></div>
+                <div className="d-flex justify-content-end"><button className="btn btn-primary" onClick={() => setConfirm(true)}><i className="bi bi-send me-1" />Resubmit</button></div>
               </>}
             </div>
           </div>
         </div>
         <div className="col-lg-5">
-          <div className="card mb-3">
+          <div className="card application-details-card mb-3">
             <div className="card-header">Application details</div>
             <div className="card-body">
-              <dl className="dl-grid mb-0">
+              <dl className="application-details-list mb-0">
                 <div><dt>Name</dt><dd>{app.personal.firstName} {app.personal.lastName}</dd></div>
                 <div><dt>Email</dt><dd>{app.personal.email}</dd></div>
                 <div><dt>Phone</dt><dd>{app.personal.phone}</dd></div>
@@ -201,7 +262,7 @@ export default function MyApplication() {
               </dl>
             </div>
           </div>
-          <div className="card">
+          <div className="card application-details-card">
             <div className="card-header">Submission history</div>
             <div className="card-body">
               <ul className="timeline small mb-0">
@@ -225,6 +286,6 @@ export default function MyApplication() {
           <h3 className="h6 mt-3">Document history</h3>
           <ul className="small mb-0">{preview.history.map((h, i) => <li key={i}>{fmtDateTime(h.at)} — {h.text}</li>)}</ul></>}
       </Modal>
-    </>
+    </div>
   );
 }
