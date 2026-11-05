@@ -148,6 +148,48 @@ h1, h2, h3, h4, h5, .font-brand {
 .profile-full-row { grid-column: 1 / -1; }
 .profile-form .form-control { min-height: 42px; }
 .profile-form textarea.form-control { min-height: 88px; }
+.team-page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+.team-page .card { background-color: #f7f8f7; }
+.team-page .card-header { background-color: #f7f8f7; padding: 1rem 1.5rem; }
+.team-page .card-body { padding: 1.5rem; }
+.team-page .stat-card { min-height: 76px; }
+.team-section-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.team-section-header h2 { color: var(--vb-teal-800); }
+.team-section-header h2 i { color: var(--vb-teal-700); }
+.team-member-filters { display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--vb-border); }
+.team-member-filters > :first-child { flex: 1; min-width: 220px; }
+.team-member-filters .form-select { min-width: 160px; }
+.team-page .table { min-width: 1000px; --bs-table-hover-bg: var(--vb-green-50); }
+.team-page .table th, .team-page .table td { padding: 0.95rem 0.85rem; vertical-align: middle; }
+.team-page .table thead th { color: var(--vb-teal-800); font-size: 0.76rem; font-weight: 600; letter-spacing: 0.025em; white-space: nowrap; }
+.team-page .table tbody tr { border-bottom-color: #e7ece8; }
+.team-page .table tbody tr:nth-child(even) td { background-color: #fbfcfb; }
+.team-page .table tbody tr.row-click { cursor: pointer; }
+.team-page .table tbody tr.row-click:hover td { background-color: var(--vb-green-50); }
+.team-page .table td { color: var(--vb-ink); font-size: 0.86rem; }
+.team-page .table td a { white-space: nowrap; }
+.team-hierarchy-level { display: inline-block; padding: 0.3rem 0.55rem; border: 1px solid #d5e7d8; border-radius: 999px; background: #f0f8f1; color: var(--vb-green-700); font-size: 0.76rem; font-weight: 600; white-space: nowrap; }
+.org-folder-tree { max-height: 520px; overflow: auto; padding: 0.1rem; }
+.org-folder-root, .org-folder-team { min-width: 0; }
+.org-folder-tree details > summary { display: flex; align-items: center; gap: 0.65rem; min-height: 44px; padding: 0.6rem 0.8rem; border: 1px solid var(--vb-border); border-radius: 9px; background: #fff; cursor: pointer; list-style: none; }
+.org-folder-tree details > summary::-webkit-details-marker { display: none; }
+.org-folder-tree details > summary::before { content: '\F285'; font-family: 'bootstrap-icons'; color: var(--vb-muted); font-size: 0.75rem; transition: transform 0.15s ease; }
+.org-folder-tree details[open] > summary::before { transform: rotate(90deg); }
+.org-folder-tree details > summary > i { color: var(--vb-teal-700); font-size: 1.05rem; }
+.org-folder-tree details > summary > span { min-width: 0; flex: 1; font-weight: 600; color: var(--vb-teal-800); }
+.org-folder-tree details > summary > small { color: var(--vb-muted); white-space: nowrap; }
+.org-folder-root > summary { background: var(--vb-teal-50) !important; border-color: #cfe0e0 !important; }
+.org-folder-children { display: grid; gap: 0.65rem; margin: 0.65rem 0 0 1.25rem; padding: 0.15rem 0 0.15rem 1rem; border-left: 2px solid #cfe0e0; }
+.org-folder-team > summary { background: #fff; }
+.org-folder-agent { display: flex; width: 100%; min-width: 0; align-items: center; gap: 0.65rem; padding: 0.55rem 0.65rem; border: 1px solid transparent; border-radius: 8px; background: transparent; text-align: left; }
+.org-folder-agent:hover, .org-folder-agent:focus-visible { background: #fff; border-color: var(--vb-border); outline: none; }
+.org-folder-agent > i { flex: 0 0 32px; width: 32px; color: var(--vb-muted); text-align: center; font-size: 1.05rem; }
+.org-folder-agent-info { display: grid; flex: 1; min-width: 0; gap: 0.1rem; }
+.org-folder-agent-info strong { overflow: hidden; color: var(--vb-ink); font-size: 0.84rem; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.org-folder-agent-info small { color: var(--vb-muted); font-size: 0.74rem; }
+.org-folder-lead { background: #fff; border-color: #d7e4e3; }
+.org-folder-members { display: grid; gap: 0.15rem; margin-left: 1.6rem; padding-left: 0.75rem; border-left: 1px dashed #c9d6d7; }
+.org-folder-empty { padding: 0.55rem 0.65rem; color: var(--vb-muted); font-size: 0.8rem; }
 .renewal-page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
 .renewal-page .card { background-color: #f7f8f7; }
 .renewal-page .card-header { background-color: #f7f8f7; padding: 1rem 1.5rem; }
@@ -448,6 +490,15 @@ tr.row-highlight td { background: var(--vb-green-50) !important; }
   .renewal-page .card-header { padding: 0.85rem 1rem; }
   .renewal-page .card-body { padding: 1rem; }
   .renewal-page .card > .list-group-flush > .list-group-item { padding-right: 1rem; padding-left: 1rem; }
+  .team-page .card-header { padding: 0.85rem 1rem; }
+  .team-page .card-body { padding: 1rem; }
+  .team-member-filters { align-items: stretch; flex-direction: column; }
+  .team-member-filters > :first-child, .team-member-filters .form-select { width: 100%; min-width: 0; }
+  .team-hierarchy-card .card-header { align-items: flex-start; }
+  .org-folder-children { margin-left: 0.55rem; padding-left: 0.55rem; }
+  .org-folder-members { margin-left: 0.45rem; padding-left: 0.4rem; }
+  .org-folder-agent { gap: 0.4rem; padding: 0.5rem 0.35rem; }
+  .org-folder-agent .status-badge { font-size: 0.67rem; padding: 0.18rem 0.4rem; }
   .profile-summary { align-items: flex-start; }
   .profile-membership-list > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.5rem; }
   .profile-membership-list dd { text-align: right; }
