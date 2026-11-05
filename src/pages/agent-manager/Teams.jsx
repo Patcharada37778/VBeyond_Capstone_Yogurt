@@ -6,6 +6,7 @@ import { Avatar, EmptyState, PageHeader, SearchInput, StatusBadge, Tabs } from '
 import { ConfirmModal, Modal } from '../../components/modals/Modal';
 import { AgentProfileModal, OrgChart } from '../../components/dashboard/AgentShared';
 import { changeTeamLead, transferAgent } from '../../services/agentLifecycle';
+import OnboardingPanel from './Onboarding';
 import { fmtDate, fmtDateTime, fullName } from '../../utils/format';
 
 function TeamCard({ team, agents, onChangeLead, canEdit }) {
@@ -40,7 +41,9 @@ export default function Teams() {
   const [params, setParams] = useSearchParams();
   const canEdit = can('teams', 'edit');
   const canApprove = can('teams', 'approve');
-  const [tab, setTab] = useState(params.get('transfer') ? 'transfer' : 'structure');
+  const tab = params.get('tab') || (params.get('transfer') ? 'transfer' : 'structure');
+  const setTab = (t) => setParams({ tab: t });
+  const unassigned = state.agents.filter((a) => !a.teamId && a.status === 'Active');
   const [selected, setSelected] = useState(null);
 
   // transfer wizard state
@@ -97,11 +100,13 @@ export default function Teams() {
 
   return (
     <>
-      <PageHeader title="Team Structure Management" subtitle="Manage teams, team leads, transfers and hierarchy." crumbs={[{ label: 'Agent Team Management' }, { label: 'Team Management' }]}
+      <PageHeader title="Team Structure Management" subtitle="Manage teams, onboarding, team leads, transfers and hierarchy." crumbs={[{ label: 'Agent Team Management' }, { label: 'Team Management' }]}
         actions={canEdit && <button className="btn btn-primary" onClick={() => setTab('transfer')}><i className="bi bi-arrow-left-right me-1" />Transfer an agent</button>} />
-      <Tabs active={tab} onChange={setTab} tabs={[{ key: 'structure', label: 'Teams' }, { key: 'hierarchy', label: 'Hierarchy' }, ...(canEdit ? [{ key: 'transfer', label: 'Transfer agent' }] : []), { key: 'requests', label: 'Transfer requests', count: pendingReq.length }, { key: 'history', label: 'History' }]} />
+      <Tabs active={tab} onChange={setTab} tabs={[{ key: 'structure', label: 'Teams' }, ...(can('onboarding', 'view') ? [{ key: 'onboarding', label: 'Unassigned / Onboarding', count: unassigned.length }] : []), { key: 'hierarchy', label: 'Hierarchy' }, ...(canEdit ? [{ key: 'transfer', label: 'Transfer agent' }] : []), { key: 'requests', label: 'Transfer requests', count: pendingReq.length }, { key: 'history', label: 'History' }]} />
 
       {tab === 'structure' && <div className="row g-3">{state.teams.map((t) => <div className="col-md-6 col-xl-3" key={t.id}><TeamCard team={t} agents={state.agents} canEdit={canEdit} onChangeLead={(team) => { setLeadTeam(team); setNewLead(''); }} /></div>)}</div>}
+
+      {tab === 'onboarding' && can('onboarding', 'view') && <OnboardingPanel />}
 
       {tab === 'hierarchy' && <div className="card"><div className="card-body"><OrgChart teams={state.teams} agents={state.agents} onSelect={setSelected} /></div></div>}
 

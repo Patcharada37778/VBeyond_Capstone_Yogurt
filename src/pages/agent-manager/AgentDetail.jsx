@@ -51,7 +51,7 @@ export default function AgentDetail() {
           {canEdit && <button className="btn btn-light" onClick={() => { setErrors({}); setEdit({ ...a, membershipExpiry: toInputDate(a.membershipExpiry) }); }}><i className="bi bi-pencil me-1" />Edit information</button>}
           {can('agentStatus', 'edit') && <Link className="btn btn-outline-primary" to={`/agent-status?agent=${a.id}`}><i className="bi bi-toggles me-1" />Change status</Link>}
           {can('teams', 'edit') && a.teamId && <Link className="btn btn-outline-primary" to={`/teams?transfer=${a.id}`}><i className="bi bi-arrow-left-right me-1" />Transfer</Link>}
-          {can('onboarding', 'edit') && !a.teamId && a.status === 'Active' && <Link className="btn btn-primary" to={`/onboarding?agent=${a.id}`}><i className="bi bi-person-plus me-1" />Onboard to team</Link>}
+          {can('onboarding', 'edit') && !a.teamId && a.status === 'Active' && <Link className="btn btn-primary" to={`/teams?tab=onboarding&agent=${a.id}`}><i className="bi bi-person-plus me-1" />Onboard to team</Link>}
         </>} />
       <div className="row g-3">
         <div className="col-lg-4">

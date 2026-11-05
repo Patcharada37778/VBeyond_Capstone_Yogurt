@@ -207,7 +207,7 @@ function AgentManagerDashboard({ user }) {
   const max = Math.max(...state.teams.map((t) => ag.filter((a) => a.teamId === t.id).length), 1);
   return (
     <>
-      <Greeting user={user} subtitle={`${toReview.length} application(s) to review · ${pendingOnboard.length} agent(s) waiting for onboarding · ${renewals.length} open renewal request(s)`}><Link to="/onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
+      <Greeting user={user} subtitle={`${toReview.length} application(s) to review · ${pendingOnboard.length} agent(s) waiting for onboarding · ${renewals.length} open renewal request(s)`}><Link to="/teams?tab=onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
       <div className="row g-3 mb-3">
         <div className="col-6 col-xl"><StatCard icon="bi-people" label="Total agents" value={ag.length} to="/agents" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-check-circle" label="Active" value={by('Active')} tone={TONES.green} to="/agent-status" /></div>
@@ -233,9 +233,9 @@ function AgentManagerDashboard({ user }) {
               {!toReview.length && <div className="list-group-item small text-muted">No applications waiting for review.</div>}
             </div>
           </div>
-          <div className="card"><div className="card-header d-flex justify-content-between"><span>Pending onboarding</span><Link to="/onboarding" className="small fw-normal">Open onboarding</Link></div>
+          <div className="card"><div className="card-header d-flex justify-content-between"><span>Pending onboarding</span><Link to="/teams?tab=onboarding" className="small fw-normal">Open onboarding</Link></div>
             <div className="list-group list-group-flush">
-              {pendingOnboard.map((a) => <Link key={a.id} to={`/onboarding?agent=${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span>{fullName(a)} <small className="text-muted">{a.id}</small></span><span className="btn btn-sm btn-outline-primary">Onboard</span></Link>)}
+              {pendingOnboard.map((a) => <Link key={a.id} to={`/teams?tab=onboarding&agent=${a.id}`} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span>{fullName(a)} <small className="text-muted">{a.id}</small></span><span className="btn btn-sm btn-outline-primary">Onboard</span></Link>)}
               {!pendingOnboard.length && <div className="list-group-item small text-muted">Everyone is assigned to a team.</div>}
             </div>
           </div>

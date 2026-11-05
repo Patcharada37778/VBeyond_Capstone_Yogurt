@@ -51,7 +51,7 @@ export default function ApplicationDetail() {
       });
       if (a.referredBy) notify(d, `agent:${a.referredBy}`, { category: 'Team invitations', title: `${a.personal.firstName} ${a.personal.lastName}'s registration was approved`, body: 'The Agent Manager will onboard them to the team.', link: '/dashboard' });
       notify(d, `applicant:${a.userKey}`, { category: 'Registration approval', title: 'Your registration has been approved!', body: `Your agent ID is ${agentId}. Proceed to first login to activate your account.`, link: '/my-application' });
-      notify(d, 'role:agentManager', { category: 'Registration updates', title: `Approved agent ready for onboarding: ${a.personal.firstName} ${a.personal.lastName}`, body: `${agentId}${a.preferredTeamId ? ` · invited to ${d.teams.find((t) => t.id === a.preferredTeamId)?.name}` : ''}`, link: `/onboarding?agent=${agentId}` });
+      notify(d, 'role:agentManager', { category: 'Registration updates', title: `Approved agent ready for onboarding: ${a.personal.firstName} ${a.personal.lastName}`, body: `${agentId}${a.preferredTeamId ? ` · invited to ${d.teams.find((t) => t.id === a.preferredTeamId)?.name}` : ''}`, link: `/teams?tab=onboarding&agent=${agentId}` });
       logAction(d, user, 'Approved application', `${id} → ${agentId}`);
     });
     setModal(null);
