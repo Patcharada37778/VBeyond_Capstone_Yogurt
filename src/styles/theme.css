@@ -446,6 +446,10 @@ body.sidebar-collapsed .sidebar .show-collapsed { display: inline; }
 .comm-max { position: absolute; top: 0; left: 0; }
 
 /* Dashboard footer */
-.dash-footer { margin-top: 2rem; padding: 1rem 1.25rem; border-top: 1px solid var(--vb-border); display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; justify-content: center; color: var(--vb-muted); font-size: 0.875rem; }
-.dash-footer a { color: var(--vb-teal-700); font-weight: 500; text-decoration: none; }
+.dash-footer { margin-top: 2rem; padding: 1.5rem; background: var(--vb-green-50); border-radius: 12px; color: var(--vb-muted); font-size: 0.875rem; }
+.dash-footer-title { margin: 0 0 1rem; color: var(--vb-teal-800); font-size: 1.1rem; font-weight: 600; }
+.dash-footer-contacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 0.75rem 1.5rem; align-items: start; }
+.dash-footer-contacts a, .dash-footer-contacts address { display: flex; align-items: flex-start; margin: 0; color: var(--vb-teal-700); font-weight: 500; text-decoration: none; }
+.dash-footer-contacts i { flex: 0 0 auto; margin-top: 0.15rem; }
+.dash-footer-contacts address span { font-weight: 400; }
 .dash-footer a:hover { text-decoration: underline; }

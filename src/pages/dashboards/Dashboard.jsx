@@ -261,8 +261,12 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <C user={user} />
       <footer className="dash-footer">
-        <span className="fw-semibold"><i className="bi bi-headset me-2" aria-hidden="true" />Contact support</span>
-        <a href="mailto:info@vbeyond.co.th"><i className="bi bi-envelope me-1" aria-hidden="true" />info@vbeyond.co.th</a>
+        <h2 className="dash-footer-title"><i className="bi bi-headset me-2" aria-hidden="true" />Contact Us</h2>
+        <div className="dash-footer-contacts">
+          <a href="tel:020068008"><i className="bi bi-telephone me-2" aria-hidden="true" />02 006 8008</a>
+          <a href="mailto:info@vbeyond.co.th"><i className="bi bi-envelope me-2" aria-hidden="true" />info@vbeyond.co.th</a>
+          <address><i className="bi bi-geo-alt me-2" aria-hidden="true" /><span>บริษัท กลุ่ม วีบียอนด์ เอกซ์ จำกัด (มหาชน) เลขที่ 1 อาคารเอ็มไพร์ ทาวเวอร์ ชั้น 47 ยูนิต 4701, 4711, 4712 ถนนสาทรใต้ แขวงยานนาวา เขตสาทร กรุงเทพ 10120</span></address>
+        </div>
       </footer>
     </div>
   );
