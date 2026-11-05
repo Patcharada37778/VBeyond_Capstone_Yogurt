@@ -404,6 +404,7 @@ tr.row-highlight td { background: var(--vb-green-50) !important; }
 .vb-modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--vb-border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .vb-modal-header h2 { font-size: 1.1rem; margin: 0; }
 .vb-modal-body { padding: 1.25rem; overflow-y: auto; }
+.agent-profile-content { width: 100%; max-width: 720px; margin: 0 auto; padding: 0 0.75rem; }
 .vb-modal-footer { padding: 0.85rem 1.25rem; border-top: 1px solid var(--vb-border); display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap; }
 
 /* Toasts */

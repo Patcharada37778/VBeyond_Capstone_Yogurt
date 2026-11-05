@@ -9,7 +9,7 @@ export function AgentProfileModal({ agent, teams, agents, onClose, showSensitive
   return (
     <Modal open={!!agent} onClose={onClose} title="Agent profile" size="lg"
       footer={<>{fullLink && <Link to={fullLink} className="btn btn-outline-primary">Open full record</Link>}<button className="btn btn-primary" onClick={onClose}>Close</button></>}>
-      {agent && <>
+      {agent && <div className="agent-profile-content">
         <div className="d-flex gap-3 align-items-center mb-3">
           <Avatar name={fullName(agent)} color={agent.avatarColor} photo={agent.photo} size={64} />
           <div>
@@ -33,7 +33,7 @@ export function AgentProfileModal({ agent, teams, agents, onClose, showSensitive
           <div><dt>License no.</dt><dd>{agent.licenseNo}</dd></div>
           <div><dt>Onboarded</dt><dd>{fmtDate(agent.onboardedAt)}</dd></div>
         </dl>
-      </>}
+      </div>}
     </Modal>
   );
 }
