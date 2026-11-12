@@ -6,11 +6,12 @@ export const ROLES = {
   agent: { label: 'Active Agent', portal: 'agent' },
   teamLead: { label: 'Team Lead', portal: 'agent' },
   agentManager: { label: 'Agent Manager', portal: 'backoffice' },
+  contentAdmin: { label: 'Content Admin', portal: 'backoffice' },
   financeAdmin: { label: 'Finance Admin', portal: 'backoffice' },
   operationsAdmin: { label: 'Operations / Compliance Admin', portal: 'backoffice' },
 };
 
-export const BACKOFFICE_ROLES = ['agentManager', 'financeAdmin', 'operationsAdmin'];
+export const BACKOFFICE_ROLES = ['agentManager', 'contentAdmin', 'financeAdmin', 'operationsAdmin'];
 export const ACTIONS = [
   { key: 'view', label: 'View' },
   { key: 'create', label: 'Create' },
@@ -46,6 +47,7 @@ function build(map) {
 
 export const DEFAULT_PERMISSIONS = {
   agentManager: build({ announcements: 'VCED', agents: 'VCE', teams: 'VCEA', onboarding: 'VCEA', renewals: 'VEA', agentStatus: 'VEA', salesUpload: 'VCA' }),
+  contentAdmin: build({ announcements: 'VCE' }),
   financeAdmin: build({ commissionRules: 'VE' }),
   operationsAdmin: build({ applications: 'VEA', documents: 'VE', faq: 'VCED' }),
 };
@@ -80,6 +82,9 @@ export const NAV = [
     { path: '/renewals', label: 'Membership Renewals', icon: 'bi-arrow-repeat', module: 'renewals' },
     { path: '/agent-status', label: 'Agent Status Management', icon: 'bi-toggles', module: 'agentStatus' },
     { path: '/faq', label: 'FAQ', icon: 'bi-journal-text', module: 'faq' },
+  ] },
+  { group: 'Content', items: [
+    { path: '/announcements', label: 'News & Announcements', icon: 'bi-megaphone', roles: ['prospect', 'agent', 'teamLead'], module: 'announcements' },
   ] },
   { group: 'Sales & Commission', items: [
     { path: '/commission-rules', label: 'Commission Rules', icon: 'bi-sliders', module: 'commissionRules' },

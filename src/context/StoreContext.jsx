@@ -13,6 +13,7 @@ export const PERSONAS = [
   { key: 'agent', label: 'Active Agent', name: 'Somchai Prasertsuk', session: { agentId: 'AG-1001' } },
   { key: 'teamLead', label: 'Team Lead', name: 'Kanokwan Thongdee', session: { agentId: 'AG-1002' } },
   { key: 'agentManager', label: 'Agent Manager', name: 'Suchada Panyakul', session: { adminId: 'ADM-02' } },
+  { key: 'contentAdmin', label: 'Content Admin', name: 'Pimchanok Wattanakul', session: { adminId: 'ADM-09' }, color: '#6a4c93' },
   { key: 'financeAdmin', label: 'Finance Admin', name: 'Kanyarak Rattanasri', session: { adminId: 'ADM-07' }, color: '#2f6f9f' },
   { key: 'operationsAdmin', label: 'Operations / Compliance Admin', name: 'Nattaporn Jingjai', session: { adminId: 'ADM-08' }, color: '#6a4c93' },
 ];

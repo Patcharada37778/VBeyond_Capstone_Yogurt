@@ -28,6 +28,7 @@ Use the quick sign-in buttons on the login page, or the **Demo role switcher** i
 | Active Agent | Somchai Prasertsuk (AG-1001) |
 | Team Lead | Kanokwan Thongdee (AG-1002, Team Alpha) |
 | Back-office Agent Manager | Suchada Chaiyaporn — the back-office role: applications (with fixed document slots), agent list, onboarding, renewals, teams, announcements, FAQ, commission rules and monthly sales upload |
+| Content Admin | Pimchanok Wattanakul — manages News & Announcements on the home page |
 
 Visitors who are not signed in see the landing page at `/`.
 
@@ -50,10 +51,11 @@ Other entry points on the login page:
 9. Active Agent → *Membership Renewal* → upload the PDPA certificate → submit (renewal is free)
 10. Agent Manager → *Membership Renewals* → verify documents → approve (expiry is extended)
 11. Agent Manager → *Announcements* → create a banner with or without an image
-12. Active Agent → *Property Directory* → filter and sort → save favorites → open a property → *Share with team* or *Co-branded PDF*
-13. Agent Manager → *Commission Rules* → edit the base rate, tiers and team lead split
-14. Agent Manager → *Monthly Sales Upload* → download the template → upload it (Excel or CSV) → check the preview → publish
-15. Active Agent → dashboard shows the commission tier and progress to the next tier
+12. Content Admin → *Home* → manage home-page News & Announcements, including drafts, publishing and archiving
+13. Active Agent → *Property Directory* → filter and sort → save favorites → open a property → *Share with team* or *Co-branded PDF*
+14. Agent Manager → *Commission Rules* → edit the base rate, tiers and team lead split
+15. Agent Manager → *Monthly Sales Upload* → download the template → upload it (Excel or CSV) → check the preview → publish
+16. Active Agent → dashboard shows the commission tier and progress to the next tier
 
 ## Project structure
 

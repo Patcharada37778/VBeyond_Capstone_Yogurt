@@ -139,7 +139,7 @@ function TierTracker({ agentId }) {
 }
 
 function DashboardAnnouncementFeed() {
-  const { state, user, mutate } = useStore();
+  const { state, user, mutate, can } = useStore();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
   const [sort, setSort] = useState('newest');
@@ -172,7 +172,7 @@ function DashboardAnnouncementFeed() {
           <h2 id="dashboard-announcements-heading" className="h6 mb-1"><i className="bi bi-megaphone me-2" aria-hidden="true" />News & announcements</h2>
           <small className="text-muted">{published.length} published update{published.length === 1 ? '' : 's'}</small>
         </div>
-        <Link to="/announcements" className="small fw-normal">View all</Link>
+        <Link to="/announcements" className="small fw-normal">{can('announcements', 'edit') ? 'Manage announcements' : 'View all'}</Link>
       </div>
       <div className="card-body dashboard-announcement-filters">
         <SearchInput value={query} onChange={setQuery} placeholder="Search announcements" className="dashboard-announcement-search" />
@@ -354,6 +354,20 @@ function AgentManagerDashboard({ user }) {
   );
 }
 
+function ContentAdminDashboard({ user }) {
+  const { state } = useStore();
+  const published = state.announcements.filter((announcement) => announcement.status === 'Published').length;
+  const drafts = state.announcements.filter((announcement) => announcement.status === 'Draft').length;
+  return (
+    <>
+      <Greeting user={user} subtitle={`${published} published update${published === 1 ? '' : 's'} · ${drafts} draft${drafts === 1 ? '' : 's'} to manage`}>
+        <Link to="/announcements" className="btn btn-light">Manage content</Link>
+      </Greeting>
+      <DashboardAnnouncementFeed />
+    </>
+  );
+}
+
 function OperationsAdminDashboard({ user }) {
   const { state } = useStore();
   const pending = state.applications.filter((a) => a.status === 'Pending Review');
@@ -434,6 +448,7 @@ export default function Dashboard() {
     agent: AgentDashboard,
     teamLead: TeamLeadDashboard,
     agentManager: AgentManagerDashboard,
+    contentAdmin: ContentAdminDashboard,
     financeAdmin: FinanceAdminDashboard,
     operationsAdmin: OperationsAdminDashboard,
   };
