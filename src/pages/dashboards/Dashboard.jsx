@@ -309,12 +309,11 @@ function AgentManagerDashboard({ user }) {
   const ag = state.agents;
   const by = (s) => ag.filter((a) => a.status === s).length;
   const pendingOnboard = ag.filter((a) => !a.teamId && a.status === 'Active');
-  const transfers = state.transferRequests.filter((r) => r.status === 'Pending');
   const renewals = state.renewals.filter((r) => !['Approved', 'Rejected'].includes(r.status));
   const max = Math.max(...state.teams.map((t) => ag.filter((a) => a.teamId === t.id).length), 1);
   return (
     <>
-      <Greeting user={user} subtitle={`${pendingOnboard.length} agent(s) waiting for onboarding · ${transfers.length} pending transfer(s) · ${renewals.length} open renewal request(s)`}><Link to="/teams?tab=onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
+      <Greeting user={user} subtitle={`${pendingOnboard.length} agent(s) waiting for onboarding · ${renewals.length} open renewal request(s)`}><Link to="/teams?tab=onboarding" className="btn btn-light">Onboard agents</Link></Greeting>
       <div className="row g-3 mb-3">
         <div className="col-6 col-xl"><StatCard icon="bi-people" label="Total agents" value={ag.length} to="/agents" /></div>
         <div className="col-6 col-xl"><StatCard icon="bi-check-circle" label="Active" value={by('Active')} tone={TONES.green} to="/agent-status" /></div>
@@ -341,10 +340,7 @@ function AgentManagerDashboard({ user }) {
             </div>
           </div>
           <div className="row g-3">
-            <div className="col-md-6"><div className="card h-100"><div className="card-header d-flex justify-content-between"><span>Pending transfers</span><Link to="/teams" className="small fw-normal">Review</Link></div>
-              <div className="list-group list-group-flush">{transfers.map((r) => <div key={r.id} className="list-group-item small">{fullName(ag.find((a) => a.id === r.agentId))}<div className="text-muted">{state.teams.find((t) => t.id === r.fromTeamId)?.name} → {state.teams.find((t) => t.id === r.toTeamId)?.name}</div></div>)}
-                {!transfers.length && <div className="list-group-item small text-muted">None pending.</div>}</div></div></div>
-            <div className="col-md-6"><div className="card h-100"><div className="card-header d-flex justify-content-between"><span>Renewal requests</span><Link to="/renewals" className="small fw-normal">Review</Link></div>
+            <div className="col-12"><div className="card h-100"><div className="card-header d-flex justify-content-between"><span>Renewal requests</span><Link to="/renewals" className="small fw-normal">Review</Link></div>
               <div className="list-group list-group-flush">{renewals.map((r) => <Link to={`/renewals?open=${r.id}`} key={r.id} className="list-group-item list-group-item-action small d-flex justify-content-between"><span>{fullName(ag.find((a) => a.id === r.agentId))}</span><StatusBadge status={r.status} /></Link>)}
                 {!renewals.length && <div className="list-group-item small text-muted">None open.</div>}</div></div></div>
           </div>

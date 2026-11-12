@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { logAction, useStore } from '../../context/StoreContext';
 import { useToast } from '../../context/ToastContext';
-import { Avatar, EmptyState, PageHeader, SearchInput, StatusBadge, Tabs } from '../../components/common';
+import { Avatar, EmptyState, PageHeader, SearchInput, Tabs } from '../../components/common';
 import { ConfirmModal, Modal } from '../../components/modals/Modal';
 import { AgentProfileModal, OrgChart } from '../../components/dashboard/AgentShared';
 import { changeTeamLead, transferAgent } from '../../services/agentLifecycle';
 import OnboardingPanel from './Onboarding';
-import { fmtDate, fmtDateTime, fullName } from '../../utils/format';
+import { fmtDateTime, fullName } from '../../utils/format';
 
 function TeamCard({ team, agents, onChangeLead, canEdit }) {
   const members = agents.filter((a) => a.teamId === team.id);
@@ -41,8 +41,8 @@ export default function Teams() {
   const [params, setParams] = useSearchParams();
   const canEdit = can('teams', 'edit');
   const canCreate = can('teams', 'create');
-  const canApprove = can('teams', 'approve');
-  const tab = params.get('tab') || (params.get('transfer') ? 'transfer' : 'structure');
+  const requestedTab = params.get('tab');
+  const tab = requestedTab === 'requests' ? 'structure' : requestedTab || (params.get('transfer') ? 'transfer' : 'structure');
   const setTab = (t) => setParams({ tab: t });
   const unassigned = state.agents.filter((a) => !a.teamId && a.status === 'Active');
   const [selected, setSelected] = useState(null);
@@ -60,7 +60,6 @@ export default function Teams() {
   const [newLead, setNewLead] = useState('');
   const [leadConfirm, setLeadConfirm] = useState(false);
 
-  const [decline, setDecline] = useState(null);
   const blankNewTeam = { name: '', region: '', focus: '', leadId: '', members: [] };
   const [newTeam, setNewTeam] = useState(blankNewTeam);
   const [newTeamErrors, setNewTeamErrors] = useState({});
@@ -169,16 +168,6 @@ export default function Teams() {
     toast(`${fullName(l)} is now the team lead of ${leadTeam.name}. Affected users were notified.`, 'success', 'Team lead changed');
     setLeadConfirm(false); setLeadTeam(null); setNewLead('');
   };
-  const approveRequest = (r) => {
-    mutate((d) => { transferAgent(d, user, r.agentId, r.toTeamId, r.reason); const x = d.transferRequests.find((y) => y.id === r.id); x.status = 'Approved'; x.decidedBy = user.name; x.decidedAt = new Date().toISOString(); });
-    toast('Transfer request approved and the agent was moved.');
-  };
-  const declineRequest = () => {
-    mutate((d) => { const x = d.transferRequests.find((y) => y.id === decline.id); x.status = 'Declined'; x.decidedBy = user.name; x.decidedAt = new Date().toISOString(); logAction(d, user, 'Declined transfer request', x.id); });
-    toast('Transfer request declined.', 'info'); setDecline(null);
-  };
-
-  const pendingReq = state.transferRequests.filter((r) => r.status === 'Pending');
   const history = state.agents.flatMap((a) => a.teamHistory.filter((h) => h.reason?.startsWith('Transfer') || h.reason === 'Appointed team lead').map((h) => ({ ...h, agent: a }))).sort((a, b) => new Date(b.from) - new Date(a.from));
 
   return (
@@ -188,7 +177,7 @@ export default function Teams() {
           {canCreate && <button className="btn btn-outline-primary" onClick={openNewTeam}><i className="bi bi-plus-lg me-1" />Add a new team</button>}
           {canEdit && <button className="btn btn-primary" onClick={() => setTab('transfer')}><i className="bi bi-arrow-left-right me-1" />Transfer an agent</button>}
         </>} />
-      <Tabs active={tab} onChange={setTab} tabs={[{ key: 'structure', label: 'Teams' }, ...(can('onboarding', 'view') ? [{ key: 'onboarding', label: 'Unassigned / Onboarding', count: unassigned.length }] : []), { key: 'hierarchy', label: 'Hierarchy' }, ...(canEdit ? [{ key: 'transfer', label: 'Transfer agent' }] : []), { key: 'requests', label: 'Transfer requests', count: pendingReq.length }, { key: 'history', label: 'History' }]} />
+      <Tabs active={tab} onChange={setTab} tabs={[{ key: 'structure', label: 'Teams' }, ...(can('onboarding', 'view') ? [{ key: 'onboarding', label: 'Unassigned / Onboarding', count: unassigned.length }] : []), { key: 'hierarchy', label: 'Hierarchy' }, ...(canEdit ? [{ key: 'transfer', label: 'Transfer agent' }] : []), { key: 'history', label: 'History' }]} />
 
       {tab === 'structure' && <div className="row g-3">{state.teams.map((t) => <div className="col-md-6 col-xl-4" key={t.id}><TeamCard team={t} agents={state.agents} canEdit={canEdit} onChangeLead={(team) => { setLeadTeam(team); setNewLead(''); }} /></div>)}</div>}
 
@@ -235,29 +224,6 @@ export default function Teams() {
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {tab === 'requests' && (
-        <div className="card">
-          <div className="list-group list-group-flush">
-            {state.transferRequests.map((r) => {
-              const a = state.agents.find((x) => x.id === r.agentId);
-              return (
-                <div key={r.id} className="list-group-item d-flex flex-wrap gap-3 align-items-center">
-                  <Avatar name={fullName(a)} color={a?.avatarColor} size={38} />
-                  <div className="flex-grow-1" style={{ minWidth: 220 }}>
-                    <div className="fw-semibold">{fullName(a)} <small className="text-muted">{r.id}</small></div>
-                    <div className="small">{state.teams.find((t) => t.id === r.fromTeamId)?.name} → {state.teams.find((t) => t.id === r.toTeamId)?.name} · requested by {fullName(state.agents.find((x) => x.id === r.requestedBy))} · {fmtDate(r.requestedAt)}</div>
-                    <div className="small text-muted">{r.reason}</div>
-                  </div>
-                  <StatusBadge status={r.status} />
-                  {r.status === 'Pending' && canApprove && <div className="d-flex gap-2"><button className="btn btn-sm btn-light text-danger" onClick={() => setDecline(r)}>Decline</button><button className="btn btn-sm btn-success" onClick={() => approveRequest(r)}>Approve</button></div>}
-                </div>
-              );
-            })}
-          </div>
-          {!state.transferRequests.length && <EmptyState title="No transfer requests" />}
         </div>
       )}
 
@@ -376,9 +342,6 @@ export default function Teams() {
             {state.teams.some((t) => t.leadId === newLead) && <li className="text-danger">This agent currently leads another team, which will be left without a lead.</li>}
           </ul>
         </>}
-      </ConfirmModal>
-      <ConfirmModal open={!!decline} onClose={() => setDecline(null)} onConfirm={declineRequest} title="Decline transfer request?" confirmLabel="Decline" variant="danger">
-        The agent will stay in their current team.
       </ConfirmModal>
     </>
   );
